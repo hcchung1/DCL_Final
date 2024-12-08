@@ -24,3 +24,5 @@
 start_gui
 open_project C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Tetris/lab8.xpr
 update_compile_order -fileset sources_1
+update_compile_order -fileset sources_1
+update_compile_order -fileset sources_1
