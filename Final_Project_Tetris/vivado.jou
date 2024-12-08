@@ -1,27 +1,26 @@
 #-----------------------------------------------------------
-# Vivado v2024.1 (64-bit)
-# SW Build 5076996 on Wed May 22 18:37:14 MDT 2024
-# IP Build 5075265 on Wed May 22 21:45:21 MDT 2024
-# SharedData Build 5076995 on Wed May 22 18:29:18 MDT 2024
-# Start of session at: Fri Nov  1 18:18:23 2024
-# Process ID: 12556
-# Current directory: F:/Desktop/dlab_course/DCL_LAB/lab8_for_student
-# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent9416 F:\Desktop\dlab_course\DCL_LAB\lab8_for_student\lab8.xpr
-# Log file: F:/Desktop/dlab_course/DCL_LAB/lab8_for_student/vivado.log
-# Journal file: F:/Desktop/dlab_course/DCL_LAB/lab8_for_student\vivado.jou
-# Running On        :DESKTOP-QI5ML8H
+# Vivado v2024.1.1 (64-bit)
+# SW Build 5094488 on Fri Jun 14 08:59:21 MDT 2024
+# IP Build 5091682 on Fri Jun 14 16:55:04 MDT 2024
+# SharedData Build 5094118 on Fri Jun 14 01:09:43 MDT 2024
+# Start of session at: Sun Dec  8 16:11:52 2024
+# Process ID: 10648
+# Current directory: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Tetris
+# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent17012 C:\Users\Henry\Documents\GitHub\DCL_Final\Final_Project_Tetris\lab8.xpr
+# Log file: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Tetris/vivado.log
+# Journal file: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Tetris\vivado.jou
+# Running On        :Henry-Dell
 # Platform          :Windows Server 2016 or Windows 10
-# Operating System  :19043
-# Processor Detail  :12th Gen Intel(R) Core(TM) i5-12400
-# CPU Frequency     :2496 MHz
-# CPU Physical cores:6
-# CPU Logical cores :12
-# Host memory       :34118 MB
-# Swap memory       :13958 MB
-# Total Virtual     :48077 MB
-# Available Virtual :11297 MB
+# Operating System  :22631
+# Processor Detail  :12th Gen Intel(R) Core(TM) i7-12700H
+# CPU Frequency     :2688 MHz
+# CPU Physical cores:14
+# CPU Logical cores :20
+# Host memory       :16849 MB
+# Swap memory       :10200 MB
+# Total Virtual     :27049 MB
+# Available Virtual :7072 MB
 #-----------------------------------------------------------
 start_gui
-open_project F:/Desktop/dlab_course/DCL_LAB/lab8_for_student/lab8.xpr
+open_project C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Tetris/lab8.xpr
 update_compile_order -fileset sources_1
-reset_run synth_1

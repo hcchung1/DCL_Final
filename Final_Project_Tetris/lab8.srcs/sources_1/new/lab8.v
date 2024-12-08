@@ -60,8 +60,8 @@ localparam [2:0] S_MAIN_INIT = 3'b000, S_MAIN_IDLE = 3'b001,
                  S_MAIN_DONE = 3'b100, S_MAIN_SHOW = 3'b101;
 
 // Declare system variables
-wire btn_level, btn_pressed;
-reg  prev_btn_level;
+wire [3:0] btn_level, btn_pressed;
+reg  [3:0] prev_btn_level;
 reg  [5:0] send_counter;
 reg  [2:0] P, P_next;
 reg  [9:0] sd_counter;
@@ -98,8 +98,26 @@ clk_divider#(200) clk_divider0(
 
 debounce btn_db0(
   .clk(clk),
+  .btn_input(usr_btn[0]),
+  .btn_output(btn_level[0])
+);
+
+debounce btn_db1(
+  .clk(clk),
+  .btn_input(usr_btn[1]),
+  .btn_output(btn_level[1])
+);
+
+debounce btn_db2(
+  .clk(clk),
   .btn_input(usr_btn[2]),
-  .btn_output(btn_level)
+  .btn_output(btn_level[2])
+);
+
+debounce btn_db3(
+  .clk(clk),
+  .btn_input(usr_btn[3]),
+  .btn_output(btn_level[3])
 );
 
 LCD_module lcd0( 
@@ -147,7 +165,10 @@ always @(posedge clk) begin
     prev_btn_level <= btn_level;
 end
 
-assign btn_pressed = (btn_level == 1 && prev_btn_level == 0)? 1 : 0;
+assign btn_pressed[0] = (btn_level[0] == 1 && prev_btn_level[0] == 0)? 1 : 0;
+assign btn_pressed[1] = (btn_level[1] == 1 && prev_btn_level[1] == 0)? 1 : 0;
+assign btn_pressed[2] = (btn_level[2] == 1 && prev_btn_level[2] == 0)? 1 : 0;
+assign btn_pressed[3] = (btn_level[3] == 1 && prev_btn_level[3] == 0)? 1 : 0;
 
 // ------------------------------------------------------------------------
 // The following code sets the control signals of an SRAM memory block
@@ -161,24 +182,6 @@ assign data_in = sd_dout;           // Input data always comes from the SD contr
 assign sram_addr = sd_counter[8:0]; // Set the driver of the SRAM address signal.
 // End of the SRAM memory block
 // ------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------
-// FSM of the SD card reader that reads the super block (512 bytes)
-always @(posedge clk) begin
-  if (~reset_n) begin
-    P <= S_MAIN_INIT;
-    done_flag <= 0;
-  end
-  else begin
-    P <= P_next;
-    if (P == S_MAIN_DONE)
-      done_flag <= 1;
-    else if (P == S_MAIN_SHOW && P_next == S_MAIN_IDLE)
-      done_flag <= 0;
-    else
-      done_flag <= done_flag;
-  end
-end
 
 always @(*) begin // FSM next-state logic
   case (P)
@@ -204,58 +207,6 @@ always @(*) begin // FSM next-state logic
   endcase
 end
 
-// FSM output logic: controls the 'rd_req' and 'rd_addr' signals.
-always @(*) begin
-  rd_req = (P == S_MAIN_WAIT);
-  rd_addr = blk_addr;
-end
-
-always @(posedge clk) begin
-  if (~reset_n) blk_addr <= 32'h2000;
-  else blk_addr <= blk_addr; // In lab 6, change this line to scan all blocks
-end
-
-// FSM output logic: controls the 'sd_counter' signal.
-// SD card read address incrementer
-always @(posedge clk) begin
-  if (~reset_n || (P == S_MAIN_READ && P_next == S_MAIN_DONE))
-    sd_counter <= 0;
-  else if ((P == S_MAIN_READ && sd_valid) ||
-           (P == S_MAIN_DONE && P_next == S_MAIN_SHOW))
-    sd_counter <= sd_counter + 1;
-end
-
-// FSM ouput logic: Retrieves the content of sram[] for display
-always @(posedge clk) begin
-  if (~reset_n) data_byte <= 8'b0;
-  else if (sram_en && P == S_MAIN_DONE) data_byte <= data_out;
-end
-// End of the FSM of the SD card reader
-// ------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------
-// LCD Display function.
-always @(posedge clk) begin
-  if (~reset_n) begin
-    row_A = "SD card cannot  ";
-    row_B = "be initialized! ";
-  end else if (done_flag) begin
-    row_A <= "SD block 8192:  ";
-    row_B <= { "Byte ",
-               sd_counter[9:8] + "0",
-               ((sd_counter[7:4] > 9)? "7" : "0") + sd_counter[7:4],
-               ((sd_counter[3:0] > 9)? "7" : "0") + sd_counter[3:0],
-               "h = ",
-               ((data_byte[7:4] > 9)? "7" : "0") + data_byte[7:4],
-               ((data_byte[3:0] > 9)? "7" : "0") + data_byte[3:0], "h." };
-  end
-  else if (P == S_MAIN_IDLE) begin
-    row_A <= "Hit BTN2 to read";
-    row_B <= "the SD card ... ";
-  end
-end
-// End of the LCD display function
-// ------------------------------------------------------------------------
 
 
 
