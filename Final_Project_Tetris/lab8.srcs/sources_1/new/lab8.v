@@ -67,6 +67,7 @@ reg  [2:0] P, P_next;
 
 reg  [127:0] row_A = "SD card cannot  ";
 reg  [127:0] row_B = "be initialized! ";
+reg  [3:0] switch;
 
 wire init_finished;
 
@@ -161,7 +162,8 @@ assign btn_pressed[3] = (btn_level[3] == 1 && prev_btn_level[3] == 0)? 1 : 0;
 reg move_end;
 reg pause;
 reg ending;
-reg [3:0] choice;
+reg [4:0] choice;
+reg starting;
 
 // -----------------------------------------------------------------
 // FSM next-state logic
@@ -171,7 +173,7 @@ always @(*) begin
       if (init_finished == 1) P_next = S_MAIN_START;
       else P_next = S_MAIN_INIT;
     S_MAIN_START: // assume that all the usr_sw(s) were originally 0
-      if (usr_sw[0]) P_next = S_MAIN_MOVE;
+      if (starting) P_next = S_MAIN_MOVE;
       else P_next = S_MAIN_START;
     S_MAIN_MOVE:
       if(~move_end) P_next = S_MAIN_WAIT;
@@ -196,7 +198,51 @@ end
 // end of FSM
 // -----------------------------------------------------------------
 
+// -----------------------------------------------------------------
+// Main Block
 
+reg [$clog2(100000000):0] wait_clk;
+
+always @(posedge clk)begin 
+  if(~reset_n)begin 
+  
+  end else if(P == S_MAIN_INIT)begin 
+    // Initial all the things, include LCD, uart, LED, VGA??
+    switch <= usr_sw;
+    starting <= 0;
+  end else if(P == S_MAIN_START)begin 
+    // when user switch any way for switch[0], start the game.
+    if(usr_sw[0] != switch[0])begin 
+      starting <= 1;
+      switch <= usr_sw;
+    end else begin 
+      switch <= usr_sw;
+      starting <= 0;
+    end
+  end else if(P == S_MAIN_MOVE)begin 
+    // VGA start changing the snake on the screen
+    
+    //when changing over, go to state: S_MAIN_WAIT
+    move_end <= 1;
+    wait_clk <= 0;
+  end else if(P == S_MAIN_WAIT)begin 
+    // getting choice from user, upon getting the choice or wait for a second, go to state:S_MAIN_CHECK
+    wait_clk <= wait_clk + 1;
+    if(wait_clk == 100000000) begin 
+      choice[4] <= 1;
+    end else if(|btn_pressed) begin 
+      choice[3:0] <= btn_pressed[3:0];
+    end else if (switch != usr_sw)begin 
+      pause <= (switch[1] != usr_sw[1]);
+      ending <= (switch[2] != usr_sw[2]);
+    end
+  end else begin 
+  
+  end
+end
+
+// End of Main Block
+// -----------------------------------------------------------------
 
 
 
