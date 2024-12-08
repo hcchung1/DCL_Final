@@ -30,11 +30,12 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-module lab8(
+module tetris(
   // General system I/O ports
   input  clk,
   input  reset_n,
   input  [3:0] usr_btn,
+  input  [3:0] usr_sw,       // switches
   output [3:0] usr_led,
 
   // SD card specific I/O ports
@@ -55,31 +56,19 @@ module lab8(
   output [3:0] rgb_led_b
 );
 
-localparam [2:0] S_MAIN_INIT = 3'b000, S_MAIN_IDLE = 3'b001,
-                 S_MAIN_WAIT = 3'b010, S_MAIN_READ = 3'b011,
-                 S_MAIN_DONE = 3'b100, S_MAIN_SHOW = 3'b101;
+localparam [2:0] S_MAIN_INIT = 0, S_MAIN_START = 1, S_MAIN_MOVE = 2, S_MAIN_WAIT = 3,
+                 S_MAIN_CHECK = 4, S_MAIN_PAUSE = 5, S_MAIN_END = 6;
+
 
 // Declare system variables
 wire [3:0] btn_level, btn_pressed;
 reg  [3:0] prev_btn_level;
-reg  [5:0] send_counter;
 reg  [2:0] P, P_next;
-reg  [9:0] sd_counter;
-reg  [7:0] data_byte;
-reg  [31:0] blk_addr;
 
 reg  [127:0] row_A = "SD card cannot  ";
 reg  [127:0] row_B = "be initialized! ";
-reg  done_flag; // Signals the completion of reading one SD sector.
 
-// Declare SD card interface signals
-wire clk_sel;
-wire clk_500k;
-reg  rd_req;
-reg  [31:0] rd_addr;
 wire init_finished;
-wire [7:0] sd_dout;
-wire sd_valid;
 
 // Declare the control/data signals of an SRAM memory block
 wire [7:0] data_in;
@@ -87,7 +76,6 @@ wire [7:0] data_out;
 wire [8:0] sram_addr;
 wire       sram_we, sram_en;
 
-assign clk_sel = (init_finished)? clk : clk_500k; // clock for the SD controller
 assign usr_led = 4'h00;
 
 clk_divider#(200) clk_divider0(
@@ -170,29 +158,45 @@ assign btn_pressed[1] = (btn_level[1] == 1 && prev_btn_level[1] == 0)? 1 : 0;
 assign btn_pressed[2] = (btn_level[2] == 1 && prev_btn_level[2] == 0)? 1 : 0;
 assign btn_pressed[3] = (btn_level[3] == 1 && prev_btn_level[3] == 0)? 1 : 0;
 
-always @(*) begin // FSM next-state logic
+reg move_end;
+reg pause;
+reg ending;
+reg [3:0] choice;
+
+// -----------------------------------------------------------------
+// FSM next-state logic
+always @(*) begin 
   case (P)
     S_MAIN_INIT: // wait for SD card initialization
-      if (init_finished == 1) P_next = S_MAIN_IDLE;
+      if (init_finished == 1) P_next = S_MAIN_START;
       else P_next = S_MAIN_INIT;
-    S_MAIN_IDLE: // wait for button click
-      if (btn_pressed == 1) P_next = S_MAIN_WAIT;
-      else P_next = S_MAIN_IDLE;
-    S_MAIN_WAIT: // issue a rd_req to the SD controller until it's ready
-      P_next = S_MAIN_READ;
-    S_MAIN_READ: // wait for the input data to enter the SRAM buffer
-      if (sd_counter == 512) P_next = S_MAIN_DONE;
-      else P_next = S_MAIN_READ;
-    S_MAIN_DONE: // read byte 0 of the superblock from sram[]
-      if (btn_pressed == 1) P_next = S_MAIN_SHOW;
-      else P_next = S_MAIN_DONE;
-    S_MAIN_SHOW:
-      if (sd_counter < 512) P_next = S_MAIN_DONE;
-    else P_next = S_MAIN_IDLE;
-    default:
-      P_next = S_MAIN_IDLE;
+    S_MAIN_START: // assume that all the usr_sw(s) were originally 0
+      if (usr_sw[0]) P_next = S_MAIN_MOVE;
+      else P_next = S_MAIN_START;
+    S_MAIN_MOVE:
+      if(~move_end) P_next = S_MAIN_WAIT;
+      else P_next = S_MAIN_MOVE;
+    S_MAIN_WAIT:
+      if(|choice && ~pause && ~ending)  P_next = S_MAIN_CHECK;
+      else if(pause) P_next = S_MAIN_PAUSE;
+      else if(ending) P_next = S_MAIN_END;
+      else P_next = S_MAIN_WAIT;
+    S_MAIN_CHECK:
+      if(ending) P_next = S_MAIN_END;
+      else P_next = S_MAIN_MOVE;
+    S_MAIN_PAUSE:
+      if(~pause) P_next = S_MAIN_MOVE;
+      else P_next = S_MAIN_PAUSE;
+    S_MAIN_END:
+      P_next = S_MAIN_END;
+    
+    default: P_next = S_MAIN_INIT; // ???
   endcase
 end
+// end of FSM
+// -----------------------------------------------------------------
+
+
 
 
 
