@@ -170,19 +170,6 @@ assign btn_pressed[1] = (btn_level[1] == 1 && prev_btn_level[1] == 0)? 1 : 0;
 assign btn_pressed[2] = (btn_level[2] == 1 && prev_btn_level[2] == 0)? 1 : 0;
 assign btn_pressed[3] = (btn_level[3] == 1 && prev_btn_level[3] == 0)? 1 : 0;
 
-// ------------------------------------------------------------------------
-// The following code sets the control signals of an SRAM memory block
-// that is connected to the data output port of the SD controller.
-// Once the read request is made to the SD controller, 512 bytes of data
-// will be sequentially read into the SRAM memory block, one byte per
-// clock cycle (as long as the sd_valid signal is high).
-assign sram_we = sd_valid;          // Write data into SRAM when sd_valid is high.
-assign sram_en = 1;                 // Always enable the SRAM block.
-assign data_in = sd_dout;           // Input data always comes from the SD controller.
-assign sram_addr = sd_counter[8:0]; // Set the driver of the SRAM address signal.
-// End of the SRAM memory block
-// ------------------------------------------------------------------------
-
 always @(*) begin // FSM next-state logic
   case (P)
     S_MAIN_INIT: // wait for SD card initialization
