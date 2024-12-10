@@ -3,12 +3,12 @@
 # SW Build 5094488 on Fri Jun 14 08:59:21 MDT 2024
 # IP Build 5091682 on Fri Jun 14 16:55:04 MDT 2024
 # SharedData Build 5094118 on Fri Jun 14 01:09:43 MDT 2024
-# Start of session at: Sun Dec  8 16:11:52 2024
-# Process ID: 10648
-# Current directory: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Tetris
-# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent17012 C:\Users\Henry\Documents\GitHub\DCL_Final\Final_Project_Tetris\lab8.xpr
-# Log file: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Tetris/vivado.log
-# Journal file: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Tetris\vivado.jou
+# Start of session at: Tue Dec 10 20:29:53 2024
+# Process ID: 24988
+# Current directory: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Snake
+# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent28832 C:\Users\Henry\Documents\GitHub\DCL_Final\Final_Project_Snake\lab8.xpr
+# Log file: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Snake/vivado.log
+# Journal file: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Snake\vivado.jou
 # Running On        :Henry-Dell
 # Platform          :Windows Server 2016 or Windows 10
 # Operating System  :22631
@@ -17,12 +17,10 @@
 # CPU Physical cores:14
 # CPU Logical cores :20
 # Host memory       :16849 MB
-# Swap memory       :10200 MB
-# Total Virtual     :27049 MB
-# Available Virtual :7072 MB
+# Swap memory       :10737 MB
+# Total Virtual     :27586 MB
+# Available Virtual :12467 MB
 #-----------------------------------------------------------
 start_gui
-open_project C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Tetris/lab8.xpr
-update_compile_order -fileset sources_1
-update_compile_order -fileset sources_1
+open_project C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Snake/lab8.xpr
 update_compile_order -fileset sources_1

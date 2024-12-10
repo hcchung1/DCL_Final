@@ -3,12 +3,12 @@
 # SW Build 5094488 on Fri Jun 14 08:59:21 MDT 2024
 # IP Build 5091682 on Fri Jun 14 16:55:04 MDT 2024
 # SharedData Build 5094118 on Fri Jun 14 01:09:43 MDT 2024
-# Start of session at: Sun Dec  8 16:11:52 2024
-# Process ID: 10648
-# Current directory: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Tetris
-# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent17012 C:\Users\Henry\Documents\GitHub\DCL_Final\Final_Project_Tetris\lab8.xpr
-# Log file: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Tetris/vivado.log
-# Journal file: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Tetris\vivado.jou
+# Start of session at: Tue Dec 10 20:29:53 2024
+# Process ID: 24988
+# Current directory: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Snake
+# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent28832 C:\Users\Henry\Documents\GitHub\DCL_Final\Final_Project_Snake\lab8.xpr
+# Log file: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Snake/vivado.log
+# Journal file: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Snake\vivado.jou
 # Running On        :Henry-Dell
 # Platform          :Windows Server 2016 or Windows 10
 # Operating System  :22631
@@ -17,12 +17,12 @@
 # CPU Physical cores:14
 # CPU Logical cores :20
 # Host memory       :16849 MB
-# Swap memory       :10200 MB
-# Total Virtual     :27049 MB
-# Available Virtual :7072 MB
+# Swap memory       :10737 MB
+# Total Virtual     :27586 MB
+# Available Virtual :12467 MB
 #-----------------------------------------------------------
 start_gui
-open_project C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Tetris/lab8.xpr
+open_project C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Snake/lab8.xpr
 WARNING: [Board 49-26] cannot add Board Part xilinx.com:kc705:part0:1.6 available at C:/Xilinx/Vivado/2024.1/data/xhub/boards/XilinxBoardStore/boards/Xilinx/kc705/1.6/board.xml as part xc7k325tffg900-2 specified in board_part file is either invalid or not available
 WARNING: [Board 49-26] cannot add Board Part xilinx.com:kcu105:part0:1.6 available at C:/Xilinx/Vivado/2024.1/data/xhub/boards/XilinxBoardStore/boards/Xilinx/kcu105/1.6/board.xml as part xcku040-ffva1156-2-e specified in board_part file is either invalid or not available
 WARNING: [Board 49-26] cannot add Board Part xilinx.com:kcu105:part0:1.7 available at C:/Xilinx/Vivado/2024.1/data/xhub/boards/XilinxBoardStore/boards/Xilinx/kcu105/1.7/board.xml as part xcku040-ffva1156-2-e specified in board_part file is either invalid or not available
@@ -94,16 +94,11 @@ WARNING: [Board 49-26] cannot add Board Part xilinx.com:zcu216:part0:2.0 availab
 WARNING: [Board 49-26] cannot add Board Part xilinx.com:zcu216ld:part0:2.0 available at C:/Xilinx/Vivado/2024.1/data/xhub/boards/XilinxBoardStore/boards/Xilinx/zcu216ld/production/2.0/board.xml as part xczu59dr-ffvf1760-2-i specified in board_part file is either invalid or not available
 WARNING: [Board 49-26] cannot add Board Part xilinx.com:zcu670:part0:2.0 available at C:/Xilinx/Vivado/2024.1/data/xhub/boards/XilinxBoardStore/boards/Xilinx/zcu670/2.0/board.xml as part xczu67dr-fsve1156-2-i specified in board_part file is either invalid or not available
 WARNING: [Board 49-26] cannot add Board Part xilinx.com:zcu670ld:part0:1.0 available at C:/Xilinx/Vivado/2024.1/data/xhub/boards/XilinxBoardStore/boards/Xilinx/zcu670ld/1.0/board.xml as part xczu57dr-fsve1156-2-i specified in board_part file is either invalid or not available
-INFO: [Project 1-313] Project file moved from 'F:/Desktop/dlab_course/DCL_LAB/lab8_for_student' since last save.
-INFO: [filemgmt 56-3] Default IP Output Path : Could not find the directory 'C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Tetris/lab8.gen/sources_1'.
+INFO: [filemgmt 56-3] Default IP Output Path : Could not find the directory 'C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Snake/lab8.gen/sources_1'.
 Scanning sources...
 Finished scanning sources
 INFO: [IP_Flow 19-234] Refreshing IP repositories
 INFO: [IP_Flow 19-1704] No user IP repositories specified
 INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/Xilinx/Vivado/2024.1/data/ip'.
-open_project: Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1607.930 ; gain = 143.094
+open_project: Time (s): cpu = 00:00:10 ; elapsed = 00:00:12 . Memory (MB): peak = 1706.188 ; gain = 191.898
 update_compile_order -fileset sources_1
-update_compile_order -fileset sources_1
-update_compile_order -fileset sources_1
-exit
-INFO: [Common 17-206] Exiting Vivado at Sun Dec  8 17:29:42 2024...
