@@ -60,6 +60,9 @@ reg  [127:0] row_A = "SD card cannot  ";
 reg  [127:0] row_B = "be initialized! ";
 reg  [3:0] switch;
 
+
+//ASDFD
+
 wire init_finished;
 
 // Declare the control/data signals of an SRAM memory block
