@@ -1,28 +1,19 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: Dept. of Computer Science, National Chiao Tung University
-// Engineer: Chun-Jen Tsai
+// Company: Dept. of Computer Science, National Yang Ming Chiao Tung University
+// Engineer: Cheng-Han Chung, 
 // 
 // Create Date: 2017/05/08 15:29:41
 // Design Name: 
-// Module Name: lab6
-// Project Name: 
-// Target Devices: 
+// Module Name: snake
+// Project Name: Final_Project
+// Target Devices: FPGA
 // Tool Versions:
-// Description: The sample top module of lab 6: sd card reader. The behavior of
-//              this module is as follows
-//              1. When the SD card is initialized, display a message on the LCD.
-//                 If the initialization fails, an error message will be shown.
-//              2. The user can then press usr_btn[2] to trigger the sd card
-//                 controller to read the super block of the sd card (located at
-//                 block # 8192) into the SRAM memory.
-//              3. During SD card reading time, the four LED lights will be turned on.
-//                 They will be turned off when the reading is done.
-//              4. The LCD will then displayer the sector just been read, and the
-//                 first byte of the sector.
-//              5. Everytime you press usr_btn[2], the next byte will be displayed.
+// Description: This is snake Verilog, aim to play snake game by FPGA
+//              1. Control directions by bottom
+//              2. Showing snake and background on VGA
 // 
-// Dependencies: clk_divider, LCD_module, debounce, sd_card
+// Dependencies: clk_divider, LCD_module, debounce, VGA, 
 // 
 // Revision:
 // Revision 0.01 - File Created
@@ -39,21 +30,21 @@ module snake(
   output [3:0] usr_led,
 
   // SD card specific I/O ports
-  output spi_ss,
-  output spi_sck,
-  output spi_mosi,
-  input  spi_miso,
+//  output spi_ss,
+//  output spi_sck,
+//  output spi_mosi,
+//  input  spi_miso,
 
   // 1602 LCD Module Interface
   output LCD_RS,
   output LCD_RW,
   output LCD_E,
-  output [3:0] LCD_D,
+  output [3:0] LCD_D
   
   // tri-state LED
-  output [3:0] rgb_led_r,
-  output [3:0] rgb_led_g,
-  output [3:0] rgb_led_b
+//  output [3:0] rgb_led_r,
+//  output [3:0] rgb_led_g,
+//  output [3:0] rgb_led_b
 );
 
 localparam [2:0] S_MAIN_INIT = 0, S_MAIN_START = 1, S_MAIN_MOVE = 2, S_MAIN_WAIT = 3,
@@ -77,37 +68,18 @@ wire [7:0] data_out;
 wire [8:0] sram_addr;
 wire       sram_we, sram_en;
 
-assign usr_led = 4'h00;
+assign usr_led = 4'h0000;
 
-clk_divider#(200) clk_divider0(
-  .clk(clk),
-  .reset(~reset_n),
-  .clk_out(clk_500k)
-);
+//clk_divider#(200) clk_divider0(
+//  .clk(clk),
+//  .reset(~reset_n),
+//  .clk_out(clk_500k)
+//);
 
-debounce btn_db0(
-  .clk(clk),
-  .btn_input(usr_btn[0]),
-  .btn_output(btn_level[0])
-);
-
-debounce btn_db1(
-  .clk(clk),
-  .btn_input(usr_btn[1]),
-  .btn_output(btn_level[1])
-);
-
-debounce btn_db2(
-  .clk(clk),
-  .btn_input(usr_btn[2]),
-  .btn_output(btn_level[2])
-);
-
-debounce btn_db3(
-  .clk(clk),
-  .btn_input(usr_btn[3]),
-  .btn_output(btn_level[3])
-);
+debounce btn_db0(.clk(clk),.btn_input(usr_btn[0]),.btn_output(btn_level[0]));
+debounce btn_db1(.clk(clk),.btn_input(usr_btn[1]),.btn_output(btn_level[1]));
+debounce btn_db2(.clk(clk),.btn_input(usr_btn[2]),.btn_output(btn_level[2]));
+debounce btn_db3(.clk(clk),.btn_input(usr_btn[3]),.btn_output(btn_level[3]));
 
 LCD_module lcd0( 
   .clk(clk),
@@ -120,20 +92,20 @@ LCD_module lcd0(
   .LCD_D(LCD_D)
 );
 
-sd_card sd_card0(
-  .cs(spi_ss),
-  .sclk(spi_sck),
-  .mosi(spi_mosi),
-  .miso(spi_miso),
+//sd_card sd_card0(
+//  .cs(spi_ss),
+//  .sclk(spi_sck),
+//  .mosi(spi_mosi),
+//  .miso(spi_miso),
 
-  .clk(clk_sel),
-  .rst(~reset_n),
-  .rd_req(rd_req),
-  .block_addr(rd_addr),
-  .init_finished(init_finished),
-  .dout(sd_dout),
-  .sd_valid(sd_valid)
-);
+//  .clk(clk_sel),
+//  .rst(~reset_n),
+//  .rd_req(rd_req),
+//  .block_addr(rd_addr),
+//  .init_finished(init_finished),
+//  .dout(sd_dout),
+//  .sd_valid(sd_valid)
+//);
 
 sram ram0(
   .clk(clk),
