@@ -39,7 +39,13 @@ module snake(
   output LCD_RS,
   output LCD_RW,
   output LCD_E,
-  output [3:0] LCD_D
+  output [3:0] LCD_D, 
+  // VGA specific I/O ports
+  output VGA_HSYNC,
+  output VGA_VSYNC,
+  output [3:0] VGA_RED,
+  output [3:0] VGA_GREEN,
+  output [3:0] VGA_BLUE
   
   // tri-state LED
 //  output [3:0] rgb_led_r,
@@ -59,9 +65,22 @@ reg  [2:0] P, P_next;
 reg  [127:0] row_A = "SD card cannot  ";
 reg  [127:0] row_B = "be initialized! ";
 reg  [3:0] switch;
+reg move_end;
+reg pause;
+reg ending;
+reg [4:0] choice;
+reg starting;
+reg [399:0] snk_pos;
+wire [399:0] snk_posw;
+reg [39:0] apple_pos;
+wire [39:0] apple_posw;
+reg [79:0] wall_pos;
+wire [79:0] wall_posw;
+// 5 apple, 10 wall
 
+wire [3:0] choicew;
+assign choicew = choice[3:0];
 
-//ASDFD
 
 wire init_finished;
 
@@ -95,20 +114,26 @@ LCD_module lcd0(
   .LCD_D(LCD_D)
 );
 
-//sd_card sd_card0(
-//  .cs(spi_ss),
-//  .sclk(spi_sck),
-//  .mosi(spi_mosi),
-//  .miso(spi_miso),
+Screen screen(
+    .clk(clk),
+    .reset_n(reset_n),
+    .usr_btn(usr_btn),
+    .usr_sw(usr_sw),
 
-//  .clk(clk_sel),
-//  .rst(~reset_n),
-//  .rd_req(rd_req),
-//  .block_addr(rd_addr),
-//  .init_finished(init_finished),
-//  .dout(sd_dout),
-//  .sd_valid(sd_valid)
-//);
+    .choice(choicew),  // 
+    .snk_pos(snk_posw),
+    .apple_pos(apple_posw),
+    .wall_pos(wall_posw),
+
+    .move_end(move_end),
+    
+    // VGA specific I/O ports
+    .VGA_HSYNC(VGA_HSYNC),
+    .VGA_VSYNC(VGA_VSYNC),
+    .VGA_RED(VGA_RED),
+    .VGA_GREEN(VGA_GREEN),
+    .VGA_BLUE(VGA_BLUE)
+    );
 
 sram ram0(
   .clk(clk),
@@ -134,11 +159,7 @@ assign btn_pressed[1] = (btn_level[1] == 1 && prev_btn_level[1] == 0)? 1 : 0;
 assign btn_pressed[2] = (btn_level[2] == 1 && prev_btn_level[2] == 0)? 1 : 0;
 assign btn_pressed[3] = (btn_level[3] == 1 && prev_btn_level[3] == 0)? 1 : 0;
 
-reg move_end;
-reg pause;
-reg ending;
-reg [4:0] choice;
-reg starting;
+
 
 // -----------------------------------------------------------------
 // FSM next-state logic
