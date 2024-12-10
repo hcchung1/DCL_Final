@@ -203,7 +203,7 @@ always @(posedge clk)begin
   end else if(P == S_MAIN_WAIT)begin 
     // getting choice from user, upon getting the choice or wait for a second, go to state:S_MAIN_CHECK
     wait_clk <= wait_clk + 1;
-    if(wait_clk == 100000000) begin 
+    if(wait_clk == 50000000) begin 
       choice[4] <= 1;
     end else if(|btn_pressed) begin 
       choice[3:0] <= btn_pressed[3:0];
