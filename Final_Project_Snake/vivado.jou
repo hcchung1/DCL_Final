@@ -1,26 +1,27 @@
 #-----------------------------------------------------------
-# Vivado v2024.1.1 (64-bit)
-# SW Build 5094488 on Fri Jun 14 08:59:21 MDT 2024
-# IP Build 5091682 on Fri Jun 14 16:55:04 MDT 2024
-# SharedData Build 5094118 on Fri Jun 14 01:09:43 MDT 2024
-# Start of session at: Tue Dec 10 20:29:53 2024
-# Process ID: 24988
-# Current directory: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Snake
-# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent28832 C:\Users\Henry\Documents\GitHub\DCL_Final\Final_Project_Snake\lab8.xpr
-# Log file: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Snake/vivado.log
-# Journal file: C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Snake\vivado.jou
-# Running On        :Henry-Dell
+# Vivado v2024.1 (64-bit)
+# SW Build 5076996 on Wed May 22 18:37:14 MDT 2024
+# IP Build 5075265 on Wed May 22 21:45:21 MDT 2024
+# SharedData Build 5076995 on Wed May 22 18:29:18 MDT 2024
+# Start of session at: Tue Dec 10 20:56:37 2024
+# Process ID: 13848
+# Current directory: C:/coding/verilog/DCL_FINAL/DCL_Final/Final_Project_Snake
+# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent15324 C:\coding\verilog\DCL_FINAL\DCL_Final\Final_Project_Snake\lab8.xpr
+# Log file: C:/coding/verilog/DCL_FINAL/DCL_Final/Final_Project_Snake/vivado.log
+# Journal file: C:/coding/verilog/DCL_FINAL/DCL_Final/Final_Project_Snake\vivado.jou
+# Running On        :LAPTOP-TVBTHU6U
 # Platform          :Windows Server 2016 or Windows 10
 # Operating System  :22631
-# Processor Detail  :12th Gen Intel(R) Core(TM) i7-12700H
-# CPU Frequency     :2688 MHz
-# CPU Physical cores:14
-# CPU Logical cores :20
-# Host memory       :16849 MB
-# Swap memory       :10737 MB
-# Total Virtual     :27586 MB
-# Available Virtual :12467 MB
+# Processor Detail  :Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
+# CPU Frequency     :2304 MHz
+# CPU Physical cores:4
+# CPU Logical cores :8
+# Host memory       :16968 MB
+# Swap memory       :31138 MB
+# Total Virtual     :48107 MB
+# Available Virtual :21819 MB
 #-----------------------------------------------------------
 start_gui
-open_project C:/Users/Henry/Documents/GitHub/DCL_Final/Final_Project_Snake/lab8.xpr
+open_project C:/coding/verilog/DCL_FINAL/DCL_Final/Final_Project_Snake/lab8.xpr
 update_compile_order -fileset sources_1
+add_files -fileset constrs_1 -norecurse C:/coding/verilog/FINAL/lab10/lab10.srcs/constrs_1/lab10.xdc
