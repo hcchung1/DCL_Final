@@ -267,7 +267,7 @@ module Check(
                 end          
     
                 apl_check = 1;
-
+ 
             end
             //end of apple check
             
