@@ -29,28 +29,18 @@ module snake(
   input  [3:0] usr_sw,       // switches
   output [3:0] usr_led,
 
-  // SD card specific I/O ports
-//  output spi_ss,
-//  output spi_sck,
-//  output spi_mosi,
-//  input  spi_miso,
-
-  // 1602 LCD Module Interface
+  // LCD
   output LCD_RS,
   output LCD_RW,
   output LCD_E,
   output [3:0] LCD_D, 
-  // VGA specific I/O ports
+
+  // VGA 
   output VGA_HSYNC,
   output VGA_VSYNC,
   output [3:0] VGA_RED,
   output [3:0] VGA_GREEN,
   output [3:0] VGA_BLUE
-  
-  // tri-state LED
-//  output [3:0] rgb_led_r,
-//  output [3:0] rgb_led_g,
-//  output [3:0] rgb_led_b
 );
 
 localparam [2:0] S_MAIN_INIT = 0, S_MAIN_START = 1, S_MAIN_MOVE = 2, S_MAIN_WAIT = 3,
@@ -61,26 +51,42 @@ localparam [2:0] S_MAIN_INIT = 0, S_MAIN_START = 1, S_MAIN_MOVE = 2, S_MAIN_WAIT
 wire [3:0] btn_level, btn_pressed;
 reg  [3:0] prev_btn_level;
 reg  [2:0] P, P_next;
-
-reg  [127:0] row_A = "SD card cannot  ";
-reg  [127:0] row_B = "be initialized! ";
 reg  [3:0] switch;
-reg move_end;
+wire move_end;
 reg pause;
 reg ending;
-reg [4:0] choice;
+
+wire state; // state 
+assign state = P;
+
+wire moving;
+assign moving = (P == S_MAIN_MOVE);
+
+wire checking;
+assign checking = (P == S_MAIN_CHECK);
+
 reg starting;
-reg [399:0] snk_pos;
+
+reg [399:0] snk_pos = 0;
 wire [399:0] snk_posw;
+assign snk_posw = snk_pos;
+
 reg [39:0] apple_pos;
 wire [39:0] apple_posw;
+assign apple_posw = apple_pos;
+
 reg [79:0] wall_pos;
 wire [79:0] wall_posw;
-// 5 apple, 10 wall
+assign wall_posw = wall_pos;
 
+reg [3:0] choice;
+reg [3:0] prev_ch;
 wire [3:0] choicew;
-assign choicew = choice[3:0];
+assign choicew = choice;
 
+wire [399:0] new_position;
+wire snake_dead;
+wire apple_eat;
 
 wire init_finished;
 
@@ -92,57 +98,37 @@ wire       sram_we, sram_en;
 
 assign usr_led = 4'h0000;
 
-//clk_divider#(200) clk_divider0(
-//  .clk(clk),
-//  .reset(~reset_n),
-//  .clk_out(clk_500k)
-//);
-
 debounce btn_db0(.clk(clk),.btn_input(usr_btn[0]),.btn_output(btn_level[0]));
 debounce btn_db1(.clk(clk),.btn_input(usr_btn[1]),.btn_output(btn_level[1]));
 debounce btn_db2(.clk(clk),.btn_input(usr_btn[2]),.btn_output(btn_level[2]));
 debounce btn_db3(.clk(clk),.btn_input(usr_btn[3]),.btn_output(btn_level[3]));
 
-LCD_module lcd0( 
+// LCD_module lcd0( 
+//   .clk(clk),
+//   .reset(~reset_n),
+//   .row_A(row_A),
+//   .row_B(row_B),
+//   .LCD_E(LCD_E),
+//   .LCD_RS(LCD_RS),
+//   .LCD_RW(LCD_RW),
+//   .LCD_D(LCD_D)
+// );
+
+Screen screen(.clk(clk),.reset_n(reset_n),.usr_btn(usr_btn),.usr_sw(usr_sw),.state(state),.choice(choicew),.snk_pos(snk_posw),.apple_pos(apple_posw),.wall_pos(wall_posw),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
+
+Check check(
   .clk(clk),
-  .reset(~reset_n),
-  .row_A(row_A),
-  .row_B(row_B),
-  .LCD_E(LCD_E),
-  .LCD_RS(LCD_RS),
-  .LCD_RW(LCD_RW),
-  .LCD_D(LCD_D)
+  .reset_n(reset_n),
+  .snk_pos(snk_posw),
+  .apl_pos(apple_posw),  
+  .wall_pos(wall_posw),
+  .dir_sig(choicew),
+  .snake_dead(snake_dead),
+  .apple_eat(apple_eat),
+  .new_position(new_position);
 );
 
-Screen screen(
-    .clk(clk),
-    .reset_n(reset_n),
-    .usr_btn(usr_btn),
-    .usr_sw(usr_sw),
-
-    .choice(choicew),  // 
-    .snk_pos(snk_posw),
-    .apple_pos(apple_posw),
-    .wall_pos(wall_posw),
-
-    .move_end(move_end),
-    
-    // VGA specific I/O ports
-    .VGA_HSYNC(VGA_HSYNC),
-    .VGA_VSYNC(VGA_VSYNC),
-    .VGA_RED(VGA_RED),
-    .VGA_GREEN(VGA_GREEN),
-    .VGA_BLUE(VGA_BLUE)
-    );
-
-sram ram0(
-  .clk(clk),
-  .we(sram_we),
-  .en(sram_en),
-  .addr(sram_addr),
-  .data_i(data_in),
-  .data_o(data_out)
-);
+// sram ram0(.clk(clk),.we(sram_we),.en(sram_en),.addr(sram_addr),.data_i(data_in),.data_o(data_out));
 
 //
 // Enable one cycle of btn_pressed per each button hit
@@ -159,8 +145,6 @@ assign btn_pressed[1] = (btn_level[1] == 1 && prev_btn_level[1] == 0)? 1 : 0;
 assign btn_pressed[2] = (btn_level[2] == 1 && prev_btn_level[2] == 0)? 1 : 0;
 assign btn_pressed[3] = (btn_level[3] == 1 && prev_btn_level[3] == 0)? 1 : 0;
 
-
-
 // -----------------------------------------------------------------
 // FSM next-state logic
 always @(*) begin 
@@ -169,17 +153,17 @@ always @(*) begin
       if (init_finished == 1) P_next = S_MAIN_START;
       else P_next = S_MAIN_INIT;
     S_MAIN_START: // assume that all the usr_sw(s) were originally 0
-      if (starting) P_next = S_MAIN_MOVE;
+      if (starting) P_next = S_MAIN_MOVE; // go into S_MAIN_MOVE before S_MAIN_CHECK to make "snake" on screen
       else P_next = S_MAIN_START;
-    S_MAIN_MOVE:
-      if(~move_end) P_next = S_MAIN_WAIT;
+    S_MAIN_MOVE: // VGA start changing the snake on the screen
+      if(move_end) P_next = S_MAIN_WAIT;
       else P_next = S_MAIN_MOVE;
-    S_MAIN_WAIT:
+    S_MAIN_WAIT: // user signals the choice
       if(|choice && ~pause && ~ending)  P_next = S_MAIN_CHECK;
       else if(pause) P_next = S_MAIN_PAUSE;
       else if(ending) P_next = S_MAIN_END;
       else P_next = S_MAIN_WAIT;
-    S_MAIN_CHECK:
+    S_MAIN_CHECK: // check the choice
       if(ending) P_next = S_MAIN_END;
       else P_next = S_MAIN_MOVE;
     S_MAIN_PAUSE:
@@ -191,7 +175,7 @@ always @(*) begin
     default: P_next = S_MAIN_INIT; // ???
   endcase
 end
-// end of FSM
+// END of FSM
 // -----------------------------------------------------------------
 
 // -----------------------------------------------------------------
@@ -217,23 +201,35 @@ always @(posedge clk)begin
     end
   end else if(P == S_MAIN_MOVE)begin 
     // VGA start changing the snake on the screen
-    
+    if(~moving) moving <= 1; // signals for VGA to start changing the snake on the screen
     //when changing over, go to state: S_MAIN_WAIT
-    move_end <= 1;
-    wait_clk <= 0;
+    wait_clk <= 0; // bzero(wait_clk)
+    switch <= usr_sw; // update switches
+    choice <= 4'b0000; // clear choice
   end else if(P == S_MAIN_WAIT)begin 
     // getting choice from user, upon getting the choice or wait for a second, go to state:S_MAIN_CHECK
-    wait_clk <= wait_clk + 1;
-    if(wait_clk == 50000000) begin 
-      choice[4] <= 1;
-    end else if(|btn_pressed) begin 
-      choice[3:0] <= btn_pressed[3:0];
-    end else if (switch != usr_sw)begin 
-      pause <= (switch[1] != usr_sw[1]);
-      ending <= (switch[2] != usr_sw[2]);
+    if(wait_clk == 50000000)begin 
+      if(~(|choice))begin 
+        choice <= prev_ch;
+      end
+    end else begin 
+      wait_clk <= wait_clk + 1;
     end
-  end else begin 
-  
+    // check if the user input some choice before choice has made
+    if(~(|choice) && |btn_pressed)begin 
+        choice[3:0] <= btn_pressed[3:0];
+    end
+    pause <= (switch[1] != usr_sw[1]);
+    ending <= (switch[2] != usr_sw[2]);
+  end else if(P == S_MAIN_CHECK) begin 
+    if(new_position != snk_pos)begin  // check.v is done
+      snk_pos <= new_position;
+      if(snake_dead)begin 
+        ending <= 1;
+      end else if(apple_eat)begin 
+        
+      end
+    end
   end
 end
 

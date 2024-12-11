@@ -23,8 +23,6 @@
 module Check(
     input clk,
     input reset_n,
-    input btn,
-    input sw,
     input [399:0] snk_pos,  // 位置編碼 0就是結束
     input [23:0] apl_pos,  
     input [39:0] wall_pos,
