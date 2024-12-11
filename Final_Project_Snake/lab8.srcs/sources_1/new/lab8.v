@@ -55,7 +55,13 @@ reg  [3:0] switch;
 reg move_end;
 reg pause;
 reg ending;
-reg moving;
+
+wire moving;
+assign moving = (P == S_MAIN_MOVE);
+
+wire checking;
+assign checking = (P == S_MAIN_CHECK);
+
 reg starting;
 
 reg [399:0] snk_pos;
@@ -74,6 +80,11 @@ reg [3:0] choice;
 reg [3:0] prev_ch;
 wire [3:0] choicew;
 assign choicew = choice[3:0];
+
+wire [399:0] new_position;
+wire snake_dead;
+wire apple_eat;
+
 
 
 wire init_finished;
@@ -103,6 +114,19 @@ debounce btn_db3(.clk(clk),.btn_input(usr_btn[3]),.btn_output(btn_level[3]));
 // );
 
 Screen screen(.clk(clk),.reset_n(reset_n),.usr_btn(usr_btn),.usr_sw(usr_sw),.choice(choicew),.snk_pos(snk_posw),.apple_pos(apple_posw),.wall_pos(wall_posw),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
+
+Check check(
+    .clk(clk),
+    .reset_n(reset_n),
+    .snk_pos(snk_posw),  // 位置編碼 0就是結束
+    .apl_pos(apple_posw),  
+    .wall_pos(wall_posw),
+    .dir_sig(choice),
+    .vaild_sig(moving),
+    .snake_dead(snake_dead),
+    .apple_eat(apple_eat),
+    .new_position(new_position);
+    );
 
 // sram ram0(.clk(clk),.we(sram_we),.en(sram_en),.addr(sram_addr),.data_i(data_in),.data_o(data_out));
 
