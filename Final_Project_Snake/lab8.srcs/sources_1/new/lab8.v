@@ -227,7 +227,7 @@ always @(posedge clk)begin
       if(snake_dead)begin 
         ending <= 1;
       end else if(apple_eat)begin 
-        // delete the apple been eaten, and add a new apple randomly
+        
       end
     end
   end
