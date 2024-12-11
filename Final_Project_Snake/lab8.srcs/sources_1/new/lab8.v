@@ -52,9 +52,12 @@ wire [3:0] btn_level, btn_pressed;
 reg  [3:0] prev_btn_level;
 reg  [2:0] P, P_next;
 reg  [3:0] switch;
-reg move_end;
+wire move_end;
 reg pause;
 reg ending;
+
+wire state; // state 
+assign state = P;
 
 wire moving;
 assign moving = (P == S_MAIN_MOVE);
@@ -64,7 +67,7 @@ assign checking = (P == S_MAIN_CHECK);
 
 reg starting;
 
-reg [399:0] snk_pos;
+reg [399:0] snk_pos = 0;
 wire [399:0] snk_posw;
 assign snk_posw = snk_pos;
 
@@ -79,13 +82,11 @@ assign wall_posw = wall_pos;
 reg [3:0] choice;
 reg [3:0] prev_ch;
 wire [3:0] choicew;
-assign choicew = choice[3:0];
+assign choicew = choice;
 
 wire [399:0] new_position;
 wire snake_dead;
 wire apple_eat;
-
-
 
 wire init_finished;
 
@@ -113,20 +114,19 @@ debounce btn_db3(.clk(clk),.btn_input(usr_btn[3]),.btn_output(btn_level[3]));
 //   .LCD_D(LCD_D)
 // );
 
-Screen screen(.clk(clk),.reset_n(reset_n),.usr_btn(usr_btn),.usr_sw(usr_sw),.choice(choicew),.snk_pos(snk_posw),.apple_pos(apple_posw),.wall_pos(wall_posw),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
+Screen screen(.clk(clk),.reset_n(reset_n),.usr_btn(usr_btn),.usr_sw(usr_sw),.state(state),.choice(choicew),.snk_pos(snk_posw),.apple_pos(apple_posw),.wall_pos(wall_posw),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
 
 Check check(
-    .clk(clk),
-    .reset_n(reset_n),
-    .snk_pos(snk_posw),  // 位置編碼 0就是結束
-    .apl_pos(apple_posw),  
-    .wall_pos(wall_posw),
-    .dir_sig(choice),
-    .vaild_sig(moving),
-    .snake_dead(snake_dead),
-    .apple_eat(apple_eat),
-    .new_position(new_position);
-    );
+  .clk(clk),
+  .reset_n(reset_n),
+  .snk_pos(snk_posw),
+  .apl_pos(apple_posw),  
+  .wall_pos(wall_posw),
+  .dir_sig(choicew),
+  .snake_dead(snake_dead),
+  .apple_eat(apple_eat),
+  .new_position(new_position);
+);
 
 // sram ram0(.clk(clk),.we(sram_we),.en(sram_en),.addr(sram_addr),.data_i(data_in),.data_o(data_out));
 
@@ -156,7 +156,7 @@ always @(*) begin
       if (starting) P_next = S_MAIN_MOVE; // go into S_MAIN_MOVE before S_MAIN_CHECK to make "snake" on screen
       else P_next = S_MAIN_START;
     S_MAIN_MOVE: // VGA start changing the snake on the screen
-      if(~move_end) P_next = S_MAIN_WAIT;
+      if(move_end) P_next = S_MAIN_WAIT;
       else P_next = S_MAIN_MOVE;
     S_MAIN_WAIT: // user signals the choice
       if(|choice && ~pause && ~ending)  P_next = S_MAIN_CHECK;
@@ -205,6 +205,7 @@ always @(posedge clk)begin
     //when changing over, go to state: S_MAIN_WAIT
     wait_clk <= 0; // bzero(wait_clk)
     switch <= usr_sw; // update switches
+    choice <= 4'b0000; // clear choice
   end else if(P == S_MAIN_WAIT)begin 
     // getting choice from user, upon getting the choice or wait for a second, go to state:S_MAIN_CHECK
     if(wait_clk == 50000000)begin 
@@ -218,11 +219,17 @@ always @(posedge clk)begin
     if(~(|choice) && |btn_pressed)begin 
         choice[3:0] <= btn_pressed[3:0];
     end
-
     pause <= (switch[1] != usr_sw[1]);
     ending <= (switch[2] != usr_sw[2]);
   end else if(P == S_MAIN_CHECK) begin 
-    
+    if(new_position != snk_pos)begin  // check.v is done
+      snk_pos <= new_position;
+      if(snake_dead)begin 
+        ending <= 1;
+      end else if(apple_eat)begin 
+        // delete the apple been eaten, and add a new apple randomly
+      end
+    end
   end
 end
 
