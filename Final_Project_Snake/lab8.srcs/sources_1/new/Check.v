@@ -54,7 +54,7 @@ module Check(
 
     // S_dead indexs
     reg [7:0] next_pos = 0;
-    reg isdead = 0;
+    reg is_dead = 0;
     reg dead_check = 0;
 
     // S_apl indexs
@@ -90,8 +90,8 @@ module Check(
             S_pre:  if (len_check == 1) state_next = S_dead;
                     else state_next = S_pre;
 
-            S_dead: if (dead_check == 1 && isdead == 1) state_next = S_pos;
-                    else if (dead_check == 1 && isdead == 0) state_next = S_apl;
+            S_dead: if (dead_check == 1 && is_dead == 1) state_next = S_pos;
+                    else if (dead_check == 1 && is_dead == 0) state_next = S_apl;
                     else state_next = S_dead;
 
             S_apl:  if (apl_check == 1) state_next = S_pos;
@@ -117,7 +117,7 @@ module Check(
 
             // S_dead initialize
             next_pos   = 0;
-            isdead     = 0;
+            is_dead     = 0;
             dead_check = 0;
 
             // S_apl initialize
@@ -139,7 +139,7 @@ module Check(
 
                 // S_dead initialize
                 next_pos   = 0;
-                isdead     = 0;
+                is_dead     = 0;
                 dead_check = 0;
 
                 // S_apl initialize
@@ -198,8 +198,8 @@ module Check(
                     // snk_pos[399:392] is the position of snake
                     if (snk_pos[399:392] + head_dir == snk_pos[(i * 8 - 1) -:8]) begin 
                         next_pos <= snk_pos[399:392] - 12;
-                        isdead <= 1;
-                        i <= snk_len;
+                        is_dead <= 1;
+                        i <= 0;
                     end
                 end
                 // end of hit itself               
@@ -208,32 +208,28 @@ module Check(
                 // if diraction is top
                 if (dir_sig[3]) begin 
                     if(snk_pos[399:392] - 12 < 0) begin 
-                        isdead <= 1;
-                        i <= snk_len;
+                        is_dead <= 1;
                     end
                 end
 
                 // if diraction is down
                 if (dir_sig[2]) begin 
                     if(snk_pos[399:392] + 12 > b_tall) begin 
-                        isdead <= 1;
-                        i <= snk_len;
+                        is_dead <= 1;
                     end
                 end
 
                 // if diraction is left
                 if (dir_sig[1]) begin 
                     if (snk_pos[399:392] % 12 == 0) begin 
-                        isdead <= 1;
-                        i <= snk_len;
+                        is_dead <= 1;
                     end
                 end
 
                 // if diraction is right
                 if (dir_sig[0]) begin 
                     if (snk_pos[399:392] % 12 == 1) begin 
-                        isdead <= 1;
-                        i <= snk_len;
+                        is_dead <= 1;
                     end
                 end
                 //end of hit bounary              
@@ -241,8 +237,8 @@ module Check(
                 // if the snake hit the walls begin
                 for (i = 5; i > 5 - wall_num; i = i - 1) begin 
                     if (snk_pos[399:392] + head_dir == wall_pos[(i * 8 - 1) -:8]) begin 
-                        isdead <= 1;
-                        i <= snk_len;
+                        is_dead <= 1;
+                        i <= 5;
                     end
                 end             
                 //end of hit the walls               
@@ -253,25 +249,21 @@ module Check(
             end
             // end of dead check
             
-
-            
             // check if apple be eaten 
             if (state == S_apl) begin
                
-                for (i = 3; i < 3 - apl_num; i = i - 1) begin 
+                for (i = 3; i > 3 - apl_num; i = i - 1) begin 
                     if (snk_pos[399:392] + he == apl_pos[(i * 8 - 1) -:8]) begin 
                         apl_eat <= 1;
                         apl_eaten_pos <= apl_pos[(i * 8 - 1) -:8];
-                        i = 3;
+                        i = 0;
                     end
                 end          
     
                 apl_check = 1;
  
             end
-            //end of apple check
-            
-
+            //end of apple check           
             
             // check the next position of the snake begin
             if (state == S_pos) begin 
