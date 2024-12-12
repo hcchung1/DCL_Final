@@ -200,6 +200,18 @@ reg [63:0] now_region;
 //            pixel_y >= (Vertical_pos<<1) && pixel_y < (Vertical_pos+FISH_H)<<1 &&
 //            (pixel_x + FISH_W*2 - 1) >= pos && pixel_x < pos + 1;
 
+genvar k;
+generate
+    for (k = 0; k < 64; k = k + 1) begin : gen_now_region
+        assign now_region[k] = 
+            (pixel_y >= (Vertical_pos[k] << 1)) && 
+            (pixel_y < ((Vertical_pos[k] + FISH_H) << 1)) &&
+            (pixel_x + (FISH_W * 2) - 1 >= Horizontal_pos[k]) && 
+            (pixel_x < Horizontal_pos[k] + 1);
+    end
+endgenerate
+
+
 integer idx;
 integer i;
 
@@ -279,10 +291,6 @@ always @(posedge clk) begin
 
 
     end else if (state == 3) begin
-        for (i = 1; i < 64; i = i + 1) begin
-            now_region[i] <= pixel_y >= (Vertical_pos[i]<<1) && pixel_y < (Vertical_pos[i]+FISH_H)<<1 &&
-                (pixel_x + FISH_W*2 - 1) >= Horizontal_pos[i] && pixel_x < Horizontal_pos[i] + 1;
-        end
         is_finished <= 0;
         first_input <= 0;
         
@@ -372,7 +380,8 @@ always @ (posedge clk) begin
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
                 
-        end else pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);
+        end
+        pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);
     end
   end
 end
