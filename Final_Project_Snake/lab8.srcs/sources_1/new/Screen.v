@@ -288,6 +288,7 @@ always @(posedge clk) begin
 
 end
 
+assign move_end = is_finished;
 
 always @ (posedge clk) begin
   if (~reset_n)
@@ -385,8 +386,9 @@ end
 always @(*) begin
   if (~video_on)
     rgb_next = 12'h000; // Synchronization period, must set RGB values to zero.
-  else
+  else begin
     rgb_next = data_out; // RGB value at (pixel_x, pixel_y)
+  end
 end
 // End of the video data display code.
 // ------------------------------------------------------------------------
