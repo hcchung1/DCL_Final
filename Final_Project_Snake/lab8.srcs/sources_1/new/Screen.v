@@ -146,7 +146,7 @@ reg [16:0] snake_addr, data_snk_o;
 // stores a 320x240 12-bit seabed image, plus two 64x32 fish images.
 sram #(.DATA_WIDTH(12), .ADDR_WIDTH(18), .RAM_SIZE(VBUF_W*VBUF_H+FISH_W*FISH_H*16))
   ram0 (.clk(clk), .we(sram_we), .en(sram_en),
-          .addr(sram_addr), .addr_snk(snake_addr),  .data_i(data_in), .data_o(data_out), data_snk_o(data_snk_o));
+          .addr(sram_addr), .addr_snk(snake_addr),  .data_i(data_in), .data_o(data_out), .data_snk_o(data_snk_o));
 
 assign sram_we = usr_sw[3]; // In this demo, we do not write the SRAM. However, if
                              // you set 'sram_we' to 0, Vivado fails to synthesize
@@ -389,10 +389,7 @@ always @(*) begin
   if (~video_on)
     rgb_next = 12'h000; // Synchronization period, must set RGB values to zero.
   else begin
-    for (idx = 0; idx < 64; idx = idx + 1) begin
-        if (now_region[idx]) rgb_next = data_snk_o;
-    end
-    else rgb_next = data_out; // RGB value at (pixel_x, pixel_y)
+    rgb_next = (|now_region && data_snk_o != 12'h0f0) ? data_snk_o : data_out;
   end
 end
 // End of the video data display code.
