@@ -255,7 +255,7 @@ always @(posedge clk) begin
         end
 
         if (now == 0) begin
-            if (index != 0 && length != 0) length <= index - 1; 
+            if (index != 0 && length == 0) length <= index - 1; 
         end else if (now <= 12) begin
             Vertical_pos[index] <= 0;
             Horizontal_pos[index] <= now;
@@ -399,7 +399,7 @@ always @(*) begin
   if (~video_on)
     rgb_next = 12'h000; // Synchronization period, must set RGB values to zero.
   else begin
-    rgb_next = (~now_region && data_snk_o != 12'h0f0) ? data_snk_o : data_out;
+    rgb_next = (now_region && data_snk_o != 12'h0f0) ? data_snk_o : data_out;
   end
 end
 // End of the video data display code.
