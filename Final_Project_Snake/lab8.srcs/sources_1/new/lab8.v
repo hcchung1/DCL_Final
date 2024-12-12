@@ -88,7 +88,7 @@ wire [2:0] apple_eat;
 
 wire [39:0] new_apple_pos;
 
-wire init_finished;
+reg init_finished;
 reg re_done;
 
 // Declare the control/data signals of an SRAM memory block
@@ -195,6 +195,7 @@ always @(posedge clk)begin
     starting <= 0;
     snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
     apple_pos <= {8'd1, 8'd15, 8'd70, 8'd80, 8'd120};
+    init_finished <= 1;
   end else if(P == S_MAIN_INIT)begin 
     // Initial all the things, include LCD, uart, LED, VGA??
     switch <= usr_sw;
