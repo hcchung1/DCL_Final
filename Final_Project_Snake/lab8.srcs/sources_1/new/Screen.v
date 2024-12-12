@@ -28,10 +28,8 @@ module Screen(
     input  [2:0] state,  // main state machine state
     input  [3:0] choice,  // 
     input  [399:0] snk_pos,
-    input  [39:0] apple_pos,
+    input  [23:0] apple_pos,
     input  [79:0] wall_pos,
-
-
     output move_end,
 
 
@@ -187,11 +185,11 @@ reg first_input;
 reg [6:0] length;
 reg [6:0] index;
 reg [399:0] snake;
-reg [39:0] apple;
+reg [23:0] apple;
 reg [79:0] wall;
 reg [7:0] now;
-reg [3:0] Vertical_pos[0:61], Horizontal_pos[0:61];
-reg now_region[0:61];
+reg [3:0] Vertical_pos[0:63], Horizontal_pos[0:63];
+reg now_region[0:63];
 
 // assign now_region =
 //            pixel_y >= (Vertical_pos<<1) && pixel_y < (Vertical_pos+FISH_H)<<1 &&
@@ -201,7 +199,7 @@ integer idx;
 integer i;
 always @(*) begin
     now_region[0] = 0;
-    for (i = 1; i < 62; i = i + 1) begin
+    for (i = 1; i < 64; i = i + 1) begin
         now_region[i] = pixel_y >= (Vertical_pos[i]<<1) && pixel_y < (Vertical_pos[i]+FISH_H)<<1 &&
                 (pixel_x + FISH_W*2 - 1) >= Horizontal_pos[i] && pixel_x < Horizontal_pos[i] + 1;
     end
@@ -217,7 +215,7 @@ always @(posedge clk) begin
         wall <= 0;
         now <= 0;
         length <= 0;
-        for (idx = 0; idx < 62; idx = idx + 1) begin
+        for (idx = 0; idx < 64; idx = idx + 1) begin
             Vertical_pos[idx] <= 0;
             Horizontal_pos[idx] <= 0;
             now_region[idx] <= 0;
@@ -236,13 +234,13 @@ always @(posedge clk) begin
         if (index <= 50) begin
             now <= snake[399:392];
             snake <= snake << 8;
-        end else if (index == 51) begin
-            now <= apple[39:32];
+        end else if (index <= 53) begin
+            now <= apple[23:16];
             apple <= apple << 8;
-        end else if (index <= 61) begin
+        end else if (index <= 63) begin
             now <= wall_pos[79:72];
             wall <= wall << 8;
-        end else if (index == 62) begin
+        end else if (index == 64) begin
             is_finished <= 1;
         end
 
@@ -301,13 +299,13 @@ always @ (posedge clk) begin
   else begin
     // Scale up a 320x240 image for the 640x480 display.
     // (pixel_x, pixel_y) ranges from (0,0) to (639, 479)
-    for (idx = 0; idx < 62; idx = idx + 1) begin
+    for (idx = 0; idx < 64; idx = idx + 1) begin
         if (now_region[idx]) begin
-            if (idx == 51)
+            if (idx >= 51 && idx <= 53)
                 pixel_addr <= fish_addr[14] +
                     ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                     ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-            else if (idx >= 52 && idx <= 61)
+            else if (idx >= 54 && idx <= 63)
                 pixel_addr <= fish_addr[15] +
                     ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                     ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
