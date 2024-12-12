@@ -22,6 +22,7 @@
 module Screen(
     input  clk,
     input  reset_n,
+    input  [3:0] usr_led,
     input  [3:0] usr_btn,
     input  [3:0] usr_sw,
 
@@ -214,10 +215,12 @@ endgenerate
 
 integer idx;
 integer i;
-
+reg check;
+assign usr_led[3] = check;
 
 always @(posedge clk) begin
     if (~reset_n) begin
+        check <= 0;
         index <= 0;
         is_finished <= 0;
         first_input <= 0;
@@ -239,6 +242,7 @@ always @(posedge clk) begin
         wall <= wall_pos;
         length <= 0;
         now <= 0;
+        check <= 1;
     end else if (state == 2 && is_finished == 0) begin
         index <= index + 1;
         if (index <= 50) begin
