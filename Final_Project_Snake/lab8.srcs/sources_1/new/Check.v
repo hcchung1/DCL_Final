@@ -198,10 +198,9 @@ module Check(
             if (state == S_dead) begin
 
                 // calculate the tail position
-                for(i = 0; i <= 399 - (snk_len - 1) * 8; i = i + 1) begin
-                    if (i == 399 - (snk_len - 1) * 8) begin
-                        ori_snk[i] <= 0;
-                    end
+                for(i = 0; i <= 399; i = i + 1) begin
+                    if (i <= (399 - (snk_len - 1) * 8))
+                        ori_snk[i] <= 0; 
                 end
                 // end of tail 
                 
