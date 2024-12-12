@@ -139,7 +139,8 @@ clk_divider#(2) clk_divider0(
   .clk_out(vga_clk)
 );
 
-reg [16:0] snake_addr, data_snk_o;
+wire [16:0] snake_addr, data_snk_o;
+reg  [16:0] snkreg_addr;
 
 // ------------------------------------------------------------------------
 // The following code describes an initialized SRAM memory block that
@@ -153,6 +154,7 @@ assign sram_we = usr_sw[3]; // In this demo, we do not write the SRAM. However, 
                              // ram0 as a BRAM -- this is a bug in Vivado.
 assign sram_en = 1;          // Here, we always enable the SRAM block.
 assign sram_addr = pixel_addr;
+assign snake_addr = snkreg_addr;
 assign data_in = 12'h000; // SRAM is read-only so we tie inputs to zeros.
 // End of the SRAM memory block.
 // ------------------------------------------------------------------------
@@ -191,7 +193,7 @@ reg [23:0] apple;
 reg [79:0] wall;
 reg [7:0] now;
 reg [3:0] Vertical_pos[0:63], Horizontal_pos[0:63];
-reg now_region[0:63];
+reg [63:0] now_region;
 
 // assign now_region =
 //            pixel_y >= (Vertical_pos<<1) && pixel_y < (Vertical_pos+FISH_H)<<1 &&
@@ -305,70 +307,70 @@ always @ (posedge clk) begin
     for (idx = 0; idx < 64; idx = idx + 1) begin
         if (now_region[idx]) begin
             if (idx >= 51 && idx <= 53)
-                snake_addr <= fish_addr[14] +
+                snkreg_addr <= fish_addr[14] +
                     ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                     ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
             else if (idx >= 54 && idx <= 63)
-                snake_addr <= fish_addr[15] +
+                snkreg_addr <= fish_addr[15] +
                     ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                     ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
             else if (idx == 1) // head
                 if (Horizontal_pos[idx] == Horizontal_pos[idx+1] + 1) // toward right
-                    snake_addr <= fish_addr[0] +
+                    snkreg_addr <= fish_addr[0] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
                 else if (Horizontal_pos[idx] == Horizontal_pos[idx+1] - 1) // toward left
-                    snake_addr <= fish_addr[1] +
+                    snkreg_addr <= fish_addr[1] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
                 else if (Vertical_pos[idx] == Vertical_pos[idx+1] + 1) // toward up
-                    snake_addr <= fish_addr[2] +
+                    snkreg_addr <= fish_addr[2] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
                 else if (Vertical_pos[idx] == Vertical_pos[idx+1] - 1) // toward down
-                    snake_addr <= fish_addr[3] +
+                    snkreg_addr <= fish_addr[3] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
             else if (idx == length) // tail
                 if (Horizontal_pos[idx] == Horizontal_pos[idx-1] + 1) // toward right
-                    snake_addr <= fish_addr[6] +
+                    snkreg_addr <= fish_addr[6] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
                 else if (Horizontal_pos[idx] == Horizontal_pos[idx-1] - 1) // toward left
-                    snake_addr <= fish_addr[7] +
+                    snkreg_addr <= fish_addr[7] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
                 else if (Vertical_pos[idx] == Vertical_pos[idx-1] + 1) // toward up
-                    snake_addr <= fish_addr[8] +
+                    snkreg_addr <= fish_addr[8] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
                 else if (Vertical_pos[idx] == Vertical_pos[idx-1] - 1) // toward down
-                    snake_addr <= fish_addr[9] +
+                    snkreg_addr <= fish_addr[9] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
             else // body
                 if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] + 1 && Horizontal_pos[idx] == Horizontal_pos[idx+1] - 1) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] + 1 && Horizontal_pos[idx] == Horizontal_pos[idx-1] - 1)) // left-right
-                    snake_addr <= fish_addr[4] +
+                    snkreg_addr <= fish_addr[4] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
                 else if ((Vertical_pos[idx] == Vertical_pos[idx-1] + 1 && Vertical_pos[idx] == Vertical_pos[idx+1] - 1) || (Vertical_pos[idx] == Vertical_pos[idx+1] + 1 && Vertical_pos[idx] == Vertical_pos[idx-1] - 1)) // up-down
-                    snake_addr <= fish_addr[5] +
+                    snkreg_addr <= fish_addr[5] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
                 else if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] + 1 && Vertical_pos[idx] == Vertical_pos[idx+1] - 1) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] + 1 && Vertical_pos[idx] == Vertical_pos[idx-1] - 1)) // right-up / down-left
-                    snake_addr <= fish_addr[10] +
+                    snkreg_addr <= fish_addr[10] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
                 else if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] - 1 && Vertical_pos[idx] == Vertical_pos[idx+1] + 1) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] - 1 && Vertical_pos[idx] == Vertical_pos[idx-1] + 1)) // right-down / up-left
-                    snake_addr <= fish_addr[11] +
+                    snkreg_addr <= fish_addr[11] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
                 else if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] - 1 && Vertical_pos[idx] == Vertical_pos[idx+1] - 1) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] - 1 && Vertical_pos[idx] == Vertical_pos[idx-1] - 1)) // left-down / up-right
-                    snake_addr <= fish_addr[12] +
+                    snkreg_addr <= fish_addr[12] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
                 else if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] + 1 && Vertical_pos[idx] == Vertical_pos[idx+1] + 1) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] + 1 && Vertical_pos[idx] == Vertical_pos[idx-1] + 1)) // left-up / down-right
-                    snake_addr <= fish_addr[13] +
+                    snkreg_addr <= fish_addr[13] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
                 
@@ -389,6 +391,9 @@ always @(*) begin
   if (~video_on)
     rgb_next = 12'h000; // Synchronization period, must set RGB values to zero.
   else begin
+    for (idx = 0; idx < 64; idx = idx + 1) begin
+
+    end
     rgb_next = (|now_region && data_snk_o != 12'h0f0) ? data_snk_o : data_out;
   end
 end
