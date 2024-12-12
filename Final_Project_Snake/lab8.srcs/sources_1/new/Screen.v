@@ -194,7 +194,7 @@ reg [23:0] apple;
 reg [79:0] wall;
 reg [7:0] now;
 reg [3:0] Vertical_pos[0:63], Horizontal_pos[0:63];
-reg [63:0] now_region;
+wire [63:0] now_region;
 
 // assign now_region =
 //            pixel_y >= (Vertical_pos<<1) && pixel_y < (Vertical_pos+FISH_H)<<1 &&
