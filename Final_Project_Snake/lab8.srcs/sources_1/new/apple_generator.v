@@ -28,7 +28,17 @@ module apple_generator (
             if(temp_pos <= 120 && temp_pos > 0)begin 
               if (!is_overlap(temp_pos, snake_pos) && !is_overlap(temp_pos, obstacle_pos)) begin
                 // 儲存蘋果位置
-                apple_pos <= apple_pos | (temp_pos << (apple_count * 8));
+                if(apple_pos[7:0] == 0) begin
+                  apple_pos <= temp_pos;
+                end else if(apple_pos[15:8] == 0) begin
+                  apple_pos <= {apple_pos[7:0], temp_pos, apple_pos[39:16]};
+                end else if(apple_pos[23:16] == 0) begin
+                  apple_pos <= {apple_pos[15:0], temp_pos, apple_pos[39:24]};
+                end else if(apple_pos[31:24] == 0) begin
+                  apple_pos <= {apple_pos[23:0], temp_pos, apple_pos[39:32]};
+                end else if(apple_pos[39:32] == 0) begin
+                  apple_pos <= {apple_pos[31:0], temp_pos};
+                end
                 apple_count <= apple_count + 1;
               end
             end

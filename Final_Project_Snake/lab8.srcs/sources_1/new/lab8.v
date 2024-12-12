@@ -44,7 +44,7 @@ module snake(
 );
 
 localparam [2:0] S_MAIN_INIT = 0, S_MAIN_START = 1, S_MAIN_MOVE = 2, S_MAIN_WAIT = 3,
-                 S_MAIN_CHECK = 4, S_MAIN_PAUSE = 5, S_MAIN_END = 6;
+                 S_MAIN_CHECK = 4, S_MAIN_RE = 5, S_MAIN_PAUSE = 6, S_MAIN_END = 7;
 
 
 // Declare system variables
@@ -86,7 +86,9 @@ assign choicew = choice;
 
 wire [399:0] new_position;
 wire snake_dead;
-wire apple_eat;
+wire [7:0] apple_eat;
+
+wire [39:0] new_apple_pos;
 
 wire init_finished;
 
@@ -102,17 +104,6 @@ debounce btn_db0(.clk(clk),.btn_input(usr_btn[0]),.btn_output(btn_level[0]));
 debounce btn_db1(.clk(clk),.btn_input(usr_btn[1]),.btn_output(btn_level[1]));
 debounce btn_db2(.clk(clk),.btn_input(usr_btn[2]),.btn_output(btn_level[2]));
 debounce btn_db3(.clk(clk),.btn_input(usr_btn[3]),.btn_output(btn_level[3]));
-
-// LCD_module lcd0( 
-//   .clk(clk),
-//   .reset(~reset_n),
-//   .row_A(row_A),
-//   .row_B(row_B),
-//   .LCD_E(LCD_E),
-//   .LCD_RS(LCD_RS),
-//   .LCD_RW(LCD_RW),
-//   .LCD_D(LCD_D)
-// );
 
 Screen screen(.clk(clk),.reset_n(reset_n),.usr_btn(usr_btn),.usr_sw(usr_sw),.state(state),.choice(choicew),.snk_pos(snk_posw),.apple_pos(apple_posw),.wall_pos(wall_posw),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
 
@@ -165,10 +156,15 @@ always @(*) begin
       else P_next = S_MAIN_WAIT;
     S_MAIN_CHECK: // check the choice
       if(ending) P_next = S_MAIN_END;
+      else if(snake_dead) P_next = S_MAIN_END;
+      else if(apple_eat) P_next = S_MAIN_RE;
       else P_next = S_MAIN_MOVE;
     S_MAIN_PAUSE:
       if(~pause) P_next = S_MAIN_MOVE;
       else P_next = S_MAIN_PAUSE;
+    S_MAIN_RE:
+      if(re_done) P_next = S_MAIN_MOVE;
+      else P_next = S_MAIN_RE;
     S_MAIN_END:
       P_next = S_MAIN_END;
     
@@ -181,7 +177,9 @@ end
 // -----------------------------------------------------------------
 // Main Block
 
+integer i;
 reg [$clog2(100000000):0] wait_clk;
+reg test;
 
 always @(posedge clk)begin 
   if(~reset_n)begin 
@@ -224,10 +222,25 @@ always @(posedge clk)begin
   end else if(P == S_MAIN_CHECK) begin 
     if(new_position != snk_pos)begin  // check.v is done
       snk_pos <= new_position;
-      if(snake_dead)begin 
-        ending <= 1;
-      end else if(apple_eat)begin 
-        
+      if(apple_eat)begin 
+        // find the eaten apple position
+        for(i = 0; i < 5; i = i + 1)begin 
+          if(apple_pos[i*8 +: 8] == apple_eat)begin 
+            apple_pos[i*8 +: 8] <= 8'b0;
+          end
+        end
+      end
+    end
+  end else if(P == S_MAIN_RE)begin 
+    if(~re_done)begin 
+      for(i = 0; i < 5; i = i + 1)begin 
+        if(new_apple_pos[i*8 +: 8] == 8'b0)begin 
+          test <= 1;
+        end
+      end
+      if(~test)begin 
+        apple_pos <= new_apple_pos;
+        re_done <= 1;
       end
     end
   end
