@@ -65,7 +65,6 @@ module Check(
     reg [399:0] new_snkpos = 0;
     reg [399:0] temp_snkpos;
     reg pos_check = 0;
-    reg len_check;
 
     integer  i;
 
@@ -144,16 +143,16 @@ module Check(
                     // S_dead initialize
                     next_pos   <= 0;
                     is_dead    <= 0;
-                    dead_check = 0;
+                    dead_check  = 0;
 
                     // S_apl initialize
                     apl_eat       <= 0;
                     apl_eaten_pos <= 0;
-                    apl_check     = 0;
+                    apl_check      = 0;
 
                     // S_pos initialize
                     new_snkpos <= 0;
-                    pos_check  = 0;
+                    pos_check   = 0;
                 end
                 
                 initialized = 1;
