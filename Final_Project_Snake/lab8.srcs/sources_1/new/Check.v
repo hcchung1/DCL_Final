@@ -112,23 +112,23 @@ module Check(
         if (~reset_n) begin 
             // S_pre initialize
 
-            apl_num  = 0;
-            wall_num = 0; 
-            snk_len  = 0;
+            apl_num  <= 0;
+            wall_num <= 0; 
+            snk_len  <= 0;
 
             // S_dead initialize
-            next_pos   = 0;
-            is_dead    = 0;
-            dead_check = 0;
+            next_pos   <= 0;
+            is_dead    <= 0;
+            dead_check <= 0;
 
             // S_apl initialize
-            apl_eat       = 0;
-            apl_eaten_pos = 0;
-            apl_check     = 0;
+            apl_eat       <= 0;
+            apl_eaten_pos <= 0;
+            apl_check     <= 0;
 
             // S_pos initialize
-            new_snkpos = 0;
-            pos_check  = 0;
+            new_snkpos <= 0;
+            pos_check  <= 0;
         end else begin
                         
             // refresh all indexs begin
@@ -136,23 +136,23 @@ module Check(
 
                 if (dir_sig[3] == 0 && dir_sig[2] == 0 && dir_sig[1] == 0 && dir_sig[0] == 0) begin 
                     // S_pre initialize
-                    apl_num  = 0;
-                    wall_num = 0; 
-                    snk_len  = 0;
+                    apl_num  <= 0;
+                    wall_num <= 0; 
+                    snk_len  <= 0;
 
                     // S_dead initialize
-                    next_pos   = 0;
-                    is_dead     = 0;
-                    dead_check = 0;
+                    next_pos   <= 0;
+                    is_dead    <= 0;
+                    dead_check <= 0;
 
                     // S_apl initialize
-                    apl_eat       = 0;
-                    apl_eaten_pos = 0;
-                    apl_check     = 0;
+                    apl_eat       <= 0;
+                    apl_eaten_pos <= 0;
+                    apl_check     <= 0;
 
                     // S_pos initialize
-                    new_snkpos = 0;
-                    pos_check  = 0;
+                    new_snkpos <= 0;
+                    pos_check  <= 0;
                 end
                 
                 initialized = 1;
