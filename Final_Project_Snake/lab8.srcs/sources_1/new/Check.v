@@ -51,6 +51,7 @@ module Check(
     
 
     // S_dead indexs
+    reg [399:0] zero;
     reg [7:0] next_pos = 0;
     reg is_dead = 0;
     reg dead_check = 0;
@@ -267,9 +268,7 @@ module Check(
                     if(apl_eat == 1)
                         new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
                     else begin
-                        for (i = snk_len; i < snk_len + 1; i = i + 1) begin
-                            new_snkpos <= {next_pos, snk_pos[399: (399 - (i- 1)*8 + 1)]};
-                        end
+                        new_snkpos <= {next_pos, snk_pos[399:8]};
                     end 
                 end  
 
