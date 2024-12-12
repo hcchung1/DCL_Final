@@ -218,7 +218,6 @@ always @(posedge clk) begin
         for (idx = 0; idx < 64; idx = idx + 1) begin
             Vertical_pos[idx] <= 0;
             Horizontal_pos[idx] <= 0;
-            now_region[idx] <= 0;
         end
     end else if (state == 2 && first_input == 0) begin
         index <= 0;
