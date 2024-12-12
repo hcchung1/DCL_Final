@@ -71,8 +71,6 @@ reg [79:0] wall_pos = 0;
 
 reg [3:0] choice;
 reg [3:0] prev_ch;
-wire [3:0] choicew;
-assign choicew = choice;
 
 wire [399:0] new_position;
 wire snake_dead;
@@ -89,6 +87,10 @@ wire [7:0] data_out;
 wire [8:0] sram_addr;
 wire       sram_we, sram_en;
 
+integer i;
+reg [$clog2(100000000):0] wait_clk;
+reg test;
+
 assign usr_led = P[2:0];
 
 debounce btn_db0(.clk(clk),.btn_input(usr_btn[0]),.btn_output(btn_level[0]));
@@ -96,7 +98,7 @@ debounce btn_db1(.clk(clk),.btn_input(usr_btn[1]),.btn_output(btn_level[1]));
 debounce btn_db2(.clk(clk),.btn_input(usr_btn[2]),.btn_output(btn_level[2]));
 debounce btn_db3(.clk(clk),.btn_input(usr_btn[3]),.btn_output(btn_level[3]));
 
-Screen screen(.clk(clk),.reset_n(reset_n),.usr_btn(usr_btn),.usr_sw(usr_sw),.state(state),.choice(choicew),.snk_pos(snk_pos),.apple_pos(apple_pos),.wall_pos(wall_pos),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
+Screen screen(.clk(clk),.reset_n(reset_n),.usr_btn(usr_btn),.usr_sw(usr_sw),.state(state),.choice(choice),.snk_pos(snk_pos),.apple_pos(apple_pos),.wall_pos(wall_pos),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
 
 Check check(
   .clk(clk),
@@ -104,7 +106,7 @@ Check check(
   .snk_pos(snk_pos),
   .apl_pos(apple_pos),  
   .wall_pos(wall_pos),
-  .dir_sig(choicew),
+  .dir_sig(choice),
   .snake_dead(snake_dead),
   .apple_eat(apple_eat),
   .new_position(new_position)
@@ -114,8 +116,8 @@ apple_generator appgen(
     .clk(clk),               // 時脈訊號
     .reset(reset_n),             // 重置訊號
     .apple_eat_pos(apple_eat),         // 蘋果是否被吃掉
-    .snake_pos(snk_posw),  // 蛇的位置，每個節點 [7:0]
-    .obstacle_pos(wall_posw), // 障礙物的位置，每個障礙物 [7:0]
+    .snake_pos(snk_pos),  // 蛇的位置，每個節點 [7:0]
+    .obstacle_pos(wall_pos), // 障礙物的位置，每個障礙物 [7:0]
     .apple_pos(new_apple_pos)   // 蘋果的位置，每個蘋果 [7:0]
 );
 
@@ -152,7 +154,7 @@ always @(*) begin
       if(move_end) P_next = S_MAIN_WAIT;
       else P_next = S_MAIN_MOVE;
     S_MAIN_WAIT: // user signals the choice
-      if(|choice && ~pause && ~ending)  P_next = S_MAIN_CHECK;
+      if((wait_clk == 50000000) && ~pause && ~ending)  P_next = S_MAIN_CHECK;
       else if(pause) P_next = S_MAIN_PAUSE;
       else if(ending) P_next = S_MAIN_END;
       else P_next = S_MAIN_WAIT;
@@ -179,9 +181,7 @@ end
 // -----------------------------------------------------------------
 // Main Block
 
-integer i;
-reg [$clog2(100000000):0] wait_clk;
-reg test;
+
 
 always @(posedge clk)begin 
   if(~reset_n)begin 
@@ -209,6 +209,8 @@ always @(posedge clk)begin
         switch <= usr_sw;
         starting <= 0;
       end
+      choice <= 4'b0001;
+      prev_ch <= 4'b0001;
 
     end else if(P == S_MAIN_MOVE)begin 
       // VGA start changing the snake on the screen
@@ -233,6 +235,7 @@ always @(posedge clk)begin
       ending <= (switch[2] != usr_sw[2]);
     end else if(P == S_MAIN_CHECK) begin 
       prev_ch <= choice;
+      choice <= 4'b0000;
       if(new_position != snk_pos)begin  // check.v is done
         snk_pos <= new_position;
         if(apple_eat)begin 
