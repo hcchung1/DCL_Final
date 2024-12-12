@@ -69,8 +69,8 @@ reg [399:0] snk_pos = 0;
 wire [399:0] snk_posw;
 assign snk_posw = snk_pos;
 
-reg [39:0] apple_pos;
-wire [39:0] apple_posw;
+reg [23:0] apple_pos;
+wire [23:0] apple_posw;
 assign apple_posw = apple_pos;
 
 reg [79:0] wall_pos;
