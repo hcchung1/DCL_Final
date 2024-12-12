@@ -236,11 +236,7 @@ always @(posedge clk)begin
       snk_pos <= new_position;
       if(apple_eat)begin 
         // find the eaten apple position
-        for(i = 0; i < 5; i = i + 1)begin 
-          if(apple_pos[i*8 +: 8] == apple_eat)begin 
-            apple_pos[i*8 +: 8] <= 8'b0;
-          end
-        end
+        apple_pos[apple_eat*8 +: 8] <= 8'b0;
       end
     end
     re_done <= 0;
