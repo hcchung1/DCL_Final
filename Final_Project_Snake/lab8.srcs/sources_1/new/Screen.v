@@ -392,9 +392,7 @@ always @(*) begin
   if (~video_on)
     rgb_next = 12'h000; // Synchronization period, must set RGB values to zero.
   else begin
-    for (idx = 0; idx < 64; idx = idx + 1) begin
-        rgb_next = (~now_region && data_snk_o != 12'h0f0) ? data_snk_o : data_out;
-    end
+    rgb_next = (~now_region && data_snk_o != 12'h0f0) ? data_snk_o : data_out;
   end
 end
 // End of the video data display code.
