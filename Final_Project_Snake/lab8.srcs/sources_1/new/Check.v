@@ -272,7 +272,7 @@ module Check(
                     end 
                 end  
 
-                initialized <= 0;
+                initialized = 0;
                 pos_check = 1;
             end
             //end of position check
