@@ -187,6 +187,7 @@ reg first_input;
 reg [6:0] length;
 reg [6:0] index;
 reg [399:0] snake;
+reg [79:0] wall;
 reg [7:0] now;
 reg [3:0] Vertical_pos[0:61], Horizontal_pos[0:61];
 reg now_region[0:61];
@@ -211,6 +212,7 @@ always @(posedge clk) begin
         is_finished <= 0;
         first_input <= 0;
         snake <= 0;
+        wall <= 0;
         now <= 0;
         length <= 0;
         for (idx = 0; idx < 62; idx = idx + 1) begin
@@ -223,6 +225,7 @@ always @(posedge clk) begin
         is_finished <= 0;
         first_input <= 1;
         snake <= snk_pos;
+        wall <= wall_pos;
         length <= 0;
         now <= 0;
     end else if (state == 2 && is_finished == 0) begin
@@ -234,7 +237,7 @@ always @(posedge clk) begin
             now <= apple_pos[7:0];
         end else if (index <= 61) begin
             now <= wall_pos[7:0];
-            wall_pos <= wall_pos >> 8;
+            wall <= wall >> 8;
         end else if (index == 62) begin
             is_finished <= 1;
         end
@@ -364,10 +367,8 @@ always @ (posedge clk) begin
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
                 
-        end
-    
+        end else pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);
     end
-    pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);
   end
 end
 // End of the AGU code.
