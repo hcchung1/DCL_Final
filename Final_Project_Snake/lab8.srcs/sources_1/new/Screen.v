@@ -202,15 +202,6 @@ reg [63:0] now_region;
 
 integer idx;
 integer i;
-always @(*) begin
-  if (state == 2) begin
-    now_region[0] = 0;
-    for (i = 1; i < 64; i = i + 1) begin
-        now_region[i] = pixel_y >= (Vertical_pos[i]<<1) && pixel_y < (Vertical_pos[i]+FISH_H)<<1 &&
-                (pixel_x + FISH_W*2 - 1) >= Horizontal_pos[i] && pixel_x < Horizontal_pos[i] + 1;
-    end
-  end
-end
 
 
 always @(posedge clk) begin
@@ -288,6 +279,10 @@ always @(posedge clk) begin
 
 
     end else if (state == 3) begin
+        for (i = 1; i < 64; i = i + 1) begin
+            now_region[i] <= pixel_y >= (Vertical_pos[i]<<1) && pixel_y < (Vertical_pos[i]+FISH_H)<<1 &&
+                (pixel_x + FISH_W*2 - 1) >= Horizontal_pos[i] && pixel_x < Horizontal_pos[i] + 1;
+        end
         is_finished <= 0;
         first_input <= 0;
         
