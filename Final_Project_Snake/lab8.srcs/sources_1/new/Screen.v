@@ -394,7 +394,7 @@ always @(*) begin
     for (idx = 0; idx < 64; idx = idx + 1) begin
 
     end
-    rgb_next = (|now_region && data_snk_o != 12'h0f0) ? data_snk_o : data_out;
+    rgb_next = (~now_region && data_snk_o != 12'h0f0) ? data_snk_o : data_out;
   end
 end
 // End of the video data display code.
