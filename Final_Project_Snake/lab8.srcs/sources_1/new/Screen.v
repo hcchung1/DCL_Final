@@ -235,7 +235,7 @@ always @(posedge clk) begin
             now <= snake[399:392];
             snake <= snake << 8;
         end else if (index <= 53) begin
-            now <= apple[39:32];
+            now <= apple[23:16];
             apple <= apple << 8;
         end else if (index <= 63) begin
             now <= wall_pos[79:72];
