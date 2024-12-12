@@ -144,6 +144,8 @@ assign btn_pressed[1] = (btn_level[1] == 1 && prev_btn_level[1] == 0)? 1 : 0;
 assign btn_pressed[2] = (btn_level[2] == 1 && prev_btn_level[2] == 0)? 1 : 0;
 assign btn_pressed[3] = (btn_level[3] == 1 && prev_btn_level[3] == 0)? 1 : 0;
 
+
+wire unused = switch[3:0];
 // -----------------------------------------------------------------
 // FSM next-state logic
 always @(*) begin 
