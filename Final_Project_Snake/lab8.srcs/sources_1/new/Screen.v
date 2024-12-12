@@ -234,14 +234,14 @@ always @(posedge clk) begin
     end else if (state == 2 && is_finished == 0) begin
         index <= index + 1;
         if (index <= 50) begin
-            now <= snake[7:0];
-            snake <= snake >> 8;
+            now <= snake[399:392];
+            snake <= snake << 8;
         end else if (index == 51) begin
-            now <= apple[7:0];
-            apple <= apple >> 8;
+            now <= apple[39:32];
+            apple <= apple << 8;
         end else if (index <= 61) begin
-            now <= wall_pos[7:0];
-            wall <= wall >> 8;
+            now <= wall_pos[79:72];
+            wall <= wall << 8;
         end else if (index == 62) begin
             is_finished <= 1;
         end
