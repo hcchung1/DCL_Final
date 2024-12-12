@@ -51,7 +51,6 @@ module Check(
     
 
     // S_dead indexs
-    reg [7:0] tail_pos = 0;
     reg [7:0] next_pos = 0;
     reg is_dead = 0;
     reg dead_check = 0;
@@ -117,7 +116,6 @@ module Check(
             snk_len  = 0;
 
             // S_dead initialize
-            tail_pos   = 0
             next_pos   = 0;
             is_dead    = 0;
             dead_check = 0;
@@ -199,7 +197,6 @@ module Check(
                     // snk_pos[399:392] is the position of snake
                     if (snk_pos[399:392] + head_dir == snk_pos[(i * 8 - 1) -:8]) begin 
                         next_pos <= snk_pos[399:392] + head_dir;
-                        tail_pos <= 399 - (snk_len - 1) * 8;
                         is_dead <= 1;
                     end
                 end
@@ -270,10 +267,9 @@ module Check(
                     if(apl_eat == 1)
                         new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
                     else begin
-                        //for (i = 0; i < snk_len; i = i + 1) begin
-                        //    new_snkpos[(i * 8) +: 8] <= (i == 0) ? next_pos : snk_pos[(i * 8) +: 8];
-                        //end
-                        new_snkpos <= {next_pos, snk_pos[399:tail_pos]};
+                        for (i = snk_len; i < snk_len + 1; i = i + 1) begin
+                            new_snkpos <= {next_pos, snk_pos[399: (399 - (snk_len - 1)*8 + 1)]};
+                        end
                     end 
                 end  
 
