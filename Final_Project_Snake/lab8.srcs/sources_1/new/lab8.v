@@ -21,7 +21,7 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-module snake(
+module lab8(
   // General system I/O ports
   input  clk,
   input  reset_n,
@@ -59,8 +59,6 @@ reg ending;
 wire state; // state 
 assign state = P;
 
-wire moving;
-assign moving = (P == S_MAIN_MOVE);
 
 wire checking;
 assign checking = (P == S_MAIN_CHECK);
@@ -91,6 +89,7 @@ wire [7:0] apple_eat;
 wire [39:0] new_apple_pos;
 
 wire init_finished;
+reg re_done;
 
 // Declare the control/data signals of an SRAM memory block
 wire [7:0] data_in;
@@ -116,7 +115,16 @@ Check check(
   .dir_sig(choicew),
   .snake_dead(snake_dead),
   .apple_eat(apple_eat),
-  .new_position(new_position);
+  .new_position(new_position)
+);
+
+apple_generator appgen(
+    .clk(clk),               // 時脈訊號
+    .reset(reset_n),             // 重置訊號
+    .apple_eat_pos(apple_eat),         // 蘋果是否被吃掉
+    .snake_pos(snk_posw),  // 蛇的位置，每個節點 [7:0]
+    .obstacle_pos(wall_posw), // 障礙物的位置，每個障礙物 [7:0]
+    .apple_pos(new_apple_pos)   // 蘋果的位置，每個蘋果 [7:0]
 );
 
 // sram ram0(.clk(clk),.we(sram_we),.en(sram_en),.addr(sram_addr),.data_i(data_in),.data_o(data_out));
@@ -183,11 +191,16 @@ reg test;
 
 always @(posedge clk)begin 
   if(~reset_n)begin 
-  
+    switch <= usr_sw;
+    starting <= 0;
+    snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
+    apple_pos <= {8'd1, 8'd15, 8'd70, 8'd80, 8'd120};
   end else if(P == S_MAIN_INIT)begin 
     // Initial all the things, include LCD, uart, LED, VGA??
     switch <= usr_sw;
     starting <= 0;
+    snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
+    apple_pos <= {8'd1, 8'd15, 8'd70, 8'd80, 8'd120};
   end else if(P == S_MAIN_START)begin 
     // when user switch any way for switch[0], start the game.
     if(usr_sw[0] != switch[0])begin 
@@ -199,7 +212,6 @@ always @(posedge clk)begin
     end
   end else if(P == S_MAIN_MOVE)begin 
     // VGA start changing the snake on the screen
-    if(~moving) moving <= 1; // signals for VGA to start changing the snake on the screen
     //when changing over, go to state: S_MAIN_WAIT
     wait_clk <= 0; // bzero(wait_clk)
     switch <= usr_sw; // update switches
@@ -231,6 +243,7 @@ always @(posedge clk)begin
         end
       end
     end
+    re_done <= 0;
   end else if(P == S_MAIN_RE)begin 
     if(~re_done)begin 
       for(i = 0; i < 5; i = i + 1)begin 

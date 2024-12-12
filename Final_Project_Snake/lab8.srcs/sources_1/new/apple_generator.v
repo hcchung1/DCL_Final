@@ -12,7 +12,7 @@ module apple_generator (
     reg [15:0] lfsr;              // 用於隨機數生成的 LFSR
 
     always @(posedge clk) begin
-        if (reset) begin
+        if (~reset) begin
             apple_pos <= 40'b0;   // 重置所有蘋果的位置
             apple_count <= 0;     // 重置蘋果計數
             lfsr <= 16'hACE1;     // 初始化 LFSR

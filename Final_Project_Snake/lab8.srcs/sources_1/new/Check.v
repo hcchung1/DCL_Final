@@ -47,8 +47,9 @@ module Check(
     // S_pre indexs
     reg apl_num = 0;
     reg wall_num = 0;
-    reg [$clog(50):0] snk_len = 0;
+    reg [5:0] snk_len = 0;
     reg signed [3:0] head_dir; 
+    
 
     // S_dead indexs
     reg [7:0] next_pos = 0;
@@ -62,7 +63,10 @@ module Check(
 
     // S_pos indexs
     reg [399:0] new_snkpos = 0;
+    reg [399:0] temp_snkpos;
     reg pos_check = 0;
+    reg len_check;
+    reg [7:0] he;
 
     integer  i;
 
@@ -96,7 +100,7 @@ module Check(
                     else state_next = S_apl;
 
             S_pos:  if (pos_check == 1) state_next = S_init;
-                    else state_next = S_pos
+                    else state_next = S_pos;
         endcase
     end
     //end
@@ -268,8 +272,11 @@ module Check(
                 if (!is_dead) begin 
                     if(apl_eat == 1)
                         new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
-                    else
-                        new_snkpos <= {next_pos, snk_pos[399:399 - (snk_len - 1) * 8]}; 
+                    else begin
+                        for (i = 0; i < snk_len; i = i + 1) begin
+                            new_snkpos[(i * 8) +: 8] <= (i == 0) ? next_pos : snk_pos[(i * 8) +: 8];
+                        end
+                    end 
                 end  
 
                 initialized <= 0;
