@@ -84,7 +84,7 @@ assign choicew = choice;
 
 wire [399:0] new_position;
 wire snake_dead;
-wire [7:0] apple_eat;
+wire [2:0] apple_eat;
 
 wire [39:0] new_apple_pos;
 
