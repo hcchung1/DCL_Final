@@ -301,14 +301,14 @@ end
 assign move_end = is_finished;
 
 always @ (posedge clk) begin
-  if (~reset_n)
+  if (~reset_n) begin
     pixel_addr <= 0;
     snkreg_addr <= 0;
 //   else if (fish_region)
 //     pixel_addr <= fish_addr[fish_clock[23]] +
 //                   ((pixel_y>>1)-FISH_VPOS)*FISH_W +
 //                   ((pixel_x +(FISH_W*2-1)-pos)>>1);
-  else begin
+  end else begin
     // Scale up a 320x240 image for the 640x480 display.
     // (pixel_x, pixel_y) ranges from (0,0) to (639, 479)
     for (idx = 0; idx < 64; idx = idx + 1) begin
