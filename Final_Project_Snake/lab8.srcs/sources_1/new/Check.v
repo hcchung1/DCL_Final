@@ -268,7 +268,7 @@ module Check(
                         new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
                     else begin
                         for (i = snk_len; i < snk_len + 1; i = i + 1) begin
-                            new_snkpos <= {next_pos, snk_pos[399: (399 - (snk_len - 1)*8 + 1)]};
+                            new_snkpos <= {next_pos, snk_pos[399: (399 - (i- 1)*8 + 1)]};
                         end
                     end 
                 end  
