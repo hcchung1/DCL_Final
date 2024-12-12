@@ -9,7 +9,7 @@ module sram
 #(parameter DATA_WIDTH = 8, ADDR_WIDTH = 16, RAM_SIZE = 65536, FILE = "background.mem")
  (input clk, input we, input en,
   input  [ADDR_WIDTH-1 : 0] addr,
-  input  [DATA_WIDTH-1 : 0] addr_snk,
+  input  [ADDR_WIDTH-1 : 0] addr_snk,
   input  [DATA_WIDTH-1 : 0] data_i,
   output reg [DATA_WIDTH-1 : 0] data_o, 
   output reg [DATA_WIDTH-1 : 0] data_snk_o);
