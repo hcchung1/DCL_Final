@@ -97,7 +97,7 @@ wire [7:0] data_out;
 wire [8:0] sram_addr;
 wire       sram_we, sram_en;
 
-assign usr_led = 4'h0000;
+assign usr_led = P;
 
 debounce btn_db0(.clk(clk),.btn_input(usr_btn[0]),.btn_output(btn_level[0]));
 debounce btn_db1(.clk(clk),.btn_input(usr_btn[1]),.btn_output(btn_level[1]));
@@ -207,6 +207,7 @@ always @(posedge clk)begin
       init_finished <= 1;
     end else if(P == S_MAIN_START)begin 
       // when user switch any way for switch[0], start the game.
+      init_finished <= 0;
       if(usr_sw[0] != switch[0])begin 
         starting <= 1;
         switch <= usr_sw;
