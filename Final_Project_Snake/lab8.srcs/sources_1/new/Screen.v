@@ -155,7 +155,7 @@ assign sram_we = usr_sw[3]; // In this demo, we do not write the SRAM. However, 
                              // ram0 as a BRAM -- this is a bug in Vivado.
 assign sram_en = 1;          // Here, we always enable the SRAM block.
 assign sram_addr = pixel_addr;
-assign snake_addr = snkreg_addr;
+assign snake_addr = snkreg_addr + VBUF_W*VBUF_H;
 assign data_in = 12'h000; // SRAM is read-only so we tie inputs to zeros.
 // End of the SRAM memory block.
 // ------------------------------------------------------------------------
