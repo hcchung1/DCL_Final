@@ -18,7 +18,7 @@ module apple_generator (
             lfsr <= 16'hACE1;     // 初始化 LFSR
         end else begin
           // 如果蘋果被吃掉，則生成新的蘋果
-          apple_count <= apple_count - apple_eat;
+          apple_count <= apple_count - (apple_eat_pos != 0);
           if (apple_count < 5) begin
             // 生成隨機位置 (4 bits for X, 4 bits for Y)
             lfsr <= {lfsr[14:0], lfsr[15] ^ lfsr[13] ^ lfsr[12] ^ lfsr[10]};

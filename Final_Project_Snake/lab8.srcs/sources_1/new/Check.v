@@ -32,7 +32,7 @@ module Check(
     output [5:0] snake_length,
     output snake_dead,
     output apple_eat,
-    output [399:0]new_position;
+    output [399:0]new_position
     );
     // boundary indexs
     localparam b_wide = 12, b_tall = 10;
