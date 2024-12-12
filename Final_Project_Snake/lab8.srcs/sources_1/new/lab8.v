@@ -66,16 +66,8 @@ assign checking = (P == S_MAIN_CHECK);
 reg starting;
 
 reg [399:0] snk_pos = 0;
-wire [399:0] snk_posw;
-assign snk_posw = snk_pos;
-
 reg [23:0] apple_pos;
-wire [23:0] apple_posw;
-assign apple_posw = apple_pos;
-
 reg [79:0] wall_pos = 0;
-wire [79:0] wall_posw;
-assign wall_posw = wall_pos;
 
 reg [3:0] choice;
 reg [3:0] prev_ch;
@@ -104,14 +96,14 @@ debounce btn_db1(.clk(clk),.btn_input(usr_btn[1]),.btn_output(btn_level[1]));
 debounce btn_db2(.clk(clk),.btn_input(usr_btn[2]),.btn_output(btn_level[2]));
 debounce btn_db3(.clk(clk),.btn_input(usr_btn[3]),.btn_output(btn_level[3]));
 
-Screen screen(.clk(clk),.reset_n(reset_n),.usr_btn(usr_btn),.usr_sw(usr_sw),.state(state),.choice(choicew),.snk_pos(snk_pos),.apple_pos(apple_posw),.wall_pos(wall_posw),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
+Screen screen(.clk(clk),.reset_n(reset_n),.usr_btn(usr_btn),.usr_sw(usr_sw),.state(state),.choice(choicew),.snk_pos(snk_pos),.apple_pos(apple_pos),.wall_pos(wall_pos),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
 
 Check check(
   .clk(clk),
   .reset_n(reset_n),
-  .snk_pos(snk_posw),
-  .apl_pos(apple_posw),  
-  .wall_pos(wall_posw),
+  .snk_pos(snk_pos),
+  .apl_pos(apple_pos),  
+  .wall_pos(wall_pos),
   .dir_sig(choicew),
   .snake_dead(snake_dead),
   .apple_eat(apple_eat),
