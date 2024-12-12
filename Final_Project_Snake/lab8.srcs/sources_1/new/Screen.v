@@ -303,6 +303,7 @@ assign move_end = is_finished;
 always @ (posedge clk) begin
   if (~reset_n)
     pixel_addr <= 0;
+    snkreg_addr <= 0;
 //   else if (fish_region)
 //     pixel_addr <= fish_addr[fish_clock[23]] +
 //                   ((pixel_y>>1)-FISH_VPOS)*FISH_W +
