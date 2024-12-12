@@ -73,7 +73,7 @@ reg [23:0] apple_pos;
 wire [23:0] apple_posw;
 assign apple_posw = apple_pos;
 
-reg [79:0] wall_pos;
+reg [79:0] wall_pos = 0;
 wire [79:0] wall_posw;
 assign wall_posw = wall_pos;
 
