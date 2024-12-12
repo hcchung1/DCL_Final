@@ -29,15 +29,14 @@ module Check(
     input [23:0] apl_pos,  
     input [39:0] wall_pos,
     input [3:0] dir_sig,
-    input vaild_sig,
 
     output [5:0] snake_length,
     output snake_dead,
-    output apple_eat,
+    output [2:0] apple_eat, // 0 是沒有 1是第一個被吃 etc.
     output [399:0]new_position;
     );
     // boundary indexs
-    localparam b_wide = 12, b_tall = 10;
+    localparam b_tall = 120; 
 
     // fsm state
     localparam S_init = 0, S_pre = 1, S_dead = 2, S_apl = 3, S_pos = 4;
@@ -132,27 +131,29 @@ module Check(
                         
             // refresh all indexs begin
             if (state == S_init) begin
-                // S_pre initialize
-                apl_num  = 0;
-                wall_num = 0; 
-                snk_len  = 0;
 
-                // S_dead initialize
-                next_pos   = 0;
-                is_dead     = 0;
-                dead_check = 0;
+                if (dir_sig[3] == 0 && dir_sig[2] == 0 && dir_sig[1] == 0 && dir_sig[0] == 0) begin 
+                    // S_pre initialize
+                    apl_num  = 0;
+                    wall_num = 0; 
+                    snk_len  = 0;
 
-                // S_apl initialize
-                apl_eat       = 0;
-                apl_eaten_pos = 0;
-                apl_check     = 0;
+                    // S_dead initialize
+                    next_pos   = 0;
+                    is_dead     = 0;
+                    dead_check = 0;
 
-                // S_pos initialize
-                new_snkpos = 0;
-                pos_check  = 0;
+                    // S_apl initialize
+                    apl_eat       = 0;
+                    apl_eaten_pos = 0;
+                    apl_check     = 0;
 
-                if (vaild_sig) 
-                    initialized = 1;
+                    // S_pos initialize
+                    new_snkpos = 0;
+                    pos_check  = 0;
+                end
+                
+                initialized = 1;
             end
             // end of refresh          
          
@@ -254,7 +255,7 @@ module Check(
                
                 for (i = 3; i > 3 - apl_num; i = i - 1) begin 
                     if (snk_pos[399:392] + he == apl_pos[(i * 8 - 1) -:8]) begin 
-                        apl_eat <= 1;
+                        apl_eat <= 4 - i;
                         apl_eaten_pos <= apl_pos[(i * 8 - 1) -:8];
                         i = 0;
                     end
