@@ -25,7 +25,7 @@ module Check(
     input reset_n,
     input [399:0] snk_pos,  // 位置編碼 0就是結束
     input [23:0] apl_pos,  
-    input [39:0] wall_pos,
+    input [79:0] wall_pos,
     input [3:0] dir_sig,
 
     output [5:0] snake_length,
@@ -65,7 +65,6 @@ module Check(
     reg [399:0] temp_snkpos;
     reg pos_check = 0;
     reg len_check;
-    reg [7:0] he;
 
     integer  i;
 
@@ -166,21 +165,18 @@ module Check(
                 for (i = 50; i > 0; i = i - 1) begin
                     if (snk_pos[(i * 8 - 1) -:8] != 0)
                         snk_len <= snk_len + 1; 
-                    else i <= 50;
                 end     
 
                 // calculate num wall
                 for (i = 3; i > 0; i = i - 1) begin
                     if (apl_pos[(i * 8 - 1) -:8] != 0)
                         apl_num <= apl_num + 1; 
-                    else i <= 3;
                 end 
 
                 // calculate num apple
-                for (i = 5; i > 0; i = i - 1) begin
+                for (i = 10; i > 0; i = i - 1) begin
                     if (wall_pos[(i * 8 - 1) -:8] != 0)
                         wall_num <= wall_num + 1; 
-                    else i <= 5;
                 end    
 
                 if (dir_sig[3])      head_dir <= -12;
@@ -202,7 +198,6 @@ module Check(
                     if (snk_pos[399:392] + head_dir == snk_pos[(i * 8 - 1) -:8]) begin 
                         next_pos <= snk_pos[399:392] - 12;
                         is_dead <= 1;
-                        i <= 0;
                     end
                 end
                 // end of hit itself               
@@ -238,10 +233,9 @@ module Check(
                 //end of hit bounary              
                 
                 // if the snake hit the walls begin
-                for (i = 5; i > 5 - wall_num; i = i - 1) begin 
+                for (i = 10; i > 10 - wall_num; i = i - 1) begin 
                     if (snk_pos[399:392] + head_dir == wall_pos[(i * 8 - 1) -:8]) begin 
                         is_dead <= 1;
-                        i <= 5;
                     end
                 end             
                 //end of hit the walls               
@@ -256,10 +250,9 @@ module Check(
             if (state == S_apl) begin
                
                 for (i = 3; i > 3 - apl_num; i = i - 1) begin 
-                    if (snk_pos[399:392] + he == apl_pos[(i * 8 - 1) -:8]) begin 
+                    if (snk_pos[399:392] + head_dir == apl_pos[(i * 8 - 1) -:8]) begin 
                         apl_eat <= 4 - i;
                         apl_eaten_pos <= apl_pos[(i * 8 - 1) -:8];
-                        i = 0;
                     end
                 end          
     
