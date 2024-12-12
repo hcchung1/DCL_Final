@@ -191,69 +191,77 @@ reg test;
 
 always @(posedge clk)begin 
   if(~reset_n)begin 
+    P <= S_MAIN_INIT;
     switch <= usr_sw;
     starting <= 0;
     snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
     apple_pos <= {8'd1, 8'd15, 8'd70, 8'd80, 8'd120};
-  end else if(P == S_MAIN_INIT)begin 
-    // Initial all the things, include LCD, uart, LED, VGA??
-    switch <= usr_sw;
-    starting <= 0;
-    snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
-    apple_pos <= {8'd1, 8'd15, 8'd70, 8'd80, 8'd120};
-    init_finished <= 1;
-  end else if(P == S_MAIN_START)begin 
-    // when user switch any way for switch[0], start the game.
-    if(usr_sw[0] != switch[0])begin 
-      starting <= 1;
-      switch <= usr_sw;
-    end else begin 
+  end else begin 
+    P <= P_next;
+    if(P == S_MAIN_INIT)begin 
+      // Initial all the things, include LCD, uart, LED, VGA??
       switch <= usr_sw;
       starting <= 0;
-    end
-  end else if(P == S_MAIN_MOVE)begin 
-    // VGA start changing the snake on the screen
-    //when changing over, go to state: S_MAIN_WAIT
-    wait_clk <= 0; // bzero(wait_clk)
-    switch <= usr_sw; // update switches
-    choice <= 4'b0000; // clear choice
-  end else if(P == S_MAIN_WAIT)begin 
-    // getting choice from user, upon getting the choice or wait for a second, go to state:S_MAIN_CHECK
-    if(wait_clk == 50000000)begin 
-      if(~(|choice))begin 
-        choice <= prev_ch;
+      snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
+      apple_pos <= {8'd1, 8'd15, 8'd70, 8'd80, 8'd120};
+      init_finished <= 1;
+    end else if(P == S_MAIN_START)begin 
+      // when user switch any way for switch[0], start the game.
+      if(usr_sw[0] != switch[0])begin 
+        starting <= 1;
+        switch <= usr_sw;
+      end else begin 
+        switch <= usr_sw;
+        starting <= 0;
       end
-    end else begin 
-      wait_clk <= wait_clk + 1;
-    end
-    // check if the user input some choice before choice has made
-    if(~(|choice) && |btn_pressed)begin 
-        choice[3:0] <= btn_pressed[3:0];
-    end
-    pause <= (switch[1] != usr_sw[1]);
-    ending <= (switch[2] != usr_sw[2]);
-  end else if(P == S_MAIN_CHECK) begin 
-    if(new_position != snk_pos)begin  // check.v is done
-      snk_pos <= new_position;
-      if(apple_eat)begin 
-        // find the eaten apple position
-        apple_pos[apple_eat*8 +: 8] <= 8'b0;
+
+    end else if(P == S_MAIN_MOVE)begin 
+      // VGA start changing the snake on the screen
+      //when changing over, go to state: S_MAIN_WAIT
+      wait_clk <= 0; // bzero(wait_clk)
+      switch <= usr_sw; // update switches
+      choice <= 4'b0000; // clear choice
+    end else if(P == S_MAIN_WAIT)begin 
+      // getting choice from user, upon getting the choice or wait for a second, go to state:S_MAIN_CHECK
+      if(wait_clk == 50000000)begin 
+        if(~(|choice))begin 
+          choice <= prev_ch;
+        end
+      end else begin 
+        wait_clk <= wait_clk + 1;
       end
-    end
-    re_done <= 0;
-  end else if(P == S_MAIN_RE)begin 
-    if(~re_done)begin 
-      for(i = 0; i < 5; i = i + 1)begin 
-        if(new_apple_pos[i*8 +: 8] == 8'b0)begin 
-          test <= 1;
+      // check if the user input some choice before choice has made
+      if(~(|choice) && |btn_pressed)begin 
+          choice[3:0] <= btn_pressed[3:0];
+      end
+      pause <= (switch[1] != usr_sw[1]);
+      ending <= (switch[2] != usr_sw[2]);
+    end else if(P == S_MAIN_CHECK) begin 
+      prev_ch <= choice;
+      if(new_position != snk_pos)begin  // check.v is done
+        snk_pos <= new_position;
+        if(apple_eat)begin 
+          // find the eaten apple position
+          apple_pos[apple_eat*8 +: 8] <= 8'b0;
         end
       end
-      if(~test)begin 
-        apple_pos <= new_apple_pos;
-        re_done <= 1;
+      re_done <= 0;
+    end else if(P == S_MAIN_RE)begin 
+      if(~re_done)begin 
+        for(i = 0; i < 5; i = i + 1)begin 
+          if(new_apple_pos[i*8 +: 8] == 8'b0)begin 
+            test <= 1;
+          end
+        end
+        if(~test)begin 
+          apple_pos <= new_apple_pos;
+          re_done <= 1;
+        end
       end
     end
   end
+  
+  
 end
 
 // End of Main Block
