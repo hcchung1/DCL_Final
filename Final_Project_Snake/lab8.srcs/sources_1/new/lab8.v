@@ -30,10 +30,10 @@ module lab8(
   output [3:0] usr_led,
 
   // LCD
-  output LCD_RS,
-  output LCD_RW,
-  output LCD_E,
-  output [3:0] LCD_D, 
+  // output LCD_RS,
+  // output LCD_RW,
+  // output LCD_E,
+  // output [3:0] LCD_D, 
 
   // VGA 
   output VGA_HSYNC,
@@ -195,13 +195,13 @@ always @(posedge clk)begin
     starting <= 0;
     snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
     apple_pos <= {8'd1, 8'd15, 8'd70, 8'd80, 8'd120};
-    init_finished <= 1;
   end else if(P == S_MAIN_INIT)begin 
     // Initial all the things, include LCD, uart, LED, VGA??
     switch <= usr_sw;
     starting <= 0;
     snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
     apple_pos <= {8'd1, 8'd15, 8'd70, 8'd80, 8'd120};
+    init_finished <= 1;
   end else if(P == S_MAIN_START)begin 
     // when user switch any way for switch[0], start the game.
     if(usr_sw[0] != switch[0])begin 
