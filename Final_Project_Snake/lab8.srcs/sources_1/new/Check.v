@@ -28,10 +28,9 @@ module Check(
     input [79:0] wall_pos,
     input [3:0] dir_sig,
 
-    output [5:0] snake_length,
     output snake_dead,
     output [2:0] apple_eat, // 0 是沒有 1是第一個被吃 etc.
-    output [399:0]new_position
+    output [399:0] new_position
     );
     // boundary indexs
     localparam b_tall = 120; 
@@ -48,6 +47,7 @@ module Check(
     reg wall_num = 0;
     reg [5:0] snk_len = 0;
     reg signed [3:0] head_dir; 
+    reg len_check = 0;
     
 
     // S_dead indexs
@@ -111,24 +111,24 @@ module Check(
 
         if (~reset_n) begin 
             // S_pre initialize
-
             apl_num  <= 0;
             wall_num <= 0; 
             snk_len  <= 0;
+            len_check = 0;
 
             // S_dead initialize
             next_pos   <= 0;
             is_dead    <= 0;
-            dead_check <= 0;
+            dead_check = 0;
 
             // S_apl initialize
             apl_eat       <= 0;
             apl_eaten_pos <= 0;
-            apl_check     <= 0;
+            apl_check     = 0;
 
             // S_pos initialize
             new_snkpos <= 0;
-            pos_check  <= 0;
+            pos_check  = 0;
         end else begin
                         
             // refresh all indexs begin
@@ -139,20 +139,21 @@ module Check(
                     apl_num  <= 0;
                     wall_num <= 0; 
                     snk_len  <= 0;
+                    len_check = 0;
 
                     // S_dead initialize
                     next_pos   <= 0;
                     is_dead    <= 0;
-                    dead_check <= 0;
+                    dead_check = 0;
 
                     // S_apl initialize
                     apl_eat       <= 0;
                     apl_eaten_pos <= 0;
-                    apl_check     <= 0;
+                    apl_check     = 0;
 
                     // S_pos initialize
                     new_snkpos <= 0;
-                    pos_check  <= 0;
+                    pos_check  = 0;
                 end
                 
                 initialized = 1;
