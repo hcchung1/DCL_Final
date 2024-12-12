@@ -187,6 +187,7 @@ reg first_input;
 reg [6:0] length;
 reg [6:0] index;
 reg [399:0] snake;
+reg [39:0] apple;
 reg [79:0] wall;
 reg [7:0] now;
 reg [3:0] Vertical_pos[0:61], Horizontal_pos[0:61];
@@ -212,6 +213,7 @@ always @(posedge clk) begin
         is_finished <= 0;
         first_input <= 0;
         snake <= 0;
+        apple <= 0;
         wall <= 0;
         now <= 0;
         length <= 0;
@@ -225,19 +227,21 @@ always @(posedge clk) begin
         is_finished <= 0;
         first_input <= 1;
         snake <= snk_pos;
+        apple <= apple_pos;
         wall <= wall_pos;
         length <= 0;
         now <= 0;
     end else if (state == 2 && is_finished == 0) begin
         index <= index + 1;
         if (index <= 50) begin
-            now <= snake[7:0];
-            snake <= snake >> 8;
+            now <= snake[399:392];
+            snake <= snake << 8;
         end else if (index == 51) begin
-            now <= apple_pos[7:0];
+            now <= apple[39:32];
+            apple <= apple << 8;
         end else if (index <= 61) begin
-            now <= wall_pos[7:0];
-            wall <= wall >> 8;
+            now <= wall_pos[79:72];
+            wall <= wall << 8;
         end else if (index == 62) begin
             is_finished <= 1;
         end
