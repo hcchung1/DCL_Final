@@ -156,7 +156,7 @@ assign sram_we = usr_sw[3]; // In this demo, we do not write the SRAM. However, 
                              // ram0 as a BRAM -- this is a bug in Vivado.
 assign sram_en = 1;          // Here, we always enable the SRAM block.
 assign sram_addr = pixel_addr;
-assign snake_addr = snkreg_addr + VBUF_W*VBUF_H;
+assign snake_addr = snkreg_addr;
 assign data_in = 12'h000; // SRAM is read-only so we tie inputs to zeros.
 // End of the SRAM memory block.
 // ------------------------------------------------------------------------
@@ -215,12 +215,10 @@ endgenerate
 
 integer idx;
 integer i;
-reg check;
-assign usr_led[3] = check;
+assign usr_led[3] = ~first_input;
 
 always @(posedge clk) begin
     if (~reset_n) begin
-        check <= 0;
         index <= 0;
         is_finished <= 0;
         first_input <= 0;
@@ -242,7 +240,6 @@ always @(posedge clk) begin
         wall <= wall_pos;
         length <= 0;
         now <= 0;
-        check <= 1;
     end else if (state == 2 && is_finished == 0) begin
         index <= index + 1;
         if (index <= 50) begin
