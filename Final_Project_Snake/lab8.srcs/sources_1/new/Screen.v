@@ -139,7 +139,7 @@ clk_divider#(2) clk_divider0(
   .clk_out(vga_clk)
 );
 
-wire [16:0] snake_addr
+wire [16:0] snake_addr;
 wire [11:0] data_snk_o;
 reg  [17:0] snkreg_addr;
 
