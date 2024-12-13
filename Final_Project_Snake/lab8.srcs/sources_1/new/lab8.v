@@ -187,15 +187,14 @@ always @(*) begin
       else if((wait_clk >= 50000000)) P_next = S_MAIN_CHECK;
       else P_next = S_MAIN_WAIT;
     S_MAIN_CHECK: // check the choice
-      if(ending && (new_position != snk_pos)) P_next = S_MAIN_END;
-      else if(snake_dead && (new_position != snk_pos)) P_next = S_MAIN_END;
-      else if(apple_eat && (new_position != snk_pos)) P_next = S_MAIN_RE;
-      else if((new_position != snk_pos))P_next = S_MAIN_MOVE;
+      if((new_position != snk_pos))P_next = S_MAIN_RE;
+      else P_next = S_MAIN_CHECK;
     S_MAIN_PAUSE: // [] switch to leave PAUSE
       if(~pause) P_next = S_MAIN_MOVE;
       else P_next = S_MAIN_PAUSE;
     S_MAIN_RE:
-      if(re_done) P_next = S_MAIN_MOVE;
+      if(re_done && snake_dead) P_next = S_MAIN_END;
+      else if(re_done) P_next = S_MAIN_MOVE;
       else P_next = S_MAIN_RE;
     S_MAIN_END:
       P_next = S_MAIN_END;
@@ -262,7 +261,7 @@ always @(posedge clk)begin
         if(~(|choice))begin 
           choice <= prev_ch;
         end
-      end else begin 
+      end else if(wait_clk < 50000000)begin 
         wait_clk <= wait_clk + 1;
       end
 
@@ -270,8 +269,6 @@ always @(posedge clk)begin
       // [x] if user input up when down is chosen, then change the choice to up; if user input left when right is chosen, then change the choice to left; and so on.
 
       if(~(|choice) && btn_pressed)begin // when no choice has been made, and user press the button
-          
-          choice[3:0] <= btn_pressed[3:0];
 
           if(btn_pressed[0] && prev_ch == 4'b0010)begin // if user press up when down is chosen
             choice <= 4'b0001;
@@ -281,7 +278,7 @@ always @(posedge clk)begin
             choice <= 4'b1000;
           end else if(btn_pressed[3] && prev_ch == 4'b1000)begin // if user press left when right is chosen
             choice <= 4'b0100;
-          end
+          end else choice <= btn_pressed[3:0];
       end
 
       // check if user want to pause at any moment when playing the game
@@ -291,14 +288,14 @@ always @(posedge clk)begin
       end
 
       row_A = "  S_MAIN_WAIT   ";
-      row_B = {(((wait_clk[26:24] > 9)?"7":"0") + wait_clk[26:24]), (((wait_clk[23:20] > 9)?"7":"0") + wait_clk[23:20]), (((wait_clk[19:16] > 9)?"7":"0") + wait_clk[19:16]), (((wait_clk[15:12] > 9)?"7":"0") + wait_clk[15:12]), (((wait_clk[11:8] > 9)?"7":"0") + wait_clk[11:8]), (((wait_clk[7:4] > 9)?"7":"0") + wait_clk[7:4]) ,(((wait_clk[3:0] > 9)?"7":"0") + wait_clk[3:0]), " ", ((choice[3])?"U":" "), ((choice[2])?"D":" "), ((choice[1])?"L":" "), ((choice[0])?"R":" "), " ", ((pause)?"P":" "), "   "};
+      row_B = {(((wait_clk[26:24] > 9)?"7":"0") + wait_clk[26:24]), (((wait_clk[23:20] > 9)?"7":"0") + wait_clk[23:20]), (((wait_clk[19:16] > 9)?"7":"0") + wait_clk[19:16]), (((wait_clk[15:12] > 9)?"7":"0") + wait_clk[15:12]), (((wait_clk[11:8] > 9)?"7":"0") + wait_clk[11:8]), (((wait_clk[7:4] > 9)?"7":"0") + wait_clk[7:4]) ,(((wait_clk[3:0] > 9)?"7":"0") + wait_clk[3:0]), " ", ((choice[3])?"U":" "), ((choice[2])?"D":" "), ((choice[1])?"L":" "), ((choice[0])?"R":" "), " ", ((pause)?"P":" "), " ", (((choice > 9)?"7":"0") + choice)};
 
     end else if(P == S_MAIN_CHECK) begin 
 
       // [] maybe have signal to know if check is ended
       
       if(new_position != snk_pos)begin  // [] check.v is done??
-        snk_pos <= new_position;
+        // snk_pos <= new_position; // change it to next state
         if(apple_eat)begin 
           // find the eaten apple position
           apple_pos[apple_eat*8 +: 8] <= 8'b0;
@@ -312,17 +309,27 @@ always @(posedge clk)begin
     end else if(P == S_MAIN_RE)begin 
 
       // [] check for signals used for the ending of recovery (re_done)
-      if(~re_done)begin 
-        for(i = 0; i < 5; i = i + 1)begin 
-          if(new_apple_pos[i*8 +: 8] == 8'b0)begin 
-            test <= 1;
+      if(apple_eat)begin 
+        if(~re_done)begin 
+          for(i = 0; i < 5; i = i + 1)begin 
+            if(new_apple_pos[i*8 +: 8] == 8'b0)begin 
+              test <= 1;
+            end
+          end
+          if(~test)begin 
+            apple_pos <= new_apple_pos;
+            re_done <= 1;
           end
         end
-        if(~test)begin 
-          apple_pos <= new_apple_pos;
-          re_done <= 1;
-        end
+      end else if(snake_dead)begin
+        ending <= 1;
+        re_done <= 1;
+      end else begin // no apple been eaten -> directly leave after update snk_pos
+        re_done <= 1;
       end
+      
+      snk_pos <= new_position;
+      
 
       row_A <= "   S_MAIN_RE    ";
       row_B <= "   Snake Game   ";
