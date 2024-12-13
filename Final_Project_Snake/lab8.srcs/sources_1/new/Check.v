@@ -199,8 +199,6 @@ module Check(
                 // check if snake is dead begin
                 if (s_check == S_dead) begin
 
-                    next_pos <= snk_pos[399:392] + head_dir;
-
                     // calculate the tail position
                     for(i = 0; i <= 399; i = i + 1) begin
                         if (i <= (399 - (snk_len - 1) * 8))
@@ -209,12 +207,46 @@ module Check(
                     // end of tail 
                     
                     // if the snake hit itself begin
-                    for (i = 49; i > 50 - snk_len; i = i - 1) begin 
-                        // snk_pos[399:392] is the position of snake
-                        if (snk_pos[399:392] + head_dir == snk_pos[(i * 8 - 1) -:8]) begin 
-                            is_dead <= 1;
+                    if (dir_sig[3] == 1) begin
+                        for (i = 49; i > 50 - snk_len; i = i - 1) begin 
+                            // snk_pos[399:392] is the position of snake
+                            if (snk_pos[399:392] - 12 == snk_pos[(i * 8 - 1) -:8]) begin 
+                                is_dead <= 1;
+                            end
                         end
+                        next_pos <= snk_pos[399:392] - 12;
                     end
+
+                    if (dir_sig[2] == 1) begin
+                        for (i = 49; i > 50 - snk_len; i = i - 1) begin 
+                            // snk_pos[399:392] is the position of snake
+                            if (snk_pos[399:392] + 12 == snk_pos[(i * 8 - 1) -:8]) begin 
+                                is_dead <= 1;
+                            end
+                        end
+                        next_pos <= snk_pos[399:392] + 12;
+                    end
+
+                    if (dir_sig[1] == 1) begin
+                        for (i = 49; i > 50 - snk_len; i = i - 1) begin 
+                            // snk_pos[399:392] is the position of snake
+                            if (snk_pos[399:392] - 1 == snk_pos[(i * 8 - 1) -:8]) begin 
+                                is_dead <= 1;
+                            end
+                        end
+                        next_pos <= snk_pos[399:392] - 1;
+                    end
+
+                    if (dir_sig[0] == 1) begin
+                        for (i = 49; i > 50 - snk_len; i = i - 1) begin 
+                            // snk_pos[399:392] is the position of snake
+                            if (snk_pos[399:392] + 1 == snk_pos[(i * 8 - 1) -:8]) begin 
+                                is_dead <= 1;
+                            end
+                        end
+                        next_pos <= snk_pos[399:392] + 1;
+                    end
+
                     // end of hit itself               
                     
                     // if the snake hit the boundary begin
@@ -248,11 +280,37 @@ module Check(
                     //end of hit bounary              
                     
                     // if the snake hit the walls begin
-                    for (i = 10; i > 10 - wall_num; i = i - 1) begin 
-                        if (snk_pos[399:392] + head_dir == wall_pos[(i * 8 - 1) -:8]) begin 
-                            is_dead <= 1;
-                        end
-                    end             
+                    if (dir_sig[3] == 1) begin
+                        for (i = 10; i > 10 - wall_num; i = i - 1) begin 
+                            if (snk_pos[399:392] - 12 == wall_pos[(i * 8 - 1) -:8]) begin 
+                                is_dead <= 1;
+                            end
+                        end   
+                    end   
+
+                    if (dir_sig[2] == 1) begin
+                        for (i = 10; i > 10 - wall_num; i = i - 1) begin 
+                            if (snk_pos[399:392] + 12 == wall_pos[(i * 8 - 1) -:8]) begin 
+                                is_dead <= 1;
+                            end
+                        end   
+                    end   
+
+                    if (dir_sig[1] == 1) begin
+                        for (i = 10; i > 10 - wall_num; i = i - 1) begin 
+                            if (snk_pos[399:392] - 1 == wall_pos[(i * 8 - 1) -:8]) begin 
+                                is_dead <= 1;
+                            end
+                        end   
+                    end   
+
+                    if (dir_sig[0] == 1) begin
+                        for (i = 10; i > 10 - wall_num; i = i - 1) begin 
+                            if (snk_pos[399:392] + 1 == wall_pos[(i * 8 - 1) -:8]) begin 
+                                is_dead <= 1;
+                            end
+                        end   
+                    end          
                     //end of hit the walls               
 
                     // change fsm if dead goto end else goto apl check
@@ -264,13 +322,42 @@ module Check(
                 // check if apple be eaten 
                 if (s_check == S_apl) begin
                 
-                    for (i = 3; i > 3 - apl_num; i = i - 1) begin 
-                        if (snk_pos[399:392] + head_dir == apl_pos[(i * 8 - 1) -:8]) begin 
-                            apl_eat <= 4 - i;
-                            apl_eaten_pos <= apl_pos[(i * 8 - 1) -:8];
-                        end
-                    end          
-        
+                    if (dir_sig[3] == 1) begin
+                        for (i = 3; i > 3 - apl_num; i = i - 1) begin 
+                            if (snk_pos[399:392] - 12 == apl_pos[(i * 8 - 1) -:8]) begin 
+                                apl_eat <= 4 - i;
+                                apl_eaten_pos <= apl_pos[(i * 8 - 1) -:8];
+                            end
+                        end          
+                    end
+
+                    if (dir_sig[2] == 1) begin
+                        for (i = 3; i > 3 - apl_num; i = i - 1) begin 
+                            if (snk_pos[399:392] + 12 == apl_pos[(i * 8 - 1) -:8]) begin 
+                                apl_eat <= 4 - i;
+                                apl_eaten_pos <= apl_pos[(i * 8 - 1) -:8];
+                            end
+                        end          
+                    end
+
+                    if (dir_sig[1] == 1) begin
+                        for (i = 3; i > 3 - apl_num; i = i - 1) begin 
+                            if (snk_pos[399:392] - 1 == apl_pos[(i * 8 - 1) -:8]) begin 
+                                apl_eat <= 4 - i;
+                                apl_eaten_pos <= apl_pos[(i * 8 - 1) -:8];
+                            end
+                        end          
+                    end
+
+                    if (dir_sig[0] == 1) begin
+                        for (i = 3; i > 3 - apl_num; i = i - 1) begin 
+                            if (snk_pos[399:392] + 1 == apl_pos[(i * 8 - 1) -:8]) begin 
+                                apl_eat <= 4 - i;
+                                apl_eaten_pos <= apl_pos[(i * 8 - 1) -:8];
+                            end
+                        end          
+                    end
+
                     apl_check <= 1;
     
                 end
