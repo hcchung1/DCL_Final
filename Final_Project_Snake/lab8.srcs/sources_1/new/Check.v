@@ -58,6 +58,7 @@ module Check(
     reg [7:0] next_pos = 0;
     reg is_dead = 0;
     reg dead_check = 0;
+    reg have_dir = 0;
 
     // S_apl indexs
     reg [2:0] apl_eat = 0;
@@ -218,6 +219,7 @@ module Check(
                     end   
 
                     next_pos <= snk_pos[399:392] - 12;
+                    have_dir <= 1;
                 end
 
                 else if (dir_sig[2] == 1) begin
@@ -239,6 +241,7 @@ module Check(
                     end   
 
                     next_pos <= snk_pos[399:392] + 12;
+                    have_dir <= 1;
                 end
 
                 else if (dir_sig[1] == 1) begin
@@ -260,6 +263,7 @@ module Check(
                     end   
 
                     next_pos <= snk_pos[399:392] - 1;
+                    have_dir <= 1;
                 end
 
                 else if (dir_sig[0] == 1) begin
@@ -281,6 +285,7 @@ module Check(
                     end  
 
                     next_pos <= snk_pos[399:392] + 1;
+                    have_dir <= 1;
                 end
 
                 dead_check <= 1;
