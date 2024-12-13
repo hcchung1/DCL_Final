@@ -129,7 +129,8 @@ module Check(
             apl_check     = 0;
 
             // S_pos initialize
-            pos_check  = 0;
+            pos_check   = 0;
+            new_snkpos <= snk_pos;
         end else begin
             if(state != 4) has_down <= 0;
             else if (state == 4 && has_down == 0) begin 
@@ -157,6 +158,7 @@ module Check(
 
                         // S_pos initialize
                         pos_check   = 0;
+                        new_snkpos <= snk_pos;
                     end
                     
                     initialized = 1;
@@ -284,7 +286,6 @@ module Check(
                             new_snkpos <= {next_pos, ori_snk[399:8]};
                         end 
                     end else 
-                        new_snkpos = new_snkpos;
 
                     initialized = 0;
                     pos_check = 1;
