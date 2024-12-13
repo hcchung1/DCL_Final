@@ -38,7 +38,7 @@ module Check(
     localparam b_tall = 120; 
 
     // fsm s_check
-    localparam S_init = 0, S_pre = 1, S_dead = 2, S_apl = 3, S_pos = 4;
+    localparam S_init = 0, S_pre = 1, S_dead = 2, S_apl = 3, S_pos = 4, S_endgame;
     reg [2:0] s_check = 0, s_check_next = 0;    
 
     // S_init index
@@ -95,7 +95,7 @@ module Check(
             S_pre:  if (len_check == 1) s_check_next = S_dead;
                     else s_check_next = S_pre;
 
-            S_dead: if (dead_check == 1 && is_dead == 1) s_check_next = S_pos;
+            S_dead: if (dead_check == 1 && is_dead == 1) s_check_next = S_endgame;
                     else if (dead_check == 1 && is_dead == 0) s_check_next = S_apl;
                     else s_check_next = S_dead;
 
@@ -104,6 +104,9 @@ module Check(
 
             S_pos:  if (pos_check == 1) s_check_next = S_init;
                     else s_check_next = S_pos;
+
+            S_endgame: if (edgm_check == 1) s_check_next = S_init;
+                    else s_check_next = S_endgame;
         endcase
     end
     //end
@@ -254,7 +257,7 @@ module Check(
                         end
                     end
 
-                    if (snk_pos[399:392] % 12 == 1) begin 
+                    if (snk_pos[399:392]  == 1 || snk_pos[399:392]  == 13 || snk_pos[399:392]  == 25 || snk_pos[399:392]  == 37 || snk_pos[399:392]  == 49 || snk_pos[399:392]  == 61 || snk_pos[399:392]  == 73 || snk_pos[399:392]  == 85 || snk_pos[399:392]  == 97 || snk_pos[399:392]  == 109) begin 
                         is_dead <= 1;
                     end
 
@@ -276,7 +279,7 @@ module Check(
                         end
                     end
 
-                    if (snk_pos[399:392] % 12 == 0) begin 
+                    if (snk_pos[399:392]  == 12 || snk_pos[399:392]  == 24 || snk_pos[399:392]  == 36 || snk_pos[399:392]  == 48 || snk_pos[399:392]  == 60 || snk_pos[399:392]  == 72 || snk_pos[399:392]  == 84 || snk_pos[399:392]  == 96 || snk_pos[399:392]  == 108 || snk_pos[399:392]  == 120) begin 
                         is_dead <= 1;
                     end
 
@@ -341,18 +344,21 @@ module Check(
             
             // check the next position of the snake begin
             if (s_check == S_pos) begin 
-                if (state == 4) begin
-                    if (!is_dead) begin 
-                        if(apl_eat != 0)
-                            new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
-                        else begin
-                            new_snkpos <= {next_pos, ori_snk[399:8]};
-                        end 
-                    end                    
+                if (state == 4) begin                     
+                    if(apl_eat != 0)
+                        new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
+                    else begin
+                        new_snkpos <= {next_pos, ori_snk[399:8]};
+                    end                                     
                 end else begin 
                     initialized <= 0; 
                     pos_check <= 1;
                 end
+            end
+
+            if (s_check == S_endgame) begin
+                if(state != 4)
+                    edgm_check <= 1;    
             end
             //end of position check                          
         end
