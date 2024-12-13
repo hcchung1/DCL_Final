@@ -189,12 +189,11 @@ assign {VGA_RED, VGA_GREEN, VGA_BLUE} = rgb_reg;
 reg is_finished;
 reg first_input;
 reg [6:0] length;
-reg [6:0] index;
 reg [399:0] snake;
 reg [23:0] apple;
 reg [79:0] wall;
 reg [503:0] now;
-reg [4:0] mark[119:0];
+reg [4:0] mark[0:119];
 reg [9:0] Vertical_pos[0:11], Horizontal_pos[0:11];
 wire [119:0] now_region;
 
@@ -223,7 +222,6 @@ reg [1:0] change;
 
 always @(posedge clk) begin
     if (~reset_n) begin
-        index <= 0;
         is_finished <= 0;
         first_input <= 0;
         snake <= 0;
@@ -240,7 +238,13 @@ always @(posedge clk) begin
             mark[i] <= 16;
         end
     end else if (state == 2 && first_input == 0) begin
-        index <= 0;
+        for (i = 0; i < 120; i = i + 1) begin
+            mark[i] <= 16;
+        end
+        for (idx = 0; idx < 12; idx = idx + 1) begin
+            Vertical_pos[idx] <= idx * 24;
+            Horizontal_pos[idx] <= (idx + 1) * 48;
+        end
         is_finished <= 0;
         first_input <= 1;
         snake <= snk_pos;
@@ -269,9 +273,9 @@ always @(posedge clk) begin
                     end
                 end else begin
                     if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 1 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] - 1) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 1 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] + 1) ) // left-right
-                        mark[now[503-(length*8) -: 8]-1] <= 4;
-                    else if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 12 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] - 12) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 12 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] + 12)) // up-down 
                         mark[now[503-(length*8) -: 8]-1] <= 5;
+                    else if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 12 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] - 12) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 12 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] + 12)) // up-down 
+                        mark[now[503-(length*8) -: 8]-1] <= 4;
                     else if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 1 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] - 12) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 12 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] - 1)) // right-up / down-left
                         mark[now[503-(length*8) -: 8]-1] <= 10;
                     else if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 1 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] + 12) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 12 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] - 1)) // right-down / up-left
