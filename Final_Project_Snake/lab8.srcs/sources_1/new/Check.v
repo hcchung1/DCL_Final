@@ -202,6 +202,8 @@ module Check(
                 // check if snake is dead begin
                 if (s_check == S_dead) begin
 
+                    next_pos <= snk_pos[399:392] + head_dir;
+
                     // calculate the tail position
                     for(i = 0; i <= 399; i = i + 1) begin
                         if (i <= (399 - (snk_len - 1) * 8))
@@ -213,7 +215,6 @@ module Check(
                     for (i = 49; i > 50 - snk_len; i = i - 1) begin 
                         // snk_pos[399:392] is the position of snake
                         if (snk_pos[399:392] + head_dir == snk_pos[(i * 8 - 1) -:8]) begin 
-                            next_pos <= snk_pos[399:392] + head_dir;
                             is_dead <= 1;
                         end
                     end
