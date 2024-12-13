@@ -32,7 +32,7 @@ module Check(
     output snake_dead,
     output [2:0] apple_eat, // 0 是沒有 1是第一個被吃 etc.
     output [399:0] new_position,
-    output check_done
+    output [7:0] check_done
     );
     // boundary indexs
     localparam b_tall = 120; 
@@ -50,7 +50,7 @@ module Check(
     reg apl_num = 0;
     reg wall_num = 0;
     reg [5:0] snk_len = 0;
-    reg signed [3:0] head_dir; 
+    reg signed [4:0] head_dir; 
     reg len_check = 0;
     
 
@@ -76,7 +76,7 @@ module Check(
     assign snake_dead = is_dead;
     assign apple_eat = apl_eat;
     assign new_position = new_snkpos;
-    assign check_done = pos_check;
+    assign check_done = next_pos;
 
     ///////////////////////////////////////////////////////////////////////////////
     // s_check fsm begin
@@ -118,20 +118,20 @@ module Check(
             apl_num  <= 0;
             wall_num <= 0; 
             snk_len  <= 0;
-            len_check = 0;
+            len_check <= 0;
 
             // S_dead initialize
             next_pos   <= 0;
             is_dead    <= 0;
-            dead_check = 0;
+            dead_check <= 0;
 
             // S_apl initialize
             apl_eat       <= 0;
             apl_eaten_pos <= 0;
-            apl_check     = 0;
+            apl_check     <= 0;
 
             // S_pos initialize
-            pos_check   = 0;
+            pos_check   <= 0;
             new_snkpos <= snk_pos;
         end else begin
             if(state != 4) has_done <= 0;
@@ -139,30 +139,27 @@ module Check(
                 // refresh all indexs begin
                 if (s_check == S_init) begin
 
-                    if (dir_sig[3] == 0 && dir_sig[2] == 0 && dir_sig[1] == 0 && dir_sig[0] == 0) begin 
-                        // S_pre initialize
-                        ori_snk  <= 0;
-                        apl_num  <= 0;
-                        wall_num <= 0; 
-                        snk_len  <= 0;
-                        len_check = 0;
+                    // S_pre initialize
+                    apl_num   <= 0;
+                    wall_num  <= 0; 
+                    snk_len   <= 0;
+                    len_check <= 0;
 
-                        // S_dead initialize
-                        next_pos   <= 0;
-                        is_dead    <= 0;
-                        dead_check  = 0;
+                    // S_dead initialize
+                    next_pos   <= 0;
+                    is_dead    <= 0;
+                    dead_check <= 0;
 
-                        // S_apl initialize
-                        apl_eat       <= 0;
-                        apl_eaten_pos <= 0;
-                        apl_check      = 0;
+                    // S_apl initialize
+                    apl_eat       <= 0;
+                    apl_eaten_pos <= 0;
+                    apl_check     <= 0;
 
-                        // S_pos initialize
-                        pos_check   = 0;
-                        new_snkpos <= snk_pos;
-                    end
+                    // S_pos initialize
+                    pos_check   <= 0;
+                    new_snkpos  <= snk_pos;
                     
-                    initialized = 1;
+                    initialized <= 1;
                 end
                 // end of refresh          
             
@@ -193,9 +190,9 @@ module Check(
                     else if (dir_sig[2] == 1) head_dir <=  12;
                     else if (dir_sig[1] == 1) head_dir <=  -1;
                     else if (dir_sig[0] == 1) head_dir <=   1;
-                    else head_dir = 0;
+                    else head_dir <= 0;
 
-                    len_check = 1;
+                    len_check <= 1;
                 end    
                 //end of prepare          
                 
@@ -237,14 +234,14 @@ module Check(
 
                     // if diraction is left
                     if (dir_sig[1]) begin 
-                        if (snk_pos[399:392] % 12 == 0) begin 
+                        if (snk_pos[399:392] % 12 == 1) begin 
                             is_dead <= 1;
                         end
                     end
 
                     // if diraction is right
                     if (dir_sig[0]) begin 
-                        if (snk_pos[399:392] % 12 == 1) begin 
+                        if (snk_pos[399:392] % 12 == 0) begin 
                             is_dead <= 1;
                         end
                     end
@@ -259,7 +256,7 @@ module Check(
                     //end of hit the walls               
 
                     // change fsm if dead goto end else goto apl check
-                    dead_check = 1;
+                    dead_check <= 1;
 
                 end
                 // end of dead check
@@ -274,7 +271,7 @@ module Check(
                         end
                     end          
         
-                    apl_check = 1;
+                    apl_check <= 1;
     
                 end
                 //end of apple check           
@@ -289,8 +286,8 @@ module Check(
                         end 
                     end else 
 
-                    initialized = 0;
-                    pos_check = 1;
+                    initialized <= 0;
+                    pos_check <= 1;
                     has_done <= 1;  
                 end
                 //end of position check
