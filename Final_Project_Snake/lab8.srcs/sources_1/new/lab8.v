@@ -174,7 +174,7 @@ always @(*) begin
       // else if(pause) P_next = S_MAIN_PAUSE;
       // else P_next = S_MAIN_WAIT;
       if(pause) P_next = S_MAIN_PAUSE;
-      else if((wait_clk >= 50000000) && choice) P_next = S_MAIN_CHECK;
+      else if((wait_clk >= 50000000)) P_next = S_MAIN_CHECK;
       else P_next = S_MAIN_WAIT;
     S_MAIN_CHECK: // check the choice
       if(ending) P_next = S_MAIN_END;
@@ -218,8 +218,8 @@ always @(posedge clk)begin
       snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
       apple_pos <= {8'd1, 8'd15, 8'd70, 8'd80, 8'd120};
       init_finished <= 1;
-      reg  [127:0] row_A = "  S_MAIN_INIT   ";
-      reg  [127:0] row_B = "   Snake Game   ";
+      row_A = "  S_MAIN_INIT   ";
+      row_B = "   Snake Game   ";
     end else if(P == S_MAIN_START)begin 
       // when user switch any way for switch[0], start the game.
       init_finished <= 0;
@@ -232,8 +232,8 @@ always @(posedge clk)begin
       end
       choice <= 4'b0001;
       prev_ch <= 4'b0001;
-      reg  [127:0] row_A = "  S_MAIN_START  ";
-      reg  [127:0] row_B = "   Snake Game   ";
+      row_A = "  S_MAIN_START  ";
+      row_B = "   Snake Game   ";
 
     end else if(P == S_MAIN_MOVE)begin 
       // VGA start changing the snake on the screen
@@ -241,14 +241,14 @@ always @(posedge clk)begin
       wait_clk <= 0; // bzero(wait_clk)
       switch <= usr_sw; // update switches
       choice <= 4'b0000; // clear choice
-      prev_ch <= chioce; // save the previous choice
-      reg  [127:0] row_A = "  S_MAIN_MOVE   ";
-      reg  [127:0] row_B = {"   Snake Game  ", ((move_end)? "1" : "0")};
+      prev_ch <= choice; // save the previous choice
+      row_A = "  S_MAIN_MOVE   ";
+      row_B = {"   Snake Game  ", ((move_end)? "1" : "0")};
 
     end else if(P == S_MAIN_WAIT)begin 
 
       // getting choice from user, upon getting the choice or wait for a second, go to state:S_MAIN_CHECK
-      if(wait_clk == 50000000)begin 
+      if(wait_clk == 50000000)begin // dec'50000000 -> hex'2FAF080
         if(~(|choice))begin 
           choice <= prev_ch;
         end
@@ -280,8 +280,8 @@ always @(posedge clk)begin
         switch <= usr_sw;
       end
 
-      reg  [127:0] row_A = "  S_MAIN_WAIT   ";
-      reg  [127:0] row_B = {(((wait_clk[26:24] > 9)?"7":"0") + wait_clk[26:24]), (((wait_clk[23:20] > 9)?"7":"0") + wait_clk[23:20]), (((wait_clk[19:16] > 9)?"7":"0") + wait_clk[19:16]), (((wait_clk[15:12] > 9)?"7":"0") + wait_clk[15:12]), (((wait_clk[11:8] > 9)?"7":"0") + wait_clk[11:8]), (((wait_clk[7:4] > 9)?"7":"0") + wait_clk[7:4]) ,(((wait_clk[3:0] > 9)?"7":"0") + wait_clk[3:0]), " ", ((choice[3])?"U":" "), ((choice[2])?"D":" "), ((choice[1])?"L":" "), ((choice[0])?"R":" "), " ", ((pause)?"P":" "), " "};
+      row_A = "  S_MAIN_WAIT   ";
+      row_B = {(((wait_clk[26:24] > 9)?"7":"0") + wait_clk[26:24]), (((wait_clk[23:20] > 9)?"7":"0") + wait_clk[23:20]), (((wait_clk[19:16] > 9)?"7":"0") + wait_clk[19:16]), (((wait_clk[15:12] > 9)?"7":"0") + wait_clk[15:12]), (((wait_clk[11:8] > 9)?"7":"0") + wait_clk[11:8]), (((wait_clk[7:4] > 9)?"7":"0") + wait_clk[7:4]) ,(((wait_clk[3:0] > 9)?"7":"0") + wait_clk[3:0]), " ", ((choice[3])?"U":" "), ((choice[2])?"D":" "), ((choice[1])?"L":" "), ((choice[0])?"R":" "), " ", ((pause)?"P":" "), "   "};
 
     end else if(P == S_MAIN_CHECK) begin 
 
@@ -328,9 +328,9 @@ always @(posedge clk)begin
       row_A <= "  S_MAIN_PAUSE  ";
       row_B <= "switch sw1 leave";
 
-    end else if(P == S_MAIN_STOP)begin 
+    end else if(P == S_MAIN_END)begin 
 
-      row_A <= "  S_MAIN_STOP   ";
+      row_A <= "   S_MAIN_END   ";
       row_B <= "   Snake Game   ";
     end
   end
