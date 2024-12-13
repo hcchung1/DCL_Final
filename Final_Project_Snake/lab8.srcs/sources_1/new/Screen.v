@@ -339,7 +339,8 @@ always @ (posedge clk) begin
             end
         end
     end
-    pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);
+    if (state > 0) 
+        pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);
   end
 end
 // End of the AGU code.
