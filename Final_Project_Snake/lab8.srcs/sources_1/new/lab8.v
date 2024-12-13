@@ -77,7 +77,7 @@ reg  [2:0] P, P_next;
 reg  [3:0] switch;
 wire [3:0] unused = switch[3:0];
 wire move_end;
-wire check_done;
+wire [7:0] check_done;
 reg pause;
 reg ending;
 
@@ -298,17 +298,13 @@ always @(posedge clk)begin
     end else if(P == S_MAIN_CHECK) begin 
 
       // [] maybe have signal to know if check is ended
-      
-      if(check_done)begin  // [] check.v is done??
-        // snk_pos <= new_position; // change it to next state
-        if(apple_eat)begin 
-          // find the eaten apple position
-          apple_pos[apple_eat*8 +: 8] <= 8'b0;
-        end
+      if(apple_eat)begin 
+        // find the eaten apple position
+        apple_pos[apple_eat*8 +: 8] <= 8'b0;
       end
       re_done <= 0;
 
-      row_A <= {"  S_MAIN_CHECK ", (((counter[3:0] > 9)?"7":"0") + counter[3:0])};
+      row_A <= {(((check_done[7:4] > 9)?"7":"0") + check_done[7:4]), (((check_done[3:0] > 9)?"7":"0") + check_done[3:0]), "S_MAIN_CHECK ", (((counter[3:0] > 9)?"7":"0") + counter[3:0])};
       row_B <= {"   Snake Game ", (((new_position[399:396] > 9)?"7":"0") + new_position[399:396]), (((new_position[395:392] > 9)?"7":"0") + new_position[395:392])};
 
     end else if(P == S_MAIN_RE)begin 
