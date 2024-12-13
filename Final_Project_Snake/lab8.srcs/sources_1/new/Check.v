@@ -357,8 +357,7 @@ module Check(
             end
 
             if (s_check == S_endgame) begin
-                if(state != 4)
-                    edgm_check <= 1;    
+               new_snkpos <= 400'b0;   
             end
             //end of position check                          
         end
