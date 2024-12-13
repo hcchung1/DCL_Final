@@ -572,9 +572,8 @@ always @ (posedge clk) begin
         snkreg_addr <= fish_addr[mark[118]] + ((pixel_y >> 1) - Vertical_pos[9]) * FISH_W + ((pixel_x + (FISH_W * 2 - 1) - Horizontal_pos[10]) >> 1);
     else if (now_region[119] && mark[119] != 16)
         snkreg_addr <= fish_addr[mark[119]] + ((pixel_y >> 1) - Vertical_pos[9]) * FISH_W + ((pixel_x + (FISH_W * 2 - 1) - Horizontal_pos[11]) >> 1);
-
-    if (state > 0) 
-        pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);
+    else 
+        pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);       
   end
 end
 // End of the AGU code.
