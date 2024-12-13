@@ -77,6 +77,7 @@ reg  [2:0] P, P_next;
 reg  [3:0] switch;
 wire [3:0] unused = switch[3:0];
 wire move_end;
+wire check_done;
 reg pause;
 reg ending;
 
@@ -134,7 +135,8 @@ Check check(
   .dir_sig(choice),
   .snake_dead(snake_dead),
   .apple_eat(apple_eat),
-  .new_position(new_position)
+  .new_position(new_position),
+  .check_done(check_done)
 );
 
 apple_generator appgen(
@@ -187,7 +189,7 @@ always @(*) begin
       else if((wait_clk >= 50000000)) P_next = S_MAIN_CHECK;
       else P_next = S_MAIN_WAIT;
     S_MAIN_CHECK: // check the choice
-      if((new_position != snk_pos))P_next = S_MAIN_RE;
+      if(check_done)P_next = S_MAIN_RE;
       else P_next = S_MAIN_CHECK;
     S_MAIN_PAUSE: // [] switch to leave PAUSE
       if(~pause) P_next = S_MAIN_MOVE;
@@ -217,6 +219,7 @@ always @(posedge clk)begin
     starting <= 0;
     snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
     apple_pos <= {8'd70, 8'd80, 8'd120};
+    init_finished <= 0;
   end else begin 
 
     P <= P_next;
@@ -287,14 +290,14 @@ always @(posedge clk)begin
         switch <= usr_sw;
       end
 
-      row_A = "  S_MAIN_WAIT   ";
+      row_A = {"  S_MAIN_WAIT ", (((snk_pos[399:396] > 9)?"7":"0") + snk_pos[399:396]), (((snk_pos[395:392] > 9)?"7":"0") + snk_pos[395:392])};
       row_B = {(((wait_clk[26:24] > 9)?"7":"0") + wait_clk[26:24]), (((wait_clk[23:20] > 9)?"7":"0") + wait_clk[23:20]), (((wait_clk[19:16] > 9)?"7":"0") + wait_clk[19:16]), (((wait_clk[15:12] > 9)?"7":"0") + wait_clk[15:12]), (((wait_clk[11:8] > 9)?"7":"0") + wait_clk[11:8]), (((wait_clk[7:4] > 9)?"7":"0") + wait_clk[7:4]) ,(((wait_clk[3:0] > 9)?"7":"0") + wait_clk[3:0]), " ", ((choice[3])?"U":" "), ((choice[2])?"D":" "), ((choice[1])?"L":" "), ((choice[0])?"R":" "), " ", ((pause)?"P":" "), " ", (((choice > 9)?"7":"0") + choice)};
 
     end else if(P == S_MAIN_CHECK) begin 
 
       // [] maybe have signal to know if check is ended
       
-      if(new_position != snk_pos)begin  // [] check.v is done??
+      if(check_done)begin  // [] check.v is done??
         // snk_pos <= new_position; // change it to next state
         if(apple_eat)begin 
           // find the eaten apple position
@@ -304,7 +307,7 @@ always @(posedge clk)begin
       re_done <= 0;
 
       row_A <= "  S_MAIN_CHECK  ";
-      row_B <= "   Snake Game   ";
+      row_B <= {"   Snake Game ", (((new_position[399:396] > 9)?"7":"0") + new_position[399:396]), (((new_position[395:392] > 9)?"7":"0") + new_position[395:392])};
 
     end else if(P == S_MAIN_RE)begin 
 
