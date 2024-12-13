@@ -146,11 +146,9 @@ module Check(
 
                 // S_dead initialize
                 next_pos <= snk_pos[399:392];
-                is_dead    <= 0;
                 dead_check <= 0;
 
-                // S_apl initialize
-                apl_eat       <= 0;
+                // S_apl initialize                
                 apl_eaten_pos <= 0;
                 apl_check     <= 0;
 
@@ -158,7 +156,11 @@ module Check(
                 new_snkpos  <= snk_pos;
                 pos_check   <= 0;
                 
-                if (state == 4) initialized <= 1;
+                if (state == 4) begin
+                    initialized <= 1;
+                    is_dead     <= 0;
+                    apl_eat     <= 0;
+                end
             end
             // end of refresh          
         
