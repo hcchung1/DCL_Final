@@ -133,8 +133,7 @@ module Check(
             new_snkpos <= snk_pos;
         end else begin
             if(state != 4) has_down <= 0;
-            else if (state == 4 && has_down == 0) begin 
-                has_down <= 1;     
+            else if (state == 4 && has_down == 0) begin    
                 // refresh all indexs begin
                 if (s_check == S_init) begin
 
@@ -289,6 +288,7 @@ module Check(
 
                     initialized = 0;
                     pos_check = 1;
+                    has_down <= 1;  
                 end
                 //end of position check
                 
