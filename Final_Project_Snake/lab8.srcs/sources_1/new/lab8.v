@@ -45,6 +45,15 @@ module lab8(
 
 localparam [2:0] S_MAIN_INIT = 0, S_MAIN_START = 1, S_MAIN_MOVE = 2, S_MAIN_WAIT = 3,
                  S_MAIN_CHECK = 4, S_MAIN_RE = 5, S_MAIN_PAUSE = 6, S_MAIN_END = 7;
+                 
+// INIT:  0000
+// START: 0001
+// MOVE:  0010
+// WAIT:  0011
+// CHECK: 0100
+// RE:    0101
+// PAUSE: 0110
+// END:   0111
 
 // LCDs
 reg  [127:0] row_A = "switch sw0 start";
@@ -118,6 +127,7 @@ Screen screen(.clk(clk),.reset_n(reset_n),.usr_led(usr_led),.usr_btn(usr_btn),.u
 Check check(
   .clk(clk),
   .reset_n(reset_n),
+  .state(P),
   .snk_pos(snk_pos),
   .apl_pos(apple_pos),  
   .wall_pos(wall_pos),
@@ -177,10 +187,10 @@ always @(*) begin
       else if((wait_clk >= 50000000)) P_next = S_MAIN_CHECK;
       else P_next = S_MAIN_WAIT;
     S_MAIN_CHECK: // check the choice
-      if(ending) P_next = S_MAIN_END;
-      else if(snake_dead) P_next = S_MAIN_END;
-      else if(apple_eat) P_next = S_MAIN_RE;
-      else P_next = S_MAIN_MOVE;
+      if(ending && (new_position != snk_pos)) P_next = S_MAIN_END;
+      else if(snake_dead && (new_position != snk_pos)) P_next = S_MAIN_END;
+      else if(apple_eat && (new_position != snk_pos)) P_next = S_MAIN_RE;
+      else if((new_position != snk_pos))P_next = S_MAIN_MOVE;
     S_MAIN_PAUSE: // [] switch to leave PAUSE
       if(~pause) P_next = S_MAIN_MOVE;
       else P_next = S_MAIN_PAUSE;
@@ -207,7 +217,7 @@ always @(posedge clk)begin
     switch <= usr_sw;
     starting <= 0;
     snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
-    apple_pos <= {8'd1, 8'd15, 8'd70, 8'd80, 8'd120};
+    apple_pos <= {8'd70, 8'd80, 8'd120};
   end else begin 
 
     P <= P_next;
@@ -216,7 +226,7 @@ always @(posedge clk)begin
       switch <= usr_sw;
       starting <= 0;
       snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
-      apple_pos <= {8'd1, 8'd15, 8'd70, 8'd80, 8'd120};
+      apple_pos <= {8'd70, 8'd80, 8'd120};
       init_finished <= 1;
       row_A = "  S_MAIN_INIT   ";
       row_B = "   Snake Game   ";
@@ -233,7 +243,7 @@ always @(posedge clk)begin
       choice <= 4'b0001;
       prev_ch <= 4'b0001;
       row_A = "  S_MAIN_START  ";
-      row_B = "   Snake Game   ";
+      row_B = "switch sw0 start";
 
     end else if(P == S_MAIN_MOVE)begin 
       // VGA start changing the snake on the screen
@@ -314,7 +324,7 @@ always @(posedge clk)begin
         end
       end
 
-      row_A <= "  S_MAIN_RE     ";
+      row_A <= "   S_MAIN_RE    ";
       row_B <= "   Snake Game   ";
 
     end else if(P == S_MAIN_PAUSE)begin 
@@ -324,6 +334,7 @@ always @(posedge clk)begin
         pause <= 0;
         switch <= usr_sw;
       end
+      wait_clk <= 0;
 
       row_A <= "  S_MAIN_PAUSE  ";
       row_B <= "switch sw1 leave";
