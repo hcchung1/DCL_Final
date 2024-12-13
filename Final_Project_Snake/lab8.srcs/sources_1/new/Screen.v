@@ -221,7 +221,7 @@ integer i;
 reg [1:0] change;
 
 always @(posedge clk) begin
-    if (~reset_n) begin
+    if (~reset_n || state == 1) begin
         is_finished <= 0;
         first_input <= 0;
         snake <= 0;
@@ -244,7 +244,7 @@ always @(posedge clk) begin
         for (idx = 0; idx < 12; idx = idx + 1) begin
             Vertical_pos[idx] <= idx * 24;
             Horizontal_pos[idx] <= (idx + 1) * 48;
-        end
+        end 
         is_finished <= 0;
         first_input <= 1;
         snake <= snk_pos;
@@ -262,14 +262,14 @@ always @(posedge clk) begin
             if (snake[399:392] != 0) begin
                 length <= length + 1;
                 if (length == 0) begin
-                    if (now[503:496] == now[495:488] + 1) begin // head right
-                        mark[now[503:496]-1] <= 0;
-                    end else if (now[503:496] == now[495:488] - 1) begin // head left
-                        mark[now[503:496]-1] <= 1;
-                    end else if (now[503:496] == now[495:488] + 24) begin // head up
-                        mark[now[503:496]-1] <= 2;
-                    end else if (now[503:496] == now[495:488] - 24) begin // head down
-                        mark[now[503:496]-1] <= 3;
+                    if (snake[399:392] == snake[391:384] + 1) begin // head right
+                        mark[snake[399:392]-1] <= 0;
+                    end else if (snake[399:392] == snake[391:384] - 1) begin // head left
+                        mark[snake[399:392]-1] <= 1;
+                    end else if (snake[399:392] == snake[391:384] + 12) begin // head up
+                        mark[snake[399:392]-1] <= 2;
+                    end else if (snake[399:392] == snake[391:384] - 12) begin // head down
+                        mark[snake[399:392]-1] <= 3;
                     end
                 end else begin
                     if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 1 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] - 1) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 1 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] + 1) ) // left-right
