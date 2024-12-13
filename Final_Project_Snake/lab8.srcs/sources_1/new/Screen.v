@@ -194,7 +194,7 @@ reg [399:0] snake;
 reg [23:0] apple;
 reg [79:0] wall;
 reg [7:0] now;
-reg [3:0] Vertical_pos[0:63], Horizontal_pos[0:63];
+reg [9:0] Vertical_pos[0:63], Horizontal_pos[0:63];
 wire [63:0] now_region;
 
 // assign now_region =
@@ -259,34 +259,34 @@ always @(posedge clk) begin
             if (index != 0 && length == 0) length <= index - 1; 
         end else if (now <= 12) begin
             Vertical_pos[index] <= 0;
-            Horizontal_pos[index] <= now;
+            Horizontal_pos[index] <= now * 24;
         end else if (now <= 24) begin
-            Vertical_pos[index] <= 1;
-            Horizontal_pos[index] <= now - 12;
+            Vertical_pos[index] <= 1 * 24;
+            Horizontal_pos[index] <= (now - 12) * 24;
         end else if (now <= 36) begin
-            Vertical_pos[index] <= 2;
-            Horizontal_pos[index] <= now - 24;
+            Vertical_pos[index] <= 2 * 24;
+            Horizontal_pos[index] <= (now - 24) * 24;
         end else if (now <= 48) begin
-            Vertical_pos[index] <= 3;
-            Horizontal_pos[index] <= now - 36;
+            Vertical_pos[index] <= 3 * 24;
+            Horizontal_pos[index] <= (now - 36) * 24;
         end else if (now <= 60) begin
-            Vertical_pos[index] <= 4;
-            Horizontal_pos[index] <= now - 48;
+            Vertical_pos[index] <= 4 * 24;
+            Horizontal_pos[index] <= (now - 48) * 24;
         end else if (now <= 72) begin
-            Vertical_pos[index] <= 5;
-            Horizontal_pos[index] <= now - 60;
+            Vertical_pos[index] <= 5 * 24;
+            Horizontal_pos[index] <= (now - 60) * 24;
         end else if (now <= 84) begin
-            Vertical_pos[index] <= 6;
-            Horizontal_pos[index] <= now - 72;
+            Vertical_pos[index] <= 6 * 24;
+            Horizontal_pos[index] <= (now - 72) * 24;
         end else if (now <= 96) begin
-            Vertical_pos[index] <= 7;
-            Horizontal_pos[index] <= now - 84;
+            Vertical_pos[index] <= 7* 24;
+            Horizontal_pos[index] <= (now - 84) * 24;
         end else if (now <= 108) begin
-            Vertical_pos[index] <= 8;
-            Horizontal_pos[index] <= now - 96;
+            Vertical_pos[index] <= 8 * 24;
+            Horizontal_pos[index] <= (now - 96) * 24;
         end else if (now <= 120) begin
-            Vertical_pos[index] <= 9;
-            Horizontal_pos[index] <= now - 108;
+            Vertical_pos[index] <= 9 * 24;
+            Horizontal_pos[index] <= (now - 108) * 24;
         end
 
 
