@@ -194,7 +194,7 @@ reg [23:0] apple;
 reg [79:0] wall;
 reg [503:0] now;
 reg [4:0] mark[0:119];
-reg [9:0] Vertical_pos[0:11], Horizontal_pos[0:11];
+reg [9:0] Vertical_pos[0:9], Horizontal_pos[0:11];
 wire [119:0] now_region;
 
 // assign now_region =
