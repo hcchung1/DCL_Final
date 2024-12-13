@@ -244,8 +244,8 @@ always @(posedge clk)begin
         switch <= usr_sw;
         starting <= 0;
       end
-      choice <= 4'b0001;
-      prev_ch <= 4'b0001;
+      choice <= 4'b1000;
+      prev_ch <= 4'b1000;
       row_A = "  S_MAIN_START  ";
       row_B = "switch sw0 start";
 
