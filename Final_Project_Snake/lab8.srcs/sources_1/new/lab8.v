@@ -118,6 +118,7 @@ Screen screen(.clk(clk),.reset_n(reset_n),.usr_led(usr_led),.usr_btn(usr_btn),.u
 Check check(
   .clk(clk),
   .reset_n(reset_n),
+  .state(P),
   .snk_pos(snk_pos),
   .apl_pos(apple_pos),  
   .wall_pos(wall_pos),
