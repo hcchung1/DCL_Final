@@ -31,8 +31,8 @@ module Check(
 
     output snake_dead,
     output [2:0] apple_eat, // 0 是沒有 1是第一個被吃 etc.
-    output [399:0] new_position
-    output check_done;
+    output [399:0] new_position,
+    output check_done
     );
     // boundary indexs
     localparam b_tall = 120; 
