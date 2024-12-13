@@ -206,8 +206,7 @@ genvar k, j;
 generate
     for (k = 0; k < 10; k = k + 1) begin : outer_loop
         for (j = 0; j < 12; j = j + 1) begin : inner_loop
-            localparam int idd = k * 12 + j;
-            assign now_region[idd] = 
+            assign now_region[k * 12 + j] = 
                 (pixel_y >= (Vertical_pos[k] << 1)) && 
                 (pixel_y < ((Vertical_pos[k] + FISH_H) << 1)) &&
                 (pixel_x + (FISH_W * 2) - 1 >= Horizontal_pos[j]) && 
@@ -307,7 +306,7 @@ always @(posedge clk) begin
             if (wall[79:72] != 0) begin
                 mark[wall[79:72]] <= 15;
             end else if (wall == 0) begin
-                is_fininshed <= 1;
+                is_finished <= 1;
             end
         end
         
@@ -336,7 +335,7 @@ always @ (posedge clk) begin
     for (m = 0; m < 10; m = m + 1) begin
         for (n = 0; n < 12; n = n + 1) begin
             if (now_region[m*12+n] && mark[m*12+n] != 16) begin
-                snake_addr <= fish_addr[mark[m*12+n]] + ((pixel_y >> 1) - Vertical_pos[m]) * FISH_W + ((pixel_x + (FISH_W * 2 - 1) - Horizontal_pos[n]) >> 1);
+                snkreg_addr <= fish_addr[mark[m*12+n]] + ((pixel_y >> 1) - Vertical_pos[m]) * FISH_W + ((pixel_x + (FISH_W * 2 - 1) - Horizontal_pos[n]) >> 1);
             end
         end
     end
