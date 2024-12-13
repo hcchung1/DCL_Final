@@ -76,7 +76,7 @@ module Check(
     assign snake_dead = is_dead;
     assign apple_eat = apl_eat;
     assign new_position = new_snkpos;
-    assign check_done = next_pos;
+    assign check_done = have_dir;
 
     ///////////////////////////////////////////////////////////////////////////////
     // s_check fsm begin
