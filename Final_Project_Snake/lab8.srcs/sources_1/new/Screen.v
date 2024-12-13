@@ -356,7 +356,7 @@ always @ (posedge clk) begin
                     snkreg_addr <= fish_addr[9] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-            else // body
+            else if (idx > 1 && idx < length)// body
                 if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] + 48 && Horizontal_pos[idx] == Horizontal_pos[idx+1] - 48) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] + 48 && Horizontal_pos[idx] == Horizontal_pos[idx-1] - 48)) // left-right
                     snkreg_addr <= fish_addr[4] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
