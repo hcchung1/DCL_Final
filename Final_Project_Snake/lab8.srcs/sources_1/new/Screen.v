@@ -262,8 +262,8 @@ always @(posedge clk) begin
             now <= now << 8;
             index <= index + 1;
             change <= 0;
-            if (now[7:0] == 0) begin
-                if (index != 0 && length == 0) length <= index; 
+            if (now[7:0] == 0 && index <= 49 && index != 0 && now[14:8] != 0) begin
+                length <= index; 
             end else if (now[7:0] <= 12) begin
                 Vertical_pos[index] <= 0;
                 Horizontal_pos[index] <= now[7:0] * 48;
