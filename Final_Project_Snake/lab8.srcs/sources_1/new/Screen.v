@@ -22,6 +22,7 @@
 module Screen(
     input  clk,
     input  reset_n,
+    input  [3:0] usr_led,
     input  [3:0] usr_btn,
     input  [3:0] usr_sw,
 
@@ -139,18 +140,23 @@ clk_divider#(2) clk_divider0(
   .clk_out(vga_clk)
 );
 
+wire [16:0] snake_addr;
+wire [11:0] data_snk_o;
+reg  [17:0] snkreg_addr;
+
 // ------------------------------------------------------------------------
 // The following code describes an initialized SRAM memory block that
 // stores a 320x240 12-bit seabed image, plus two 64x32 fish images.
 sram #(.DATA_WIDTH(12), .ADDR_WIDTH(18), .RAM_SIZE(VBUF_W*VBUF_H+FISH_W*FISH_H*16))
   ram0 (.clk(clk), .we(sram_we), .en(sram_en),
-          .addr(sram_addr), .data_i(data_in), .data_o(data_out));
+          .addr(sram_addr), .addr_snk(snake_addr),  .data_i(data_in), .data_o(data_out), .data_snk_o(data_snk_o));
 
 assign sram_we = usr_sw[3]; // In this demo, we do not write the SRAM. However, if
                              // you set 'sram_we' to 0, Vivado fails to synthesize
                              // ram0 as a BRAM -- this is a bug in Vivado.
 assign sram_en = 1;          // Here, we always enable the SRAM block.
 assign sram_addr = pixel_addr;
+assign snake_addr = snkreg_addr;
 assign data_in = 12'h000; // SRAM is read-only so we tie inputs to zeros.
 // End of the SRAM memory block.
 // ------------------------------------------------------------------------
@@ -187,24 +193,30 @@ reg [6:0] index;
 reg [399:0] snake;
 reg [23:0] apple;
 reg [79:0] wall;
-reg [7:0] now;
-reg [3:0] Vertical_pos[0:63], Horizontal_pos[0:63];
-reg now_region[0:63];
+reg [503:0] now;
+reg [9:0] Vertical_pos[0:63], Horizontal_pos[0:63];
+wire [63:0] now_region;
 
 // assign now_region =
 //            pixel_y >= (Vertical_pos<<1) && pixel_y < (Vertical_pos+FISH_H)<<1 &&
 //            (pixel_x + FISH_W*2 - 1) >= pos && pixel_x < pos + 1;
 
+genvar k;
+generate
+    for (k = 0; k < 64; k = k + 1) begin : gen_now_region
+        assign now_region[k] = 
+            (pixel_y >= (Vertical_pos[k] << 1)) && 
+            (pixel_y < ((Vertical_pos[k] + FISH_H) << 1)) &&
+            (pixel_x + (FISH_W * 2) - 1 >= Horizontal_pos[k]) && 
+            (pixel_x < Horizontal_pos[k] + 1);
+    end
+endgenerate
+
+
 integer idx;
 integer i;
-always @(*) begin
-    now_region[0] = 0;
-    for (i = 1; i < 64; i = i + 1) begin
-        now_region[i] = pixel_y >= (Vertical_pos[i]<<1) && pixel_y < (Vertical_pos[i]+FISH_H)<<1 &&
-                (pixel_x + FISH_W*2 - 1) >= Horizontal_pos[i] && pixel_x < Horizontal_pos[i] + 1;
-    end
-end
-
+assign usr_led[3] = ~first_input;
+reg change;
 
 always @(posedge clk) begin
     if (~reset_n) begin
@@ -216,6 +228,7 @@ always @(posedge clk) begin
         wall <= 0;
         now <= 0;
         length <= 0;
+        change <= 0;
         for (idx = 0; idx < 64; idx = idx + 1) begin
             Vertical_pos[idx] <= 0;
             Horizontal_pos[idx] <= 0;
@@ -229,57 +242,61 @@ always @(posedge clk) begin
         wall <= wall_pos;
         length <= 0;
         now <= 0;
+        change <= 0;
     end else if (state == 2 && is_finished == 0) begin
-        index <= index + 1;
-        if (index <= 50) begin
-            now <= snake[399:392];
-            snake <= snake << 8;
-        end else if (index <= 53) begin
-            now <= apple[23:16];
-            apple <= apple << 8;
-        end else if (index <= 63) begin
-            now <= wall_pos[79:72];
-            wall <= wall << 8;
-        end else if (index == 64) begin
-            is_finished <= 1;
+        if (change == 0) begin
+            change <= 1;
+            if (index <= 49) begin
+                now[7:0] <= snake[399:392];
+                snake <= snake << 8;
+            end else if (index <= 52) begin
+                now[7:0] <= apple[23:16];
+                apple <= apple << 8;
+            end else if (index <= 62) begin
+                now[7:0] <= wall_pos[79:72];
+                wall <= wall << 8;
+            end else if (index == 63) begin
+                is_finished <= 1;
+            end
+        end else begin 
+            now <= now << 8;
+            index <= index + 1;
+            change <= 0;
+            if (now[7:0] == 0 && index <= 49 && index != 0 && now[14:8] != 0) begin
+                length <= index; 
+            end else if (now[7:0] <= 12) begin
+                Vertical_pos[index] <= 0;
+                Horizontal_pos[index] <= now[7:0] * 48;
+            end else if (now[7:0] <= 24) begin
+                Vertical_pos[index] <= 1 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 12) * 48;
+            end else if (now[7:0] <= 36) begin
+                Vertical_pos[index] <= 2 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 24) * 48;
+            end else if (now[7:0] <= 48) begin
+                Vertical_pos[index] <= 3 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 36) * 48;
+            end else if (now[7:0] <= 60) begin
+                Vertical_pos[index] <= 4 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 48) * 48;
+            end else if (now[7:0] <= 72) begin
+                Vertical_pos[index] <= 5 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 60) * 48;
+            end else if (now[7:0] <= 84) begin
+                Vertical_pos[index] <= 6 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 72) * 48;
+            end else if (now[7:0] <= 96) begin
+                Vertical_pos[index] <= 7* 24;
+                Horizontal_pos[index] <= (now[7:0] - 84) * 48;
+            end else if (now[7:0] <= 108) begin
+                Vertical_pos[index] <= 8 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 96) * 48;
+            end else if (now[7:0] <= 120) begin
+                Vertical_pos[index] <= 9 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 108) * 48;
+            end
         end
-
-        if (now == 0) begin
-            if (index != 0 && length != 0) length <= index - 1; 
-        end else if (now <= 12) begin
-            Vertical_pos[index] <= 0;
-            Horizontal_pos[index] <= now;
-        end else if (now <= 24) begin
-            Vertical_pos[index] <= 1;
-            Horizontal_pos[index] <= now - 12;
-        end else if (now <= 36) begin
-            Vertical_pos[index] <= 2;
-            Horizontal_pos[index] <= now - 24;
-        end else if (now <= 48) begin
-            Vertical_pos[index] <= 3;
-            Horizontal_pos[index] <= now - 36;
-        end else if (now <= 60) begin
-            Vertical_pos[index] <= 4;
-            Horizontal_pos[index] <= now - 48;
-        end else if (now <= 72) begin
-            Vertical_pos[index] <= 5;
-            Horizontal_pos[index] <= now - 60;
-        end else if (now <= 84) begin
-            Vertical_pos[index] <= 6;
-            Horizontal_pos[index] <= now - 72;
-        end else if (now <= 96) begin
-            Vertical_pos[index] <= 7;
-            Horizontal_pos[index] <= now - 84;
-        end else if (now <= 108) begin
-            Vertical_pos[index] <= 8;
-            Horizontal_pos[index] <= now - 96;
-        end else if (now <= 120) begin
-            Vertical_pos[index] <= 9;
-            Horizontal_pos[index] <= now - 108;
-        end
-
-
-
+        
     end else if (state == 3) begin
         is_finished <= 0;
         first_input <= 0;
@@ -290,87 +307,113 @@ end
 
 assign move_end = is_finished;
 
+
 always @ (posedge clk) begin
-  if (~reset_n)
+  if (~reset_n) begin
     pixel_addr <= 0;
+    snkreg_addr <= 0;
 //   else if (fish_region)
 //     pixel_addr <= fish_addr[fish_clock[23]] +
 //                   ((pixel_y>>1)-FISH_VPOS)*FISH_W +
 //                   ((pixel_x +(FISH_W*2-1)-pos)>>1);
-  else begin
+  end else begin
     // Scale up a 320x240 image for the 640x480 display.
     // (pixel_x, pixel_y) ranges from (0,0) to (639, 479)
     for (idx = 0; idx < 64; idx = idx + 1) begin
         if (now_region[idx]) begin
-            if (idx >= 51 && idx <= 53)
-                pixel_addr <= fish_addr[14] +
+            if (idx >= 50 && idx <= 52)
+                snkreg_addr <= fish_addr[14] +
                     ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                     ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-            else if (idx >= 54 && idx <= 63)
-                pixel_addr <= fish_addr[15] +
+            else if (idx >= 53 && idx <= 62)
+                snkreg_addr <= fish_addr[15] +
                     ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                     ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-            else if (idx == 1) // head
-                if (Horizontal_pos[idx] == Horizontal_pos[idx+1] + 1) // toward right
-                    pixel_addr <= fish_addr[0] +
+            else if (idx == 0) // head
+                if (Horizontal_pos[idx] == Horizontal_pos[idx+1]+48) // toward right
+                    snkreg_addr <= fish_addr[0] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-                else if (Horizontal_pos[idx] == Horizontal_pos[idx+1] - 1) // toward left
-                    pixel_addr <= fish_addr[1] +
+                else if (Horizontal_pos[idx] == Horizontal_pos[idx+1] - 48) // toward left
+                    snkreg_addr <= fish_addr[1] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-                else if (Vertical_pos[idx] == Vertical_pos[idx+1] + 1) // toward up
-                    pixel_addr <= fish_addr[2] +
+                else if (Vertical_pos[idx] == Vertical_pos[idx+1] + 24) // toward up
+                    snkreg_addr <= fish_addr[2] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-                else if (Vertical_pos[idx] == Vertical_pos[idx+1] - 1) // toward down
-                    pixel_addr <= fish_addr[3] +
+                else if (Vertical_pos[idx] == Vertical_pos[idx+1] - 24) // toward down
+                    snkreg_addr <= fish_addr[3] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
             else if (idx == length) // tail
-                if (Horizontal_pos[idx] == Horizontal_pos[idx-1] + 1) // toward right
-                    pixel_addr <= fish_addr[6] +
+                if (Horizontal_pos[idx] == Horizontal_pos[idx-1] + 48) // toward right
+                    snkreg_addr <= fish_addr[6] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-                else if (Horizontal_pos[idx] == Horizontal_pos[idx-1] - 1) // toward left
-                    pixel_addr <= fish_addr[7] +
+                else if (Horizontal_pos[idx] == Horizontal_pos[idx-1] - 48) // toward left
+                    snkreg_addr <= fish_addr[7] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-                else if (Vertical_pos[idx] == Vertical_pos[idx-1] + 1) // toward up
-                    pixel_addr <= fish_addr[8] +
+                else if (Vertical_pos[idx] == Vertical_pos[idx-1] + 24) // toward up
+                    snkreg_addr <= fish_addr[8] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-                else if (Vertical_pos[idx] == Vertical_pos[idx-1] - 1) // toward down
-                    pixel_addr <= fish_addr[9] +
+                else if (Vertical_pos[idx] == Vertical_pos[idx-1] - 24) // toward down
+                    snkreg_addr <= fish_addr[9] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-            else // body
-                if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] + 1 && Horizontal_pos[idx] == Horizontal_pos[idx+1] - 1) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] + 1 && Horizontal_pos[idx] == Horizontal_pos[idx-1] - 1)) // left-right
-                    pixel_addr <= fish_addr[4] +
+            else if (idx > 0 && idx < length)// body
+                // if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] + 48 && Horizontal_pos[idx] == Horizontal_pos[idx+1] - 48) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] + 48 && Horizontal_pos[idx] == Horizontal_pos[idx-1] - 48)) // left-right
+                //     snkreg_addr <= fish_addr[4] +
+                //         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
+                //         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
+                // else if ((Vertical_pos[idx] == Vertical_pos[idx-1] + 24 && Vertical_pos[idx] == Vertical_pos[idx+1] - 24) || (Vertical_pos[idx] == Vertical_pos[idx+1] + 24 && Vertical_pos[idx] == Vertical_pos[idx-1] - 24)) // up-down
+                //     snkreg_addr <= fish_addr[5] +
+                //         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
+                //         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
+                // else if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] + 48 && Vertical_pos[idx] == Vertical_pos[idx+1] - 24) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] + 48 && Vertical_pos[idx] == Vertical_pos[idx-1] - 24)) // right-up / down-left
+                //     snkreg_addr <= fish_addr[10] +
+                //         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
+                //         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
+                // else if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] - 48 && Vertical_pos[idx] == Vertical_pos[idx+1] + 24) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] - 48 && Vertical_pos[idx] == Vertical_pos[idx-1] + 24)) // right-down / up-left
+                //     snkreg_addr <= fish_addr[11] +
+                //         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
+                //         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
+                // else if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] - 48 && Vertical_pos[idx] == Vertical_pos[idx+1] - 24) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] - 48 && Vertical_pos[idx] == Vertical_pos[idx-1] - 24)) // left-down / up-right
+                //     snkreg_addr <= fish_addr[12] +
+                //         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
+                //         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
+                // else if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] + 48 && Vertical_pos[idx] == Vertical_pos[idx+1] + 24) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] + 48 && Vertical_pos[idx] == Vertical_pos[idx-1] + 24)) // left-up / down-right
+                //     snkreg_addr <= fish_addr[13] +
+                //         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
+                //         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
+                if ((now[503-(idx*8) -: 8] == now[503-(idx+1)*8 -: 8] + 1 && now[503-(idx*8) -: 8] == now[503-(idx-1)*8 -: 8] - 1) || (now[503-(idx*8) -: 8] == now[503-(idx+1)*8 -: 8] - 1 && now[503-(idx*8) -: 8] == now[503-(idx-1)*8 -: 8] + 1) ) // left-right
+                    snkreg_addr <= fish_addr[4] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-                else if ((Vertical_pos[idx] == Vertical_pos[idx-1] + 1 && Vertical_pos[idx] == Vertical_pos[idx+1] - 1) || (Vertical_pos[idx] == Vertical_pos[idx+1] + 1 && Vertical_pos[idx] == Vertical_pos[idx-1] - 1)) // up-down
-                    pixel_addr <= fish_addr[5] +
+                else if ((now[503-(idx*8) -: 8] == now[503-(idx+1)*8 -: 8] + 12 && now[503-(idx*8) -: 8] == now[503-(idx-1)*8 -: 8] - 12) || (now[503-(idx*8) -: 8] == now[503-(idx+1)*8 -: 8] - 12 && now[503-(idx*8) -: 8] == now[503-(idx-1)*8 -: 8] + 12)) // up-down 
+                    snkreg_addr <= fish_addr[5] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-                else if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] + 1 && Vertical_pos[idx] == Vertical_pos[idx+1] - 1) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] + 1 && Vertical_pos[idx] == Vertical_pos[idx-1] - 1)) // right-up / down-left
-                    pixel_addr <= fish_addr[10] +
+                else if ((now[503-(idx*8) -: 8] == now[503-(idx+1)*8 -: 8] - 1 && now[503-(idx*8) -: 8] == now[503-(idx-1)*8 -: 8] - 12) || (now[503-(idx*8) -: 8] == now[503-(idx+1)*8 -: 8] - 12 && now[503-(idx*8) -: 8] == now[503-(idx-1)*8 -: 8] - 1)) // right-up / down-left
+                    snkreg_addr <= fish_addr[10] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-                else if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] - 1 && Vertical_pos[idx] == Vertical_pos[idx+1] + 1) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] - 1 && Vertical_pos[idx] == Vertical_pos[idx-1] + 1)) // right-down / up-left
-                    pixel_addr <= fish_addr[11] +
+                else if ((now[503-(idx*8) -: 8] == now[503-(idx+1)*8 -: 8] - 1 && now[503-(idx*8) -: 8] == now[503-(idx-1)*8 -: 8] + 12) || (now[503-(idx*8) -: 8] == now[503-(idx+1)*8 -: 8] + 12 && now[503-(idx*8) -: 8] == now[503-(idx-1)*8 -: 8] - 1)) // right-down / up-left
+                    snkreg_addr <= fish_addr[11] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-                else if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] - 1 && Vertical_pos[idx] == Vertical_pos[idx+1] - 1) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] - 1 && Vertical_pos[idx] == Vertical_pos[idx-1] - 1)) // left-down / up-right
-                    pixel_addr <= fish_addr[12] +
+                else if ((now[503-(idx*8) -: 8] == now[503-(idx+1)*8 -: 8] + 1 && now[503-(idx*8) -: 8] == now[503-(idx-1)*8 -: 8] + 12) || (now[503-(idx*8) -: 8] == now[503-(idx+1)*8 -: 8] + 12 && now[503-(idx*8) -: 8] == now[503-(idx-1)*8 -: 8] + 1)) // left-down / up-right
+                    snkreg_addr <= fish_addr[12] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-                else if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] + 1 && Vertical_pos[idx] == Vertical_pos[idx+1] + 1) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] + 1 && Vertical_pos[idx] == Vertical_pos[idx-1] + 1)) // left-up / down-right
-                    pixel_addr <= fish_addr[13] +
+                else if ((now[503-(idx*8) -: 8] == now[503-(idx+1)*8 -: 8] + 1 && now[503-(idx*8) -: 8] == now[503-(idx-1)*8 -: 8] - 12) || (now[503-(idx*8) -: 8] == now[503-(idx+1)*8 -: 8] - 12 && now[503-(idx*8) -: 8] == now[503-(idx-1)*8 -: 8] + 1)) // left-up / down-right
+                    snkreg_addr <= fish_addr[13] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-                
-        end else pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);
+        end
+        pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);
     end
   end
 end
@@ -387,8 +430,7 @@ always @(*) begin
   if (~video_on)
     rgb_next = 12'h000; // Synchronization period, must set RGB values to zero.
   else begin
-    if (move_end) rgb_next = 12'hFFF;
-    else rgb_next = data_out; // RGB value at (pixel_x, pixel_y)
+    rgb_next = (now_region && data_snk_o != 12'h0f0) ? data_snk_o : data_out;
   end
 end
 // End of the video data display code.

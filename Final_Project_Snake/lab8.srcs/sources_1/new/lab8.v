@@ -1,11 +1,11 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
+// ------------------------------------------------------------
 // Company: Dept. of Computer Science, National Yang Ming Chiao Tung University
-// Engineer: Cheng-Han Chung, 
+// Engineer: Cheng-Han Chung
 // 
 // Create Date: 2017/05/08 15:29:41
-// Design Name: 
-// Module Name: snake
+// Design Name: Main Module
+// Module Name: lab8
 // Project Name: Final_Project
 // Target Devices: FPGA
 // Tool Versions:
@@ -13,13 +13,13 @@
 //              1. Control directions by bottom
 //              2. Showing snake and background on VGA
 // 
-// Dependencies: clk_divider, LCD_module, debounce, VGA, 
+// Dependencies: clk_divider, LCD_module, debounce, VGA, LED, SRAM, memory
 // 
 // Revision:
 // Revision 0.01 - File Created
-// Additional Comments:
+// Additional Comments: This is the main module of the snake game, it will control the whole game!
 // 
-//////////////////////////////////////////////////////////////////////////////////
+// ------------------------------------------------------------
 
 module lab8(
   // General system I/O ports
@@ -30,10 +30,10 @@ module lab8(
   output [3:0] usr_led,
 
   // LCD
-  // output LCD_RS,
-  // output LCD_RW,
-  // output LCD_E,
-  // output [3:0] LCD_D, 
+  output LCD_RS,
+  output LCD_RW,
+  output LCD_E,
+  output [3:0] LCD_D, 
 
   // VGA 
   output VGA_HSYNC,
@@ -46,12 +46,27 @@ module lab8(
 localparam [2:0] S_MAIN_INIT = 0, S_MAIN_START = 1, S_MAIN_MOVE = 2, S_MAIN_WAIT = 3,
                  S_MAIN_CHECK = 4, S_MAIN_RE = 5, S_MAIN_PAUSE = 6, S_MAIN_END = 7;
 
+// LCDs
+reg  [127:0] row_A = "switch sw0 start";
+reg  [127:0] row_B = "   Snake Game   ";
+
+LCD_module lcd0( 
+  .clk(clk),
+  .reset(~reset_n),
+  .row_A(row_A),
+  .row_B(row_B),
+  .LCD_E(LCD_E),
+  .LCD_RS(LCD_RS),
+  .LCD_RW(LCD_RW),
+  .LCD_D(LCD_D)
+);
 
 // Declare system variables
 wire [3:0] btn_level, btn_pressed;
 reg  [3:0] prev_btn_level;
 reg  [2:0] P, P_next;
 reg  [3:0] switch;
+wire [3:0] unused = switch[3:0];
 wire move_end;
 reg pause;
 reg ending;
@@ -65,22 +80,12 @@ assign checking = (P == S_MAIN_CHECK);
 
 reg starting;
 
-reg [399:0] snk_pos = 0;
-wire [399:0] snk_posw;
-assign snk_posw = snk_pos;
-
-reg [23:0] apple_pos;
-wire [23:0] apple_posw;
-assign apple_posw = apple_pos;
-
-reg [79:0] wall_pos = 0;
-wire [79:0] wall_posw;
-assign wall_posw = wall_pos;
+reg [399:0] snk_pos = 0; // at most 50 nodes
+reg [23:0] apple_pos = 0; // at most 3 apples
+reg [79:0] wall_pos = 0; // at most 10 walls
 
 reg [3:0] choice;
 reg [3:0] prev_ch;
-wire [3:0] choicew;
-assign choicew = choice;
 
 wire [399:0] new_position;
 wire snake_dead;
@@ -97,6 +102,10 @@ wire [7:0] data_out;
 wire [8:0] sram_addr;
 wire       sram_we, sram_en;
 
+integer i;
+reg [26:0] wait_clk;
+reg test;
+
 assign usr_led = P[2:0];
 
 debounce btn_db0(.clk(clk),.btn_input(usr_btn[0]),.btn_output(btn_level[0]));
@@ -104,15 +113,15 @@ debounce btn_db1(.clk(clk),.btn_input(usr_btn[1]),.btn_output(btn_level[1]));
 debounce btn_db2(.clk(clk),.btn_input(usr_btn[2]),.btn_output(btn_level[2]));
 debounce btn_db3(.clk(clk),.btn_input(usr_btn[3]),.btn_output(btn_level[3]));
 
-Screen screen(.clk(clk),.reset_n(reset_n),.usr_btn(usr_btn),.usr_sw(usr_sw),.state(state),.choice(choicew),.snk_pos(snk_pos),.apple_pos(apple_posw),.wall_pos(wall_posw),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
+Screen screen(.clk(clk),.reset_n(reset_n),.usr_led(usr_led),.usr_btn(usr_btn),.usr_sw(usr_sw),.state(P),.choice(choice),.snk_pos(snk_pos),.apple_pos(apple_pos),.wall_pos(wall_pos),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
 
 Check check(
   .clk(clk),
   .reset_n(reset_n),
-  .snk_pos(snk_posw),
-  .apl_pos(apple_posw),  
-  .wall_pos(wall_posw),
-  .dir_sig(choicew),
+  .snk_pos(snk_pos),
+  .apl_pos(apple_pos),  
+  .wall_pos(wall_pos),
+  .dir_sig(choice),
   .snake_dead(snake_dead),
   .apple_eat(apple_eat),
   .new_position(new_position)
@@ -122,16 +131,15 @@ apple_generator appgen(
     .clk(clk),               // 時脈訊號
     .reset(reset_n),             // 重置訊號
     .apple_eat_pos(apple_eat),         // 蘋果是否被吃掉
-    .snake_pos(snk_posw),  // 蛇的位置，每個節點 [7:0]
-    .obstacle_pos(wall_posw), // 障礙物的位置，每個障礙物 [7:0]
+    .snake_pos(snk_pos),  // 蛇的位置，每個節點 [7:0]
+    .obstacle_pos(wall_pos), // 障礙物的位置，每個障礙物 [7:0]
     .apple_pos(new_apple_pos)   // 蘋果的位置，每個蘋果 [7:0]
 );
 
 // sram ram0(.clk(clk),.we(sram_we),.en(sram_en),.addr(sram_addr),.data_i(data_in),.data_o(data_out));
 
-//
-// Enable one cycle of btn_pressed per each button hit
-//
+// -----------------------------------------------------------------
+// Button pressed detection
 always @(posedge clk) begin
   if (~reset_n)
     prev_btn_level <= 0;
@@ -144,8 +152,10 @@ assign btn_pressed[1] = (btn_level[1] == 1 && prev_btn_level[1] == 0)? 1 : 0;
 assign btn_pressed[2] = (btn_level[2] == 1 && prev_btn_level[2] == 0)? 1 : 0;
 assign btn_pressed[3] = (btn_level[3] == 1 && prev_btn_level[3] == 0)? 1 : 0;
 
+// END of Button pressed detection
+// -----------------------------------------------------------------
 
-wire unused = switch[3:0];
+
 // -----------------------------------------------------------------
 // FSM next-state logic
 always @(*) begin 
@@ -160,16 +170,18 @@ always @(*) begin
       if(move_end) P_next = S_MAIN_WAIT;
       else P_next = S_MAIN_MOVE;
     S_MAIN_WAIT: // user signals the choice
-      if(|choice && ~pause && ~ending)  P_next = S_MAIN_CHECK;
-      else if(pause) P_next = S_MAIN_PAUSE;
-      else if(ending) P_next = S_MAIN_END;
+      // if((wait_clk == 50000000) && ~pause)  P_next = S_MAIN_CHECK;
+      // else if(pause) P_next = S_MAIN_PAUSE;
+      // else P_next = S_MAIN_WAIT;
+      if(pause) P_next = S_MAIN_PAUSE;
+      else if((wait_clk >= 50000000)) P_next = S_MAIN_CHECK;
       else P_next = S_MAIN_WAIT;
     S_MAIN_CHECK: // check the choice
       if(ending) P_next = S_MAIN_END;
       else if(snake_dead) P_next = S_MAIN_END;
       else if(apple_eat) P_next = S_MAIN_RE;
       else P_next = S_MAIN_MOVE;
-    S_MAIN_PAUSE:
+    S_MAIN_PAUSE: // [] switch to leave PAUSE
       if(~pause) P_next = S_MAIN_MOVE;
       else P_next = S_MAIN_PAUSE;
     S_MAIN_RE:
@@ -187,9 +199,7 @@ end
 // -----------------------------------------------------------------
 // Main Block
 
-integer i;
-reg [$clog2(100000000):0] wait_clk;
-reg test;
+
 
 always @(posedge clk)begin 
   if(~reset_n)begin 
@@ -199,6 +209,7 @@ always @(posedge clk)begin
     snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
     apple_pos <= {8'd1, 8'd15, 8'd70, 8'd80, 8'd120};
   end else begin 
+
     P <= P_next;
     if(P == S_MAIN_INIT)begin 
       // Initial all the things, include LCD, uart, LED, VGA??
@@ -207,6 +218,8 @@ always @(posedge clk)begin
       snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
       apple_pos <= {8'd1, 8'd15, 8'd70, 8'd80, 8'd120};
       init_finished <= 1;
+      row_A = "  S_MAIN_INIT   ";
+      row_B = "   Snake Game   ";
     end else if(P == S_MAIN_START)begin 
       // when user switch any way for switch[0], start the game.
       init_finished <= 0;
@@ -217,6 +230,10 @@ always @(posedge clk)begin
         switch <= usr_sw;
         starting <= 0;
       end
+      choice <= 4'b0001;
+      prev_ch <= 4'b0001;
+      row_A = "  S_MAIN_START  ";
+      row_B = "   Snake Game   ";
 
     end else if(P == S_MAIN_MOVE)begin 
       // VGA start changing the snake on the screen
@@ -224,24 +241,53 @@ always @(posedge clk)begin
       wait_clk <= 0; // bzero(wait_clk)
       switch <= usr_sw; // update switches
       choice <= 4'b0000; // clear choice
+      prev_ch <= choice; // save the previous choice
+      row_A = "  S_MAIN_MOVE   ";
+      row_B = {"   Snake Game  ", ((move_end)? "1" : "0")};
+
     end else if(P == S_MAIN_WAIT)begin 
+
       // getting choice from user, upon getting the choice or wait for a second, go to state:S_MAIN_CHECK
-      if(wait_clk == 50000000)begin 
+      if(wait_clk == 50000000)begin // dec'50000000 -> hex'2FAF080
         if(~(|choice))begin 
           choice <= prev_ch;
         end
       end else begin 
         wait_clk <= wait_clk + 1;
       end
+
       // check if the user input some choice before choice has made
-      if(~(|choice) && |btn_pressed)begin 
+      // [x] if user input up when down is chosen, then change the choice to up; if user input left when right is chosen, then change the choice to left; and so on.
+
+      if(~(|choice) && btn_pressed)begin // when no choice has been made, and user press the button
+          
           choice[3:0] <= btn_pressed[3:0];
+
+          if(btn_pressed[0] && prev_ch == 4'b0010)begin // if user press up when down is chosen
+            choice <= 4'b0001;
+          end else if(btn_pressed[1] && prev_ch == 4'b0001)begin // if user press down when up is chosen
+            choice <= 4'b0010;
+          end else if(btn_pressed[2] && prev_ch == 4'b0100)begin // if user press right when left is chosen
+            choice <= 4'b1000;
+          end else if(btn_pressed[3] && prev_ch == 4'b1000)begin // if user press left when right is chosen
+            choice <= 4'b0100;
+          end
       end
-      pause <= (switch[1] != usr_sw[1]);
-      ending <= (switch[2] != usr_sw[2]);
+
+      // check if user want to pause at any moment when playing the game
+      if(switch[1] != usr_sw[1])begin 
+        pause <= 1;
+        switch <= usr_sw;
+      end
+
+      row_A = "  S_MAIN_WAIT   ";
+      row_B = {(((wait_clk[26:24] > 9)?"7":"0") + wait_clk[26:24]), (((wait_clk[23:20] > 9)?"7":"0") + wait_clk[23:20]), (((wait_clk[19:16] > 9)?"7":"0") + wait_clk[19:16]), (((wait_clk[15:12] > 9)?"7":"0") + wait_clk[15:12]), (((wait_clk[11:8] > 9)?"7":"0") + wait_clk[11:8]), (((wait_clk[7:4] > 9)?"7":"0") + wait_clk[7:4]) ,(((wait_clk[3:0] > 9)?"7":"0") + wait_clk[3:0]), " ", ((choice[3])?"U":" "), ((choice[2])?"D":" "), ((choice[1])?"L":" "), ((choice[0])?"R":" "), " ", ((pause)?"P":" "), "   "};
+
     end else if(P == S_MAIN_CHECK) begin 
-      prev_ch <= choice;
-      if(new_position != snk_pos)begin  // check.v is done
+
+      // [] maybe have signal to know if check is ended
+      
+      if(new_position != snk_pos)begin  // [] check.v is done??
         snk_pos <= new_position;
         if(apple_eat)begin 
           // find the eaten apple position
@@ -249,7 +295,13 @@ always @(posedge clk)begin
         end
       end
       re_done <= 0;
+
+      row_A <= "  S_MAIN_CHECK  ";
+      row_B <= "   Snake Game   ";
+
     end else if(P == S_MAIN_RE)begin 
+
+      // [] check for signals used for the ending of recovery (re_done)
       if(~re_done)begin 
         for(i = 0; i < 5; i = i + 1)begin 
           if(new_apple_pos[i*8 +: 8] == 8'b0)begin 
@@ -261,6 +313,25 @@ always @(posedge clk)begin
           re_done <= 1;
         end
       end
+
+      row_A <= "  S_MAIN_RE     ";
+      row_B <= "   Snake Game   ";
+
+    end else if(P == S_MAIN_PAUSE)begin 
+      // [] switch to leave PAUSE
+
+      if(switch[1] != usr_sw[1])begin 
+        pause <= 0;
+        switch <= usr_sw;
+      end
+
+      row_A <= "  S_MAIN_PAUSE  ";
+      row_B <= "switch sw1 leave";
+
+    end else if(P == S_MAIN_END)begin 
+
+      row_A <= "   S_MAIN_END   ";
+      row_B <= "   Snake Game   ";
     end
   end
   

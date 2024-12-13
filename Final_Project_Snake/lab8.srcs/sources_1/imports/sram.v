@@ -9,8 +9,10 @@ module sram
 #(parameter DATA_WIDTH = 8, ADDR_WIDTH = 16, RAM_SIZE = 65536, FILE = "background.mem")
  (input clk, input we, input en,
   input  [ADDR_WIDTH-1 : 0] addr,
+  input  [ADDR_WIDTH-1 : 0] addr_snk,
   input  [DATA_WIDTH-1 : 0] data_i,
-  output reg [DATA_WIDTH-1 : 0] data_o);
+  output reg [DATA_WIDTH-1 : 0] data_o, 
+  output reg [DATA_WIDTH-1 : 0] data_snk_o);
 
 // Declareation of the memory cells
 (* ram_style = "block" *) reg [DATA_WIDTH-1 : 0] RAM [RAM_SIZE - 1:0];
@@ -33,6 +35,7 @@ begin
   if (en & we)
     data_o <= data_i;
   else
+    data_snk_o <= RAM[addr_snk];
     data_o <= RAM[addr];
 end
 
