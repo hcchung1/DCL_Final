@@ -100,6 +100,7 @@ reg [3:0] prev_ch;
 
 
 wire [399:0] new_position;
+reg checkover;
 wire snake_dead;
 wire [2:0] apple_eat;
 
@@ -191,13 +192,14 @@ always @(*) begin
       else if(wait_end) P_next = S_MAIN_CHECK;
       else P_next = S_MAIN_WAIT;
     S_MAIN_CHECK: // check the choice
-      if((new_position != snk_pos))P_next = S_MAIN_RE;
+      if((checkover))P_next = S_MAIN_RE;
       else P_next = S_MAIN_CHECK;
     S_MAIN_PAUSE: // [] switch to leave PAUSE
       if(~pause) P_next = S_MAIN_MOVE;
+      else if(snake_dead) P_next = S_MAIN_END;
       else P_next = S_MAIN_PAUSE;
     S_MAIN_RE:
-      if(re_done && snake_dead) P_next = S_MAIN_END;
+      if(snake_dead) P_next = S_MAIN_END;
       else if(re_done) P_next = S_MAIN_MOVE;
       else P_next = S_MAIN_RE;
     S_MAIN_END:
@@ -248,9 +250,9 @@ always @(posedge clk)begin
         switch <= usr_sw;
         starting <= 0;
       end
-      choice <= 4'b1000;
-      prev_ch <= 4'b1000;
-      row_A = "  S_MAIN_START  ";
+      choice <= 4'b0001;
+      prev_ch <= 4'b0001;
+      row_A = {"  S_MAIN_START", (((choice > 9)?"7":"0") + choice), (((prev_ch > 9)?"7":"0") + prev_ch)};
       row_B = "switch sw0 start";
 
     end else if(P == S_MAIN_MOVE)begin 
@@ -271,28 +273,30 @@ always @(posedge clk)begin
         if(choice == 0)begin 
           choice <= prev_ch;
         end
-        if(usr_sw[2])begin 
+        if(usr_sw[2] != switch[2])begin
+          switch <= usr_sw; 
           wait_end <= 1;
+          checkover <= 0;
         end
       end else if(wait_clk < 50000000)begin 
         wait_clk <= wait_clk + 1;
+        if(choice == 0)begin // when no choice has been made, and user press the button
+            if(btn_pressed[0] && prev_ch == 4'b0010)begin // if user press up when down is chosen
+              choice <= 4'b0001;
+            end else if(btn_pressed[1] && prev_ch == 4'b0001)begin // if user press down when up is chosen
+              choice <= 4'b0010;
+            end else if(btn_pressed[2] && prev_ch == 4'b0100)begin // if user press right when left is chosen
+              choice <= 4'b1000;
+            end else if(btn_pressed[3] && prev_ch == 4'b1000)begin // if user press left when right is chosen
+              choice <= 4'b0100;
+            end else choice <= btn_pressed[3:0];
+        end
       end
 
       // check if the user input some choice before choice has made
       // [x] if user input up when down is chosen, then change the choice to up; if user input left when right is chosen, then change the choice to left; and so on.
 
-      if(choice == 0)begin // when no choice has been made, and user press the button
-
-          if(btn_pressed[0] && prev_ch == 4'b0010)begin // if user press up when down is chosen
-            choice <= 4'b0001;
-          end else if(btn_pressed[1] && prev_ch == 4'b0001)begin // if user press down when up is chosen
-            choice <= 4'b0010;
-          end else if(btn_pressed[2] && prev_ch == 4'b0100)begin // if user press right when left is chosen
-            choice <= 4'b1000;
-          end else if(btn_pressed[3] && prev_ch == 4'b1000)begin // if user press left when right is chosen
-            choice <= 4'b0100;
-          end else choice <= btn_pressed[3:0];
-      end
+      
 
       // check if user want to pause at any moment when playing the game
       if(switch[1] != usr_sw[1])begin 
@@ -311,17 +315,17 @@ always @(posedge clk)begin
           // find the eaten apple position
           apple_pos[apple_eat*8 +: 8] <= 8'b0;
         end
-        snk_pos <= new_position;
+        
+        checkover <= 1;
       end
       
       re_done <= 0;
 
-      row_A <= {(((check_done[7:4] > 9)?"7":"0") + check_done[7:4]), (((check_done[3:0] > 9)?"7":"0") + check_done[3:0]), "S_MAIN_CHEC",(((choice[3:0] > 9)?"7":"0") + choice[3:0]) , " ",(((counter[3:0] > 9)?"7":"0") + counter[3:0])};
+      row_A <= {(((snk_pos[399:396] > 9)?"7":"0") + snk_pos[399:396]), (((snk_pos[395:392] > 9)?"7":"0") + snk_pos[395:392]), "S_MAIN_CHE",(check_done + "0") ,(((choice[3:0] > 9)?"7":"0") + choice[3:0]) , " ",(((counter[3:0] > 9)?"7":"0") + counter[3:0])};
       row_B <= {"   Snake Game ", (((new_position[399:396] > 9)?"7":"0") + new_position[399:396]), (((new_position[395:392] > 9)?"7":"0") + new_position[395:392])};
 
     end else if(P == S_MAIN_RE)begin 
 
-      
       // [] check for signals used for the ending of recovery (re_done)
       if(apple_eat)begin 
         if(~re_done)begin 
@@ -343,7 +347,7 @@ always @(posedge clk)begin
       end
       prev_ch <= choice; // save the previous choice
       
-      // snk_pos <= new_position;
+      snk_pos <= new_position;
       
 
       row_A <= "   S_MAIN_RE    ";
@@ -367,7 +371,7 @@ always @(posedge clk)begin
       row_B <= "   Snake Game   ";
     end
     
-    if(P == P_next == S_MAIN_RE)begin 
+    if(P_next == S_MAIN_RE)begin 
       counter <= counter + 1;
     end
   end
