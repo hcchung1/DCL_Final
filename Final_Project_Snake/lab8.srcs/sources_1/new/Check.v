@@ -70,6 +70,9 @@ module Check(
     reg [399:0] temp_snkpos;
     reg pos_check = 0;
 
+    // endgame index
+    reg edgm_check;
+
     integer  i;
 
     assign snake_length = snk_len;
