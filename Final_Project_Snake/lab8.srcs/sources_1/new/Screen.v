@@ -193,7 +193,7 @@ reg [6:0] index;
 reg [399:0] snake;
 reg [23:0] apple;
 reg [79:0] wall;
-reg [7:0] now;
+reg [503:0] now;
 reg [9:0] Vertical_pos[0:63], Horizontal_pos[0:63];
 wire [63:0] now_region;
 
@@ -216,6 +216,7 @@ endgenerate
 integer idx;
 integer i;
 assign usr_led[3] = ~first_input;
+reg change;
 
 always @(posedge clk) begin
     if (~reset_n) begin
@@ -227,6 +228,7 @@ always @(posedge clk) begin
         wall <= 0;
         now <= 0;
         length <= 0;
+        change <= 0;
         for (idx = 0; idx < 64; idx = idx + 1) begin
             Vertical_pos[idx] <= 0;
             Horizontal_pos[idx] <= 0;
@@ -240,57 +242,61 @@ always @(posedge clk) begin
         wall <= wall_pos;
         length <= 0;
         now <= 0;
+        change <= 0;
     end else if (state == 2 && is_finished == 0) begin
-        index <= index + 1;
-        if (index <= 50) begin
-            now <= snake[399:392];
-            snake <= snake << 8;
-        end else if (index <= 53) begin
-            now <= apple[23:16];
-            apple <= apple << 8;
-        end else if (index <= 63) begin
-            now <= wall_pos[79:72];
-            wall <= wall << 8;
-        end else if (index == 64) begin
-            is_finished <= 1;
+        if (change == 0) begin
+            change <= 1;
+            if (index <= 49) begin
+                now[7:0] <= snake[399:392];
+                snake <= snake << 8;
+            end else if (index <= 52) begin
+                now[7:0] <= apple[23:16];
+                apple <= apple << 8;
+            end else if (index <= 62) begin
+                now[7:0] <= wall_pos[79:72];
+                wall <= wall << 8;
+            end else if (index == 63) begin
+                is_finished <= 1;
+            end
+        end else begin 
+            now <= now << 8;
+            index <= index + 1;
+            change <= 0;
+            if (now[7:0] == 0) begin
+                if (index != 0 && length == 0) length <= index; 
+            end else if (now[7:0] <= 12) begin
+                Vertical_pos[index] <= 0;
+                Horizontal_pos[index] <= now[7:0] * 48;
+            end else if (now[7:0] <= 24) begin
+                Vertical_pos[index] <= 1 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 12) * 48;
+            end else if (now[7:0] <= 36) begin
+                Vertical_pos[index] <= 2 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 24) * 48;
+            end else if (now[7:0] <= 48) begin
+                Vertical_pos[index] <= 3 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 36) * 48;
+            end else if (now[7:0] <= 60) begin
+                Vertical_pos[index] <= 4 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 48) * 48;
+            end else if (now[7:0] <= 72) begin
+                Vertical_pos[index] <= 5 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 60) * 48;
+            end else if (now[7:0] <= 84) begin
+                Vertical_pos[index] <= 6 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 72) * 48;
+            end else if (now[7:0] <= 96) begin
+                Vertical_pos[index] <= 7* 24;
+                Horizontal_pos[index] <= (now[7:0] - 84) * 48;
+            end else if (now[7:0] <= 108) begin
+                Vertical_pos[index] <= 8 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 96) * 48;
+            end else if (now[7:0] <= 120) begin
+                Vertical_pos[index] <= 9 * 24;
+                Horizontal_pos[index] <= (now[7:0] - 108) * 48;
+            end
         end
-
-        if (now == 0) begin
-            if (index != 0 && length == 0) length <= index - 1; 
-        end else if (now <= 12) begin
-            Vertical_pos[index] <= 0;
-            Horizontal_pos[index] <= now * 48;
-        end else if (now <= 24) begin
-            Vertical_pos[index] <= 1 * 24;
-            Horizontal_pos[index] <= (now - 12) * 48;
-        end else if (now <= 36) begin
-            Vertical_pos[index] <= 2 * 24;
-            Horizontal_pos[index] <= (now - 24) * 48;
-        end else if (now <= 48) begin
-            Vertical_pos[index] <= 3 * 24;
-            Horizontal_pos[index] <= (now - 36) * 48;
-        end else if (now <= 60) begin
-            Vertical_pos[index] <= 4 * 24;
-            Horizontal_pos[index] <= (now - 48) * 48;
-        end else if (now <= 72) begin
-            Vertical_pos[index] <= 5 * 24;
-            Horizontal_pos[index] <= (now - 60) * 48;
-        end else if (now <= 84) begin
-            Vertical_pos[index] <= 6 * 24;
-            Horizontal_pos[index] <= (now - 72) * 48;
-        end else if (now <= 96) begin
-            Vertical_pos[index] <= 7* 24;
-            Horizontal_pos[index] <= (now - 84) * 48;
-        end else if (now <= 108) begin
-            Vertical_pos[index] <= 8 * 24;
-            Horizontal_pos[index] <= (now - 96) * 48;
-        end else if (now <= 120) begin
-            Vertical_pos[index] <= 9 * 24;
-            Horizontal_pos[index] <= (now - 108) * 48;
-        end
-
-
-
+        
     end else if (state == 3) begin
         is_finished <= 0;
         first_input <= 0;
@@ -300,6 +306,7 @@ always @(posedge clk) begin
 end
 
 assign move_end = is_finished;
+
 
 always @ (posedge clk) begin
   if (~reset_n) begin
@@ -314,15 +321,15 @@ always @ (posedge clk) begin
     // (pixel_x, pixel_y) ranges from (0,0) to (639, 479)
     for (idx = 0; idx < 64; idx = idx + 1) begin
         if (now_region[idx]) begin
-            if (idx >= 51 && idx <= 53)
+            if (idx >= 50 && idx <= 52)
                 snkreg_addr <= fish_addr[14] +
                     ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                     ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-            else if (idx >= 54 && idx <= 63)
+            else if (idx >= 53 && idx <= 62)
                 snkreg_addr <= fish_addr[15] +
                     ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                     ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-            else if (idx == 1) // head
+            else if (idx == 0) // head
                 if (Horizontal_pos[idx] == Horizontal_pos[idx+1]+48) // toward right
                     snkreg_addr <= fish_addr[0] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
@@ -356,7 +363,7 @@ always @ (posedge clk) begin
                     snkreg_addr <= fish_addr[9] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
                         ((pixel_x +(FISH_W*2-1)-Horizontal_pos[idx])>>1);
-            else if (idx > 1 && idx < length)// body
+            else if (idx > 0 && idx < length)// body
                 if ((Horizontal_pos[idx] == Horizontal_pos[idx-1] + 48 && Horizontal_pos[idx] == Horizontal_pos[idx+1] - 48) || (Horizontal_pos[idx] == Horizontal_pos[idx+1] + 48 && Horizontal_pos[idx] == Horizontal_pos[idx-1] - 48)) // left-right
                     snkreg_addr <= fish_addr[4] +
                         ((pixel_y>>1)-Vertical_pos[idx])*FISH_W +
