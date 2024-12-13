@@ -304,7 +304,7 @@ always @(posedge clk)begin
         switch <= usr_sw;
       end
 
-      row_A = {"  S_MAIN_WAIT ", (((snk_pos[399:396] > 9)?"7":"0") + snk_pos[399:396]), (((snk_pos[395:392] > 9)?"7":"0") + snk_pos[395:392])};
+      row_A = {apple_eat + "0", " S_MAIN_WAIT ", (((snk_pos[399:396] > 9)?"7":"0") + snk_pos[399:396]), (((snk_pos[395:392] > 9)?"7":"0") + snk_pos[395:392])};
       row_B = {(((wait_clk[26:24] > 9)?"7":"0") + wait_clk[26:24]), (((wait_clk[23:20] > 9)?"7":"0") + wait_clk[23:20]), (((wait_clk[19:16] > 9)?"7":"0") + wait_clk[19:16]), (((wait_clk[15:12] > 9)?"7":"0") + wait_clk[15:12]), (((wait_clk[11:8] > 9)?"7":"0") + wait_clk[11:8]), (((wait_clk[7:4] > 9)?"7":"0") + wait_clk[7:4]) ,(((wait_clk[3:0] > 9)?"7":"0") + wait_clk[3:0]), " ", ((choice[3])?"U":" "), ((choice[2])?"D":" "), ((choice[1])?"L":" "), ((choice[0])?"R":" "), " ", ((pause)?"P":" "), " ", (((choice > 9)?"7":"0") + choice)};
 
     end else if(P == S_MAIN_CHECK) begin 
@@ -313,7 +313,7 @@ always @(posedge clk)begin
       if(snk_pos != new_position)begin 
         if(apple_eat)begin 
           // find the eaten apple position
-          apple_pos[apple_eat*8 +: 8] <= 8'b0;
+          apple_pos[(31-(apple_eat)*8) -: 8] <= 8'b0;
         end
         
         checkover <= 1;

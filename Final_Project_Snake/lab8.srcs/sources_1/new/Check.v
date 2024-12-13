@@ -38,7 +38,7 @@ module Check(
     localparam b_tall = 120; 
 
     // fsm s_check
-    localparam S_init = 0, S_pre = 1, S_dead = 2, S_apl = 3, S_pos = 4, S_endgame;
+    localparam S_init = 0, S_pre = 1, S_dead = 2, S_apl = 3, S_pos = 4, S_endgame = 5;
     reg [2:0] s_check = 0, s_check_next = 0;    
 
     // S_init index
@@ -69,6 +69,9 @@ module Check(
     reg [399:0] new_snkpos = 0;
     reg [399:0] temp_snkpos;
     reg pos_check = 0;
+
+    // endgame index
+    reg edgm_check;
 
     integer  i;
 
