@@ -103,7 +103,7 @@ wire [8:0] sram_addr;
 wire       sram_we, sram_en;
 
 integer i;
-reg [$clog2(100000000):0] wait_clk;
+reg [26:0] wait_clk;
 reg test;
 
 assign usr_led = P[2:0];
@@ -218,6 +218,8 @@ always @(posedge clk)begin
       snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
       apple_pos <= {8'd1, 8'd15, 8'd70, 8'd80, 8'd120};
       init_finished <= 1;
+      reg  [127:0] row_A = "  S_MAIN_INIT   ";
+      reg  [127:0] row_B = "   Snake Game   ";
     end else if(P == S_MAIN_START)begin 
       // when user switch any way for switch[0], start the game.
       init_finished <= 0;
@@ -230,6 +232,8 @@ always @(posedge clk)begin
       end
       choice <= 4'b0001;
       prev_ch <= 4'b0001;
+      reg  [127:0] row_A = "  S_MAIN_START  ";
+      reg  [127:0] row_B = "   Snake Game   ";
 
     end else if(P == S_MAIN_MOVE)begin 
       // VGA start changing the snake on the screen
@@ -238,6 +242,8 @@ always @(posedge clk)begin
       switch <= usr_sw; // update switches
       choice <= 4'b0000; // clear choice
       prev_ch <= chioce; // save the previous choice
+      reg  [127:0] row_A = "  S_MAIN_MOVE   ";
+      reg  [127:0] row_B = {"   Snake Game  ", ((move_end)? "1" : "0")};
 
     end else if(P == S_MAIN_WAIT)begin 
 
@@ -274,6 +280,9 @@ always @(posedge clk)begin
         switch <= usr_sw;
       end
 
+      reg  [127:0] row_A = "  S_MAIN_WAIT   ";
+      reg  [127:0] row_B = {(((wait_clk[26:24] > 9)?"7":"0") + wait_clk[26:24]), (((wait_clk[23:20] > 9)?"7":"0") + wait_clk[23:20]), (((wait_clk[19:16] > 9)?"7":"0") + wait_clk[19:16]), (((wait_clk[15:12] > 9)?"7":"0") + wait_clk[15:12]), (((wait_clk[11:8] > 9)?"7":"0") + wait_clk[11:8]), (((wait_clk[7:4] > 9)?"7":"0") + wait_clk[7:4]) ,(((wait_clk[3:0] > 9)?"7":"0") + wait_clk[3:0]), " ", ((choice[3])?"U":" "), ((choice[2])?"D":" "), ((choice[1])?"L":" "), ((choice[0])?"R":" "), " ", ((pause)?"P":" "), " "};
+
     end else if(P == S_MAIN_CHECK) begin 
 
       // [] maybe have signal to know if check is ended
@@ -286,6 +295,9 @@ always @(posedge clk)begin
         end
       end
       re_done <= 0;
+
+      row_A <= "  S_MAIN_CHECK  ";
+      row_B <= "   Snake Game   ";
 
     end else if(P == S_MAIN_RE)begin 
 
@@ -302,6 +314,9 @@ always @(posedge clk)begin
         end
       end
 
+      row_A <= "  S_MAIN_RE     ";
+      row_B <= "   Snake Game   ";
+
     end else if(P == S_MAIN_PAUSE)begin 
       // [] switch to leave PAUSE
 
@@ -310,6 +325,13 @@ always @(posedge clk)begin
         switch <= usr_sw;
       end
 
+      row_A <= "  S_MAIN_PAUSE  ";
+      row_B <= "switch sw1 leave";
+
+    end else if(P == S_MAIN_STOP)begin 
+
+      row_A <= "  S_MAIN_STOP   ";
+      row_B <= "   Snake Game   ";
     end
   end
   
