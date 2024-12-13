@@ -32,6 +32,7 @@ module Check(
     output snake_dead,
     output [2:0] apple_eat, // 0 是沒有 1是第一個被吃 etc.
     output [399:0] new_position
+    output check_done;
     );
     // boundary indexs
     localparam b_tall = 120; 
@@ -42,7 +43,7 @@ module Check(
 
     // S_init index
     reg initialized;
-    reg has_down = 0;
+    reg has_done = 0;
 
     // S_pre indexs
     reg [399:0] ori_snk;
@@ -75,6 +76,7 @@ module Check(
     assign snake_dead = is_dead;
     assign apple_eat = apl_eat;
     assign new_position = new_snkpos;
+    assign check_done = pos_check;
 
     ///////////////////////////////////////////////////////////////////////////////
     // s_check fsm begin
@@ -132,8 +134,8 @@ module Check(
             pos_check   = 0;
             new_snkpos <= snk_pos;
         end else begin
-            if(state != 4) has_down <= 0;
-            else if (state == 4 && has_down == 0) begin    
+            if(state != 4) has_done <= 0;
+            else if (state == 4 && has_done == 0) begin    
                 // refresh all indexs begin
                 if (s_check == S_init) begin
 
@@ -187,10 +189,10 @@ module Check(
                             wall_num <= ((wall_num + 1) <= 10)? wall_num + 1: 10;
                     end    
 
-                    if (dir_sig[3])      head_dir <= -12;
-                    else if (dir_sig[2]) head_dir <=  12;
-                    else if (dir_sig[1]) head_dir <=  -1;
-                    else if (dir_sig[0]) head_dir <=   1;
+                    if (dir_sig[3] == 1)      head_dir <= -12;
+                    else if (dir_sig[2] == 1) head_dir <=  12;
+                    else if (dir_sig[1] == 1) head_dir <=  -1;
+                    else if (dir_sig[0] == 1) head_dir <=   1;
                     else head_dir = 0;
 
                     len_check = 1;
@@ -225,7 +227,7 @@ module Check(
                         end
                     end
 
-                    // if diraction is down
+                    // if diraction is done
                     if (dir_sig[2]) begin 
                         if(snk_pos[399:392] + 12 > b_tall) begin 
                             is_dead <= 1;
@@ -288,7 +290,7 @@ module Check(
 
                     initialized = 0;
                     pos_check = 1;
-                    has_down <= 1;  
+                    has_done <= 1;  
                 end
                 //end of position check
                 
