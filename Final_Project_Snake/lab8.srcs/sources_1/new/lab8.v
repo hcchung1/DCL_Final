@@ -189,7 +189,7 @@ always @(*) begin
       else if((wait_clk >= 50000000)) P_next = S_MAIN_CHECK;
       else P_next = S_MAIN_WAIT;
     S_MAIN_CHECK: // check the choice
-      if(check_done)P_next = S_MAIN_RE;
+      if((new_position != snk_pos))P_next = S_MAIN_RE;
       else P_next = S_MAIN_CHECK;
     S_MAIN_PAUSE: // [] switch to leave PAUSE
       if(~pause) P_next = S_MAIN_MOVE;
@@ -210,7 +210,7 @@ end
 // -----------------------------------------------------------------
 // Main Block
 
-
+reg [30:0] counter;
 
 always @(posedge clk)begin 
   if(~reset_n)begin 
@@ -220,6 +220,7 @@ always @(posedge clk)begin
     snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
     apple_pos <= {8'd70, 8'd80, 8'd120};
     init_finished <= 0;
+    counter <= 0;
   end else begin 
 
     P <= P_next;
@@ -232,6 +233,7 @@ always @(posedge clk)begin
       init_finished <= 1;
       row_A = "  S_MAIN_INIT   ";
       row_B = "   Snake Game   ";
+      counter <= 0;
     end else if(P == S_MAIN_START)begin 
       // when user switch any way for switch[0], start the game.
       init_finished <= 0;
@@ -306,11 +308,12 @@ always @(posedge clk)begin
       end
       re_done <= 0;
 
-      row_A <= "  S_MAIN_CHECK  ";
+      row_A <= {"  S_MAIN_CHECK ", (((counter[3:0] > 9)?"7":"0") + counter[3:0])};
       row_B <= {"   Snake Game ", (((new_position[399:396] > 9)?"7":"0") + new_position[399:396]), (((new_position[395:392] > 9)?"7":"0") + new_position[395:392])};
 
     end else if(P == S_MAIN_RE)begin 
 
+      
       // [] check for signals used for the ending of recovery (re_done)
       if(apple_eat)begin 
         if(~re_done)begin 
@@ -353,6 +356,10 @@ always @(posedge clk)begin
 
       row_A <= "   S_MAIN_END   ";
       row_B <= "   Snake Game   ";
+    end
+    
+    if(P == P_next == S_MAIN_RE)begin 
+      counter <= counter + 1;
     end
   end
   
