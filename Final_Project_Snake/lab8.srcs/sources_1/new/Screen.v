@@ -232,8 +232,6 @@ always @(posedge clk) begin
         now <= 0;
         length <= 0;
         change <= 0;
-        pixel_addr <= 0;
-        snkreg_addr <= 0;
         for (idx = 0; idx < 12; idx = idx + 1) begin
             Vertical_pos[idx] <= idx * 24;
             Horizontal_pos[idx] <= (idx + 1) * 48;
