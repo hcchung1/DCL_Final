@@ -89,6 +89,7 @@ wire checking;
 assign checking = (P == S_MAIN_CHECK);
 
 reg starting;
+reg wait_end = 0;
 
 reg [399:0] snk_pos = 0; // at most 50 nodes
 reg [23:0] apple_pos = 0; // at most 3 apples
@@ -96,6 +97,7 @@ reg [79:0] wall_pos = 0; // at most 10 walls
 
 reg [3:0] choice;
 reg [3:0] prev_ch;
+
 
 wire [399:0] new_position;
 wire snake_dead;
@@ -186,7 +188,7 @@ always @(*) begin
       // else if(pause) P_next = S_MAIN_PAUSE;
       // else P_next = S_MAIN_WAIT;
       if(pause) P_next = S_MAIN_PAUSE;
-      else if((wait_clk >= 50000000)) P_next = S_MAIN_CHECK;
+      else if(wait_end) P_next = S_MAIN_CHECK;
       else P_next = S_MAIN_WAIT;
     S_MAIN_CHECK: // check the choice
       if((new_position != snk_pos))P_next = S_MAIN_RE;
@@ -221,6 +223,7 @@ always @(posedge clk)begin
     apple_pos <= {8'd70, 8'd80, 8'd120};
     init_finished <= 0;
     counter <= 0;
+    wait_end <= 0;
   end else begin 
 
     P <= P_next;
@@ -234,6 +237,7 @@ always @(posedge clk)begin
       row_A = "  S_MAIN_INIT   ";
       row_B = "   Snake Game   ";
       counter <= 0;
+      wait_end <= 0;
     end else if(P == S_MAIN_START)begin 
       // when user switch any way for switch[0], start the game.
       init_finished <= 0;
@@ -255,16 +259,20 @@ always @(posedge clk)begin
       wait_clk <= 0; // bzero(wait_clk)
       switch <= usr_sw; // update switches
       choice <= 4'b0000; // clear choice
-      prev_ch <= choice; // save the previous choice
+      
       row_A = "  S_MAIN_MOVE   ";
       row_B = {"   Snake Game  ", ((move_end)? "1" : "0")};
+      wait_end <= 0;
 
     end else if(P == S_MAIN_WAIT)begin 
 
       // getting choice from user, upon getting the choice or wait for a second, go to state:S_MAIN_CHECK
-      if(wait_clk == 50000000)begin // dec'50000000 -> hex'2FAF080
-        if(~(|choice))begin 
+      if(wait_clk >= 50000000)begin // dec'50000000 -> hex'2FAF080
+        if(choice == 0)begin 
           choice <= prev_ch;
+        end
+        if(usr_sw[2])begin 
+          wait_end <= 1;
         end
       end else if(wait_clk < 50000000)begin 
         wait_clk <= wait_clk + 1;
@@ -273,7 +281,7 @@ always @(posedge clk)begin
       // check if the user input some choice before choice has made
       // [x] if user input up when down is chosen, then change the choice to up; if user input left when right is chosen, then change the choice to left; and so on.
 
-      if(~(|choice) && btn_pressed)begin // when no choice has been made, and user press the button
+      if(choice == 0)begin // when no choice has been made, and user press the button
 
           if(btn_pressed[0] && prev_ch == 4'b0010)begin // if user press up when down is chosen
             choice <= 4'b0001;
@@ -298,13 +306,17 @@ always @(posedge clk)begin
     end else if(P == S_MAIN_CHECK) begin 
 
       // [] maybe have signal to know if check is ended
-      if(apple_eat)begin 
-        // find the eaten apple position
-        apple_pos[apple_eat*8 +: 8] <= 8'b0;
+      if(snk_pos != new_position)begin 
+        if(apple_eat)begin 
+          // find the eaten apple position
+          apple_pos[apple_eat*8 +: 8] <= 8'b0;
+        end
+        snk_pos <= new_position;
       end
+      
       re_done <= 0;
 
-      row_A <= {(((check_done[7:4] > 9)?"7":"0") + check_done[7:4]), (((check_done[3:0] > 9)?"7":"0") + check_done[3:0]), "S_MAIN_CHECK ", (((counter[3:0] > 9)?"7":"0") + counter[3:0])};
+      row_A <= {(((check_done[7:4] > 9)?"7":"0") + check_done[7:4]), (((check_done[3:0] > 9)?"7":"0") + check_done[3:0]), "S_MAIN_CHEC",(((choice[3:0] > 9)?"7":"0") + choice[3:0]) , " ",(((counter[3:0] > 9)?"7":"0") + counter[3:0])};
       row_B <= {"   Snake Game ", (((new_position[399:396] > 9)?"7":"0") + new_position[399:396]), (((new_position[395:392] > 9)?"7":"0") + new_position[395:392])};
 
     end else if(P == S_MAIN_RE)begin 
@@ -329,8 +341,9 @@ always @(posedge clk)begin
       end else begin // no apple been eaten -> directly leave after update snk_pos
         re_done <= 1;
       end
+      prev_ch <= choice; // save the previous choice
       
-      snk_pos <= new_position;
+      // snk_pos <= new_position;
       
 
       row_A <= "   S_MAIN_RE    ";
