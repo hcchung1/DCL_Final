@@ -1,11 +1,11 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
+// ------------------------------------------------------------
 // Company: Dept. of Computer Science, National Yang Ming Chiao Tung University
-// Engineer: Cheng-Han Chung, 
+// Engineer: Cheng-Han Chung
 // 
 // Create Date: 2017/05/08 15:29:41
-// Design Name: 
-// Module Name: snake
+// Design Name: Main Module
+// Module Name: lab8
 // Project Name: Final_Project
 // Target Devices: FPGA
 // Tool Versions:
@@ -13,13 +13,13 @@
 //              1. Control directions by bottom
 //              2. Showing snake and background on VGA
 // 
-// Dependencies: clk_divider, LCD_module, debounce, VGA, 
+// Dependencies: clk_divider, LCD_module, debounce, VGA, LED, SRAM, memory
 // 
 // Revision:
 // Revision 0.01 - File Created
-// Additional Comments:
+// Additional Comments: This is the main module of the snake game, it will control the whole game!
 // 
-//////////////////////////////////////////////////////////////////////////////////
+// ------------------------------------------------------------
 
 module lab8(
   // General system I/O ports
@@ -30,10 +30,10 @@ module lab8(
   output [3:0] usr_led,
 
   // LCD
-  // output LCD_RS,
-  // output LCD_RW,
-  // output LCD_E,
-  // output [3:0] LCD_D, 
+  output LCD_RS,
+  output LCD_RW,
+  output LCD_E,
+  output [3:0] LCD_D, 
 
   // VGA 
   output VGA_HSYNC,
@@ -46,12 +46,27 @@ module lab8(
 localparam [2:0] S_MAIN_INIT = 0, S_MAIN_START = 1, S_MAIN_MOVE = 2, S_MAIN_WAIT = 3,
                  S_MAIN_CHECK = 4, S_MAIN_RE = 5, S_MAIN_PAUSE = 6, S_MAIN_END = 7;
 
+// LCDs
+reg  [127:0] row_A = "switch sw0 start";
+reg  [127:0] row_B = "   Snake Game   ";
+
+LCD_module lcd0( 
+  .clk(clk),
+  .reset(~reset_n),
+  .row_A(row_A),
+  .row_B(row_B),
+  .LCD_E(LCD_E),
+  .LCD_RS(LCD_RS),
+  .LCD_RW(LCD_RW),
+  .LCD_D(LCD_D)
+);
 
 // Declare system variables
 wire [3:0] btn_level, btn_pressed;
 reg  [3:0] prev_btn_level;
 reg  [2:0] P, P_next;
 reg  [3:0] switch;
+wire [3:0] unused = switch[3:0];
 wire move_end;
 reg pause;
 reg ending;
@@ -65,9 +80,9 @@ assign checking = (P == S_MAIN_CHECK);
 
 reg starting;
 
-reg [399:0] snk_pos = 0;
-reg [23:0] apple_pos;
-reg [79:0] wall_pos = 0;
+reg [399:0] snk_pos = 0; // at most 50 nodes
+reg [23:0] apple_pos = 0; // at most 3 apples
+reg [79:0] wall_pos = 0; // at most 10 walls
 
 reg [3:0] choice;
 reg [3:0] prev_ch;
@@ -123,9 +138,8 @@ apple_generator appgen(
 
 // sram ram0(.clk(clk),.we(sram_we),.en(sram_en),.addr(sram_addr),.data_i(data_in),.data_o(data_out));
 
-//
-// Enable one cycle of btn_pressed per each button hit
-//
+// -----------------------------------------------------------------
+// Button pressed detection
 always @(posedge clk) begin
   if (~reset_n)
     prev_btn_level <= 0;
@@ -138,8 +152,10 @@ assign btn_pressed[1] = (btn_level[1] == 1 && prev_btn_level[1] == 0)? 1 : 0;
 assign btn_pressed[2] = (btn_level[2] == 1 && prev_btn_level[2] == 0)? 1 : 0;
 assign btn_pressed[3] = (btn_level[3] == 1 && prev_btn_level[3] == 0)? 1 : 0;
 
+// END of Button pressed detection
+// -----------------------------------------------------------------
 
-wire unused = switch[3:0];
+
 // -----------------------------------------------------------------
 // FSM next-state logic
 always @(*) begin 
@@ -154,16 +170,18 @@ always @(*) begin
       if(move_end) P_next = S_MAIN_WAIT;
       else P_next = S_MAIN_MOVE;
     S_MAIN_WAIT: // user signals the choice
-      if((wait_clk == 50000000) && ~pause && ~ending)  P_next = S_MAIN_CHECK;
-      else if(pause) P_next = S_MAIN_PAUSE;
-      else if(ending) P_next = S_MAIN_END;
+      // if((wait_clk == 50000000) && ~pause)  P_next = S_MAIN_CHECK;
+      // else if(pause) P_next = S_MAIN_PAUSE;
+      // else P_next = S_MAIN_WAIT;
+      if(pause) P_next = S_MAIN_PAUSE;
+      else if((wait_clk >= 50000000) && choice) P_next = S_MAIN_CHECK;
       else P_next = S_MAIN_WAIT;
     S_MAIN_CHECK: // check the choice
       if(ending) P_next = S_MAIN_END;
       else if(snake_dead) P_next = S_MAIN_END;
       else if(apple_eat) P_next = S_MAIN_RE;
       else P_next = S_MAIN_MOVE;
-    S_MAIN_PAUSE:
+    S_MAIN_PAUSE: // [] switch to leave PAUSE
       if(~pause) P_next = S_MAIN_MOVE;
       else P_next = S_MAIN_PAUSE;
     S_MAIN_RE:
@@ -191,6 +209,7 @@ always @(posedge clk)begin
     snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
     apple_pos <= {8'd1, 8'd15, 8'd70, 8'd80, 8'd120};
   end else begin 
+
     P <= P_next;
     if(P == S_MAIN_INIT)begin 
       // Initial all the things, include LCD, uart, LED, VGA??
@@ -218,7 +237,10 @@ always @(posedge clk)begin
       wait_clk <= 0; // bzero(wait_clk)
       switch <= usr_sw; // update switches
       choice <= 4'b0000; // clear choice
+      prev_ch <= chioce; // save the previous choice
+
     end else if(P == S_MAIN_WAIT)begin 
+
       // getting choice from user, upon getting the choice or wait for a second, go to state:S_MAIN_CHECK
       if(wait_clk == 50000000)begin 
         if(~(|choice))begin 
@@ -227,16 +249,36 @@ always @(posedge clk)begin
       end else begin 
         wait_clk <= wait_clk + 1;
       end
+
       // check if the user input some choice before choice has made
-      if(~(|choice) && |btn_pressed)begin 
+      // [x] if user input up when down is chosen, then change the choice to up; if user input left when right is chosen, then change the choice to left; and so on.
+
+      if(~(|choice) && btn_pressed)begin // when no choice has been made, and user press the button
+          
           choice[3:0] <= btn_pressed[3:0];
+
+          if(btn_pressed[0] && prev_ch == 4'b0010)begin // if user press up when down is chosen
+            choice <= 4'b0001;
+          end else if(btn_pressed[1] && prev_ch == 4'b0001)begin // if user press down when up is chosen
+            choice <= 4'b0010;
+          end else if(btn_pressed[2] && prev_ch == 4'b0100)begin // if user press right when left is chosen
+            choice <= 4'b1000;
+          end else if(btn_pressed[3] && prev_ch == 4'b1000)begin // if user press left when right is chosen
+            choice <= 4'b0100;
+          end
       end
-      pause <= (switch[1] != usr_sw[1]);
-      ending <= (switch[2] != usr_sw[2]);
+
+      // check if user want to pause at any moment when playing the game
+      if(switch[1] != usr_sw[1])begin 
+        pause <= 1;
+        switch <= usr_sw;
+      end
+
     end else if(P == S_MAIN_CHECK) begin 
-      prev_ch <= choice;
-      choice <= 4'b0000;
-      if(new_position != snk_pos)begin  // check.v is done
+
+      // [] maybe have signal to know if check is ended
+      
+      if(new_position != snk_pos)begin  // [] check.v is done??
         snk_pos <= new_position;
         if(apple_eat)begin 
           // find the eaten apple position
@@ -244,7 +286,10 @@ always @(posedge clk)begin
         end
       end
       re_done <= 0;
+
     end else if(P == S_MAIN_RE)begin 
+
+      // [] check for signals used for the ending of recovery (re_done)
       if(~re_done)begin 
         for(i = 0; i < 5; i = i + 1)begin 
           if(new_apple_pos[i*8 +: 8] == 8'b0)begin 
@@ -256,6 +301,15 @@ always @(posedge clk)begin
           re_done <= 1;
         end
       end
+
+    end else if(P == S_MAIN_PAUSE)begin 
+      // [] switch to leave PAUSE
+
+      if(switch[1] != usr_sw[1])begin 
+        pause <= 0;
+        switch <= usr_sw;
+      end
+
     end
   end
   
