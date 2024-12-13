@@ -219,9 +219,10 @@ endgenerate
 integer idx;
 integer i;
 reg [1:0] change;
+reg [7:0] prev_snake;
 
 always @(posedge clk) begin
-    if (~reset_n || state == 1) begin
+    if (~reset_n || state == 0) begin
         is_finished <= 0;
         first_input <= 0;
         snake <= 0;
@@ -230,6 +231,7 @@ always @(posedge clk) begin
         now <= 0;
         length <= 0;
         change <= 0;
+        prev_snake <= 0;
         for (idx = 0; idx < 12; idx = idx + 1) begin
             Vertical_pos[idx] <= idx * 24;
             Horizontal_pos[idx] <= (idx + 1) * 48;
@@ -247,6 +249,7 @@ always @(posedge clk) begin
         end 
         is_finished <= 0;
         first_input <= 1;
+        prev_snake <= 0;
         snake <= snk_pos;
         apple <= apple_pos;
         wall <= wall_pos;
@@ -259,6 +262,7 @@ always @(posedge clk) begin
             now <= {snake, apple, wall};
         end else if (change == 1) begin 
             snake <= snake << 8;
+            prev_snake <= snake[399:392];
             if (snake[399:392] != 0) begin
                 length <= length + 1;
                 if (length == 0) begin
@@ -266,35 +270,35 @@ always @(posedge clk) begin
                         mark[snake[399:392]-1] <= 0;
                     end else if (snake[399:392] == snake[391:384] - 1) begin // head left
                         mark[snake[399:392]-1] <= 1;
-                    end else if (snake[399:392] == snake[391:384] + 12) begin // head up
+                    end else if (snake[399:392] == snake[391:384] - 12) begin // head up
                         mark[snake[399:392]-1] <= 2;
-                    end else if (snake[399:392] == snake[391:384] - 12) begin // head down
+                    end else if (snake[399:392] == snake[391:384] + 12) begin // head down
                         mark[snake[399:392]-1] <= 3;
                     end
-                end else begin
-                    if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 1 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] - 1) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 1 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] + 1) ) // left-right
+                end else if (snake[391:384] != 0) begin
+                    if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 1 && now[503-(length*8) -: 8] == prev_snake - 1) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 1 && now[503-(length*8) -: 8] == prev_snake + 1) ) // left-right
                         mark[now[503-(length*8) -: 8]-1] <= 5;
-                    else if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 12 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] - 12) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 12 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] + 12)) // up-down 
+                    else if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 12 && now[503-(length*8) -: 8] == prev_snake - 12) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 12 && now[503-(length*8) -: 8] == prev_snake + 12)) // up-down 
                         mark[now[503-(length*8) -: 8]-1] <= 4;
-                    else if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 1 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] - 12) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 12 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] - 1)) // right-up / down-left
+                    else if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 1 && now[503-(length*8) -: 8] == prev_snake - 12) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 12 && now[503-(length*8) -: 8] == prev_snake - 1)) // right-up / down-left
                         mark[now[503-(length*8) -: 8]-1] <= 10;
-                    else if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 1 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] + 12) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 12 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] - 1)) // right-down / up-left
+                    else if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 1 && now[503-(length*8) -: 8] == prev_snake + 12) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 12 && now[503-(length*8) -: 8] == prev_snake - 1)) // right-down / up-left
                         mark[now[503-(length*8) -: 8]-1] <= 11;
-                    else if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 1 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] + 12) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 12 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] + 1)) // left-down / up-right
+                    else if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 1 && now[503-(length*8) -: 8] == prev_snake + 12) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 12 && now[503-(length*8) -: 8] == prev_snake + 1)) // left-down / up-right
                         mark[now[503-(length*8) -: 8]-1] <= 12;
-                    else if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 1 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] - 12) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 12 && now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] + 1)) // left-up / down-right
+                    else if ((now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] + 1 && now[503-(length*8) -: 8] == prev_snake - 12) || (now[503-(length*8) -: 8] == now[503-(length+1)*8 -: 8] - 12 && now[503-(length*8) -: 8] == prev_snake + 1)) // left-up / down-right
                         mark[now[503-(length*8) -: 8]-1] <= 13;
-                end
-            end else if (snake == 0) begin
-                change <= 2;
-                if (now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] + 1) // tail right
-                    mark[now[503-(length*8) -: 8]-1] <= 6;
-                else if (now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] - 1) // tail left
-                    mark[now[503-(length*8) -: 8]-1] <= 7;
-                else if (now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] + 24) // tail up
-                    mark[now[503-(length*8) -: 8]-1] <= 8;
-                else if (now[503-(length*8) -: 8] == now[503-(length-1)*8 -: 8] - 24) // tail down
-                    mark[now[503-(length*8) -: 8]-1] <= 9;
+                end else if (snake[399:392] == 0) begin
+                    change <= 2;
+                    if (now[503-(length*8) -: 8] == prev_snake + 1) // tail right
+                        mark[now[503-(length*8) -: 8]-1] <= 6;
+                    else if (now[503-(length*8) -: 8] == prev_snake - 1) // tail left
+                        mark[now[503-(length*8) -: 8]-1] <= 7;
+                    else if (now[503-(length*8) -: 8] == prev_snake + 12) // tail up
+                        mark[now[503-(length*8) -: 8]-1] <= 8;
+                    else if (now[503-(length*8) -: 8] == prev_snake - 12) // tail down
+                        mark[now[503-(length*8) -: 8]-1] <= 9;
+                    end
             end
         end else if (change == 2) begin
             apple <= apple << 8;
@@ -574,9 +578,9 @@ always @ (posedge clk) begin
         snkreg_addr <= fish_addr[mark[118]] + ((pixel_y >> 1) - Vertical_pos[9]) * FISH_W + ((pixel_x + (FISH_W * 2 - 1) - Horizontal_pos[10]) >> 1);
     else if (now_region[119] && mark[119] != 16)
         snkreg_addr <= fish_addr[mark[119]] + ((pixel_y >> 1) - Vertical_pos[9]) * FISH_W + ((pixel_x + (FISH_W * 2 - 1) - Horizontal_pos[11]) >> 1);
-    else 
-        pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);   
 
+
+    pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);   
 
   end
 end
