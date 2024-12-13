@@ -2,9 +2,9 @@ module apple_generator (
     input wire clk,               // 時脈訊號
     input wire reset,             // 重置訊號
     input wire [7:0] apple_eat_pos,         // 蘋果是否被吃掉
-    input wire [39:0] snake_pos,  // 蛇的位置，每個節點 [7:0]
-    input wire [39:0] obstacle_pos, // 障礙物的位置，每個障礙物 [7:0]
-    output reg [39:0] apple_pos   // 蘋果的位置，每個蘋果 [7:0]
+    input wire [399:0] snake_pos,  // 蛇的位置，每個節點 [7:0]
+    input wire [79:0] obstacle_pos, // 障礙物的位置，每個障礙物 [7:0]
+    output reg [23:0] apple_pos   // 蘋果的位置，每個蘋果 [7:0]
 );
 
     reg [7:0] temp_pos;           // 暫時儲存生成的蘋果位置
@@ -29,15 +29,11 @@ module apple_generator (
               if (!is_overlap(temp_pos, snake_pos) && !is_overlap(temp_pos, obstacle_pos)) begin
                 // 儲存蘋果位置
                 if(apple_pos[7:0] == 0) begin
-                  apple_pos <= temp_pos;
+                  apple_pos <= {temp_pos, apple_pos[15:0]};
                 end else if(apple_pos[15:8] == 0) begin
-                  apple_pos <= {apple_pos[7:0], temp_pos, apple_pos[39:16]};
+                  apple_pos <= {apple_pos[7:0], temp_pos, apple_pos[23:16]};
                 end else if(apple_pos[23:16] == 0) begin
-                  apple_pos <= {apple_pos[15:0], temp_pos, apple_pos[39:24]};
-                end else if(apple_pos[31:24] == 0) begin
-                  apple_pos <= {apple_pos[23:0], temp_pos, apple_pos[39:32]};
-                end else if(apple_pos[39:32] == 0) begin
-                  apple_pos <= {apple_pos[31:0], temp_pos};
+                  apple_pos <= {apple_pos[15:0], temp_pos};
                 end
                 apple_count <= apple_count + 1;
               end
