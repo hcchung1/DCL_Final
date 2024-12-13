@@ -321,7 +321,7 @@ always @(posedge clk)begin
       
       re_done <= 0;
 
-      row_A <= {(((snk_pos[399:396] > 9)?"7":"0") + snk_pos[399:396]), (((snk_pos[395:392] > 9)?"7":"0") + snk_pos[395:392]), "S_MAIN_CHE",(check_done + "0") ,(((choice[3:0] > 9)?"7":"0") + choice[3:0]) , " ",(((counter[3:0] > 9)?"7":"0") + counter[3:0])};
+      row_A <= {(((snk_pos[399:396] > 9)?"7":"0") + snk_pos[399:396]), (((snk_pos[395:392] > 9)?"7":"0") + snk_pos[395:392]), "S_MAIN_CHE",(snake_dead + "0") ,(((choice[3:0] > 9)?"7":"0") + choice[3:0]) , " ",(((counter[3:0] > 9)?"7":"0") + counter[3:0])};
       row_B <= {"   Snake Game ", (((new_position[399:396] > 9)?"7":"0") + new_position[399:396]), (((new_position[395:392] > 9)?"7":"0") + new_position[395:392])};
 
     end else if(P == S_MAIN_RE)begin 
