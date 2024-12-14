@@ -185,7 +185,6 @@ assign {VGA_RED, VGA_GREEN, VGA_BLUE} = rgb_reg;
 // fish image.
 
 reg is_finished;
-reg first_input;
 reg [6:0] length;
 reg [399:0] snake;
 reg [23:0] apple;
@@ -243,7 +242,6 @@ reg [7:0] prev_snake;
 always @(posedge clk) begin
     if (~reset_n || state == 0) begin
         is_finished <= 0;
-        first_input <= 0;
         snake <= 0;
         apple <= 0;
         wall <= 0;
@@ -253,22 +251,19 @@ always @(posedge clk) begin
         for (i = 0; i < 120; i = i + 1) begin
             mark[i] <= 16;
         end
-    end else if (state == 2 && first_input == 0) begin
-        for (i = 0; i < 120; i = i + 1) begin
-            mark[i] <= 16;
-        end
-        is_finished <= 0;
-        first_input <= 1;
-        prev_snake <= 0;
-        snake <= snk_pos;
-        apple <= apple_pos;
-        wall <= wall_pos;
-        length <= 0;
-        now <= 0;
-        change <= 0;
+
     end else if (state == 2 && is_finished == 0) begin
         if (change == 0) begin
+            for (i = 0; i < 120; i = i + 1) begin
+                mark[i] <= 16;
+            end
             change <= 1;
+            is_finished <= 0;
+            prev_snake <= 0;
+            snake <= snk_pos;
+            apple <= apple_pos;
+            wall <= wall_pos;
+            length <= 0;
         end else if (change == 1) begin 
             snake <= snake << 8;
             prev_snake <= snake[399:392];
@@ -327,7 +322,6 @@ always @(posedge clk) begin
         
     end else if (state == 3) begin
         is_finished <= 0;
-        first_input <= 0;
         change <= 0;
     end
 
