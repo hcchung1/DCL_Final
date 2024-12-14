@@ -120,6 +120,7 @@ reg [26:0] wait_clk;
 reg test;
 reg [4:0] apple_count;
 wire [4:0] new_apple_count;
+reg ready;
 
 assign usr_led = P[2:0];
 
@@ -148,6 +149,7 @@ apple_generator appgen(
     .clk(clk),               // 時脈訊號
     .reset(reset_n),             // 重置訊號
     .state(P),
+    .ready(ready),
     .main_apple_count(apple_count),
     .apple_eat_pos(apple_eat),         // 蘋果是否被吃掉
     .snake_pos(snk_pos),  // 蛇的位置，每個節點 [7:0]
@@ -328,15 +330,19 @@ always @(posedge clk)begin
       end
       
       re_done <= 0;
+      ready <= 0;
 
       row_A <= {(((snk_pos[399:396] > 9)?"7":"0") + snk_pos[399:396]), (((snk_pos[395:392] > 9)?"7":"0") + snk_pos[395:392]), "S_MAIN_CHE",(snake_dead + "0") ,(((choice[3:0] > 9)?"7":"0") + choice[3:0]) , " ",(((counter[3:0] > 9)?"7":"0") + counter[3:0])};
       row_B <= {"   Snake Game ", (((new_position[399:396] > 9)?"7":"0") + new_position[399:396]), (((new_position[395:392] > 9)?"7":"0") + new_position[395:392])};
+
 
     end else if(P == S_MAIN_RE)begin 
 
       // [] check for signals used for the ending of recovery (re_done)
       if(apple_eat)begin 
-        if(~re_done)begin 
+        if(~ready)begin 
+          ready <= 1;
+        end else if(~re_done)begin 
           if(new_apple_pos != apple_pos)begin 
             apple_pos <= new_apple_pos; // update apple position
             apple_count <= new_apple_count; // update the number of apples

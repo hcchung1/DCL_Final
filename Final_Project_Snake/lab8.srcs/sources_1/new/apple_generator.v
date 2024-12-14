@@ -2,6 +2,7 @@ module apple_generator (
     input wire clk,               // 時脈訊號
     input wire reset,             // 重置訊號
     input wire [2:0] state,
+    input wire ready,
     input wire [4:0] main_apple_count,
     input wire [7:0] apple_eat_pos,         // 蘋果是否被吃掉
     input wire [399:0] snake_pos,  // 蛇的位置，每個節點 [7:0]
@@ -27,30 +28,38 @@ module apple_generator (
           // 如果蘋果被吃掉，則生成新的蘋果
           if(state == 4)begin 
             first_time <= 0;
-
+            apple_pos <= apple_eat_pos;
           end else if(state == 5)begin 
             pre_apple_count <= main_apple_count;
-            if(pre_apple_count < 3)begin 
+            if(~first_time)begin 
+              apple_pos <= apple_eat_pos;
+              first_time <= 1;
+            end else if(ready) begin 
+              if(pre_apple_count < 3)begin 
 
-              // 生成隨機位置 (4 bits for X, 4 bits for Y)
-              lfsr <= {lfsr[14:0], lfsr[15] ^ lfsr[13] ^ lfsr[12] ^ lfsr[10]};
-              temp_pos <= lfsr[6:0];
-              
-              // 檢查是否與蛇或障礙物重疊
-              if(temp_pos <= 120 && temp_pos > 0)begin 
-                if (!is_overlap(temp_pos, snake_pos) && !is_overlap(temp_pos, obstacle_pos)) begin
-                  // 找到被吃掉的蘋果位置，並儲存蘋果位置
-                  if(apple_pos[7:0] == 0) begin
-                    apple_pos <= {temp_pos, apple_pos[15:0]};
-                  end else if(apple_pos[15:8] == 0) begin
-                    apple_pos <= {apple_pos[7:0], temp_pos, apple_pos[23:16]};
-                  end else if(apple_pos[23:16] == 0) begin
-                    apple_pos <= {apple_pos[15:0], temp_pos};
+                // 生成隨機位置 (4 bits for X, 4 bits for Y)
+                lfsr <= {lfsr[14:0], lfsr[15] ^ lfsr[13] ^ lfsr[12] ^ lfsr[10]};
+                temp_pos <= lfsr[6:0];
+                
+                // 檢查是否與蛇或障礙物重疊
+                if(temp_pos <= 120 && temp_pos > 0)begin 
+                  if (!is_overlap(temp_pos, snake_pos) && !is_overlap(temp_pos, obstacle_pos)) begin
+                    // 找到被吃掉的蘋果位置，並儲存蘋果位置
+                    if(apple_pos[7:0] == 0) begin
+                      apple_pos <= {temp_pos, apple_pos[15:0]};
+                    end else if(apple_pos[15:8] == 0) begin
+                      apple_pos <= {apple_pos[7:0], temp_pos, apple_pos[23:16]};
+                    end else if(apple_pos[23:16] == 0) begin
+                      apple_pos <= {apple_pos[15:0], temp_pos};
+                    end
+                    apple_count <= apple_count + 1;
                   end
-                  apple_count <= apple_count + 1;
                 end
               end
+
             end
+            
+            
             
           end
           // apple_count <= apple_count - (apple_eat_pos != 0);
