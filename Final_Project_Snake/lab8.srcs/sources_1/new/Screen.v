@@ -222,6 +222,13 @@ wire [119:0] now_region;
 // assign now_region =
 //            pixel_y >= (Vertical_pos<<1) && pixel_y < (Vertical_pos+FISH_H)<<1 &&
 //            (pixel_x + FISH_W*2 - 1) >= pos && pixel_x < pos + 1;
+wire stop_region1, stop_region2;
+assign stop_region1 = (pixel_y >= (12 << 1)) && (pixel_y < ((12 + 24) << 1)) &&
+                     (pixel_x + (10 * 2) - 1 >= 602) && (pixel_x < 602 + 1);
+
+assign stop_region2 = (pixel_y >= (12 << 1)) && (pixel_y < ((12 + 24) << 1)) &&
+                        (pixel_x + (10 * 2) - 1 >= 625) && (pixel_x < 625 + 1);
+                
 genvar k, j;
 generate
     for (k = 0; k < 10; k = k + 1) begin : outer_loop
@@ -720,7 +727,11 @@ always @(*) begin
     rgb_next = 12'h000; // Synchronization period, must set RGB values to zero.
   else begin
     if (state == 1) rgb_next = data_out;
-    else rgb_next = (now_region && data_snk_o != 12'h0f0 && disp) ? data_snk_o : data_out;
+    else begin
+        if (state == 6 && (stop_region1 || stop_region2)) begin
+            rgb_next = 12'h000;
+        end else rgb_next = (now_region && data_snk_o != 12'h0f0 && disp) ? data_snk_o : data_out;
+    end
   end
 end
 // End of the video data display code.
