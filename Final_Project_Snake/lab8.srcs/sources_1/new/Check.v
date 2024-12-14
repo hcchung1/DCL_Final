@@ -207,8 +207,10 @@ module Check(
 
                 // calculate the tail position
                 ori_snk[399 - (snk_len - 1) * 8 -:8] <= 0;
-                stone_snk[399 - (snk_len - 1) * 8 -:8] <= 0;
-                stone_snk[399 - (snk_len - 2) * 8 -:8] <= 0;
+                if(snk_len >= 5) begin
+                    stone_snk[399 - (snk_len - 1) * 8 -:8] <= 0;
+                    stone_snk[399 - (snk_len - 2) * 8 -:8] <= 0;
+                end
                 // end of tail 
                 // if the snake hit itself begin
 
@@ -226,7 +228,11 @@ module Check(
 
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] - 12 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
-                            wall_colsn <= 11 - i;
+                            if(snk_len >= 5) begin
+                                wall_colsn <= 11 - i;
+                            end else begin
+                                is_dead <= 1;
+                            end
                         end
                     end   
 
@@ -248,7 +254,11 @@ module Check(
 
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] + 12 == wall_pos[(i * 8 - 1) -:8]) begin 
-                            wall_colsn <= 11 - i;
+                            if(snk_len >= 5) begin
+                                wall_colsn <= 11 - i;
+                            end else begin
+                                is_dead <= 1;
+                            end
                         end
                     end   
 
@@ -270,7 +280,11 @@ module Check(
 
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] - 1 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
-                            wall_colsn <= 11 - i;
+                            if(snk_len >= 5) begin
+                                wall_colsn <= 11 - i;
+                            end else begin
+                                is_dead <= 1;
+                            end
                         end
                     end   
 
@@ -292,7 +306,11 @@ module Check(
 
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] + 1 == wall_pos[(i * 8 - 1) -:8]) begin 
-                            wall_colsn <= 11 - i;
+                            if(snk_len >= 5) begin
+                                wall_colsn <= 11 - i;
+                            end else begin
+                                is_dead <= 1;
+                            end
                         end
                     end  
 
