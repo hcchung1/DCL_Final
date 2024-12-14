@@ -118,9 +118,6 @@ wire       sram_we, sram_en;
 integer i;
 reg [26:0] wait_clk;
 reg test;
-reg [4:0] apple_count;
-wire [4:0] new_apple_count;
-reg ready;
 
 assign usr_led = P[2:0];
 
@@ -149,13 +146,11 @@ apple_generator appgen(
     .clk(clk),               // 時脈訊號
     .reset(reset_n),             // 重置訊號
     .state(P),
-    .ready(ready),
-    .main_apple_count(apple_count),
-    .apple_eat_pos(apple_eat),         // 蘋果是否被吃掉
+    .main_apple_pos(apple_pos), // 蘋果位置
+    .apple_eat_pos(apple_eat),         // 蘋果被吃掉的位置
     .snake_pos(snk_pos),  // 蛇的位置，每個節點 [7:0]
     .obstacle_pos(wall_pos), // 障礙物的位置，每個障礙物 [7:0]
-    .apple_pos(new_apple_pos),   // 蘋果的位置，每個蘋果 [7:0]
-    .apple_count(new_apple_count)
+    .apple_pos(new_apple_pos)   // 蘋果的位置，每個蘋果 [7:0]
 );
 
 // sram ram0(.clk(clk),.we(sram_we),.en(sram_en),.addr(sram_addr),.data_i(data_in),.data_o(data_out));
@@ -233,7 +228,6 @@ always @(posedge clk)begin
     init_finished <= 0;
     counter <= 0;
     wait_end <= 0;
-    apple_count <= 3;
   end else begin 
 
     P <= P_next;
@@ -248,7 +242,6 @@ always @(posedge clk)begin
       row_B = "   Snake Game   ";
       counter <= 0;
       wait_end <= 0;
-      apple_count <= 3;
     end else if(P == S_MAIN_START)begin 
       // when user switch any way for switch[0], start the game.
       init_finished <= 0;
@@ -320,17 +313,10 @@ always @(posedge clk)begin
 
       // [] maybe have signal to know if check is ended
       if(snk_pos != new_position)begin 
-        if(apple_eat)begin 
-          // find the eaten apple position and remove it
-          apple_pos[(31-(apple_eat)*8) -: 8] <= 8'b0;
-          apple_count <= apple_count - 1;
-        end
-        
         checkover <= 1;
       end
       
       re_done <= 0;
-      ready <= 0;
 
       row_A <= {(((snk_pos[399:396] > 9)?"7":"0") + snk_pos[399:396]), (((snk_pos[395:392] > 9)?"7":"0") + snk_pos[395:392]), "S_MAIN_CHE",(snake_dead + "0") ,(((choice[3:0] > 9)?"7":"0") + choice[3:0]) , " ",(((counter[3:0] > 9)?"7":"0") + counter[3:0])};
       row_B <= {"   Snake Game ", (((new_position[399:396] > 9)?"7":"0") + new_position[399:396]), (((new_position[395:392] > 9)?"7":"0") + new_position[395:392])};
@@ -340,12 +326,9 @@ always @(posedge clk)begin
 
       // [] check for signals used for the ending of recovery (re_done)
       if(apple_eat)begin 
-        if(~ready)begin 
-          ready <= 1;
-        end else if(~re_done)begin 
+        if(~re_done)begin 
           if(new_apple_pos != apple_pos)begin 
             apple_pos <= new_apple_pos; // update apple position
-            apple_count <= new_apple_count; // update the number of apples
             re_done <= 1;
           end
         end
