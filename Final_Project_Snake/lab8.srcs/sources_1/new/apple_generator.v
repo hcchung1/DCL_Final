@@ -29,7 +29,7 @@ module apple_generator (
             first_time <= 0;
 
           end else if(state == 5)begin 
-            
+            pre_apple_count <= main_apple_count;
             if(pre_apple_count < 3)begin 
 
               // 生成隨機位置 (4 bits for X, 4 bits for Y)
