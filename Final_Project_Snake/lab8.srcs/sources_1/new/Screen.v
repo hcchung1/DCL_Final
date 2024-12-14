@@ -99,9 +99,6 @@ reg [17:0] fish_addr[0:15];
 // [14] apple
 // [15] wall
 
-
-
-
 // 
 // Initializes the fish images starting addresses.
 // Note: System Verilog has an easier way to initialize an array,
@@ -237,8 +234,6 @@ generate
         end
     end
 endgenerate
-
-
 
 
 always @(posedge clk) begin
