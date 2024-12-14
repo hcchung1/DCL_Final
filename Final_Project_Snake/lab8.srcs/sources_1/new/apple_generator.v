@@ -30,32 +30,32 @@ always @(posedge clk) begin
       
       // 檢查是否與蛇或障礙物重疊
       if(temp_pos <= 120 && temp_pos > 0)begin 
-        if (!is_overlap(temp_pos, snake_pos) && !is_overlap(temp_pos, obstacle_pos)) begin
+        if (!is_overlap(temp_pos, snake_pos) && !is_overlap(temp_pos, obstacle_pos) && !is_overlap(temp_pos, apple_pos)) begin
           // 找到被吃掉的蘋果位置，並儲存蘋果位置
-          if(apple_eat_pos == 1 && temp_pos != apple_pos[23:16])begin 
+          if(apple_eat_pos == 1)begin 
             apple_pos <= {temp_pos, apple_pos[15:8], apple_pos[7:0]};
-          end else if(apple_eat_pos == 2 && temp_pos != apple_pos[15:8])begin 
+          end else if(apple_eat_pos == 2)begin 
             apple_pos <= {apple_pos[23:16], temp_pos, apple_pos[7:0]};
-          end else if(apple_eat_pos == 3 && temp_pos != apple_pos[7:0])begin 
+          end else if(apple_eat_pos == 3)begin 
             apple_pos <= {apple_pos[23:16], apple_pos[15:8], temp_pos};
           end else if(obstacle_hit_pos == 1)begin 
-            obstacle_new_pos <= {temp_pos, obstacle_pos[71:8]};
-          end else if(obstacle_hit_pos == 2)begin 
-            obstacle_new_pos <= {obstacle_pos[79:72], temp_pos, obstacle_pos[63:8]};
+            obstacle_new_pos <= {temp_pos, obstacle_pos[71:0]};
+          end else if(obstacle_hit_pos == 2)begin
+            obstacle_new_pos <= {obstacle_pos[79:72], temp_pos, obstacle_pos[63:0]};
           end else if(obstacle_hit_pos == 3)begin 
-            obstacle_new_pos <= {obstacle_pos[79:64], temp_pos, obstacle_pos[55:8]};
+            obstacle_new_pos <= {obstacle_pos[79:64], temp_pos, obstacle_pos[55:0]};
           end else if(obstacle_hit_pos == 4)begin 
-            obstacle_new_pos <= {obstacle_pos[79:56], temp_pos, obstacle_pos[47:8]};
+            obstacle_new_pos <= {obstacle_pos[79:56], temp_pos, obstacle_pos[47:0]};
           end else if(obstacle_hit_pos == 5)begin 
-            obstacle_new_pos <= {obstacle_pos[79:48], temp_pos, obstacle_pos[39:8]};
+            obstacle_new_pos <= {obstacle_pos[79:48], temp_pos, obstacle_pos[39:0]};
           end else if(obstacle_hit_pos == 6)begin 
-            obstacle_new_pos <= {obstacle_pos[79:40], temp_pos, obstacle_pos[31:8]};
+            obstacle_new_pos <= {obstacle_pos[79:40], temp_pos, obstacle_pos[31:0]};
           end else if(obstacle_hit_pos == 7)begin 
-            obstacle_new_pos <= {obstacle_pos[79:32], temp_pos, obstacle_pos[23:8]};
+            obstacle_new_pos <= {obstacle_pos[79:32], temp_pos, obstacle_pos[23:0]};
           end else if(obstacle_hit_pos == 8)begin 
-            obstacle_new_pos <= {obstacle_pos[79:24], temp_pos, obstacle_pos[15:8]};
+            obstacle_new_pos <= {obstacle_pos[79:24], temp_pos, obstacle_pos[15:0]};
           end else if(obstacle_hit_pos == 9)begin 
-            obstacle_new_pos <= {obstacle_pos[79:16], temp_pos, obstacle_pos[7:8]};
+            obstacle_new_pos <= {obstacle_pos[79:16], temp_pos, obstacle_pos[7:0]};
           end else if(obstacle_hit_pos == 10)begin 
             obstacle_new_pos <= {obstacle_pos[79:8], temp_pos};
           end
@@ -73,12 +73,12 @@ end
 // 判斷重疊的函數
 function is_overlap(
     input [7:0] pos,
-    input [39:0] entity_pos
+    input [399:0] entity_pos
 );
     integer i;
     begin
         is_overlap = 0;
-        for (i = 0; i < 5; i = i + 1) begin
+        for (i = 0; i < 50; i = i + 1) begin
             if (pos == entity_pos[i*8 +: 8]) begin
                 is_overlap = 1;
             end
