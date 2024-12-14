@@ -48,6 +48,7 @@ module Check(
 
     // S_pre indexs
     reg [399:0] ori_snk;
+    reg [399:0] stone_snk;
     reg [2:0] apl_num = 0;
     reg [3:0] wall_num = 0;
     reg [5:0] snk_len = 0; 
@@ -179,6 +180,7 @@ module Check(
                 apl_eat     <= 0;
                 wall_colsn  <= 0;
                 ori_snk     <= snk_pos;
+                stone_snk   <= snk_pos;
 
                 // calulate len snake
                 if (count != 0) begin
@@ -205,6 +207,10 @@ module Check(
 
                 // calculate the tail position
                 ori_snk[399 - (snk_len - 1) * 8 -:8] <= 0;
+                if(snk_len >= 5) begin
+                    stone_snk[399 - (snk_len - 1) * 8 -:8] <= 0;
+                    stone_snk[399 - (snk_len - 2) * 8 -:8] <= 0;
+                end
                 // end of tail 
                 // if the snake hit itself begin
 
@@ -222,8 +228,11 @@ module Check(
 
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] - 12 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
-                            is_dead <= 1;
-                            wall_colsn <= 11 - i;
+                            if(snk_len >= 5) begin
+                                wall_colsn <= 11 - i;
+                            end else begin
+                                is_dead <= 1;
+                            end
                         end
                     end   
 
@@ -245,8 +254,11 @@ module Check(
 
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] + 12 == wall_pos[(i * 8 - 1) -:8]) begin 
-                            is_dead <= 1;
-                            wall_colsn <= 11 - i;
+                            if(snk_len >= 5) begin
+                                wall_colsn <= 11 - i;
+                            end else begin
+                                is_dead <= 1;
+                            end
                         end
                     end   
 
@@ -268,8 +280,11 @@ module Check(
 
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] - 1 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
-                            is_dead <= 1;
-                            wall_colsn <= 11 - i;
+                            if(snk_len >= 5) begin
+                                wall_colsn <= 11 - i;
+                            end else begin
+                                is_dead <= 1;
+                            end
                         end
                     end   
 
@@ -291,8 +306,11 @@ module Check(
 
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] + 1 == wall_pos[(i * 8 - 1) -:8]) begin 
-                            is_dead <= 1;
-                            wall_colsn <= 11 - i;
+                            if(snk_len >= 5) begin
+                                wall_colsn <= 11 - i;
+                            end else begin
+                                is_dead <= 1;
+                            end
                         end
                     end  
 
@@ -354,9 +372,11 @@ module Check(
                 if (state == 4) begin                     
                     if(apl_eat != 0)
                         new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
-                    else begin
+                    else if (wall_colsn != 0)begin
+                        new_snkpos <= {next_pos, stone_snk[399:8]};
+                    end else begin 
                         new_snkpos <= {next_pos, ori_snk[399:8]};
-                    end                                     
+                    end                                    
                 end else begin 
                     initialized <= 0; 
                     pos_check <= 1;

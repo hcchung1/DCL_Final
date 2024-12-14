@@ -27,6 +27,7 @@ module Screen(
     input  [3:0] usr_sw,
 
     input  [2:0] state,  // main state machine state
+    input  [1:0] mode,   // game mode
     input  [3:0] choice,  // 
     input  [399:0] snk_pos,
     input  [23:0] apple_pos,
@@ -730,7 +731,12 @@ always @(*) begin
     else begin
         if (state == 6 && (stop_region1 || stop_region2)) begin
             rgb_next = 12'h000;
-        end else rgb_next = (now_region && data_snk_o != 12'h0f0 && disp) ? data_snk_o : data_out;
+        end else begin
+            if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
+            else if (data_out == 12'h665) rgb_next = 12'hC30;
+            else rgb_next = data_out;
+            
+        end
     end
   end
 end
