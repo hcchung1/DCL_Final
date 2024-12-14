@@ -50,8 +50,7 @@ module Check(
     reg [2:0] apl_num = 0;
     reg [3:0] wall_num = 0;
     reg [5:0] snk_len = 0; 
-    reg len_check = 0;
-    
+    reg len_check = 0;    
 
     // S_dead indexs
     reg [399:0] zero;
@@ -173,25 +172,23 @@ module Check(
 
                 is_dead     <= 0;
                 apl_eat     <= 0;
-                ori_snk <= snk_pos;
+                ori_snk     <= snk_pos;
 
                 // calulate len snake
                 for (i = 50; i > 0; i = i - 1) begin
                     if (snk_pos[(i * 8 - 1) -:8] != 0)
-                        snk_len <= ((snk_len + 1) <= 50)? snk_len + 1: 50;
+                        snk_len <= snk_len + 1;
+                    
+                    if (i <= 10) begin
+                        if (wall_pos[(i * 8 - 1) -:8] != 0)
+                        wall_num <= wall_num + 1;
+                    end
+
+                    if (i <= 3) begin 
+                        if (apl_pos[(i * 8 - 1) -:8] != 0)
+                        apl_num <= apl_num + 1;
+                    end
                 end     
-
-                // calculate num wall
-                for (i = 3; i > 0; i = i - 1) begin
-                    if (apl_pos[(i * 8 - 1) -:8] != 0)
-                        apl_num <= ((apl_num + 1) <= 3)? apl_num + 1: 3;
-                end 
-
-                // calculate num apple
-                for (i = 10; i > 0; i = i - 1) begin
-                    if (wall_pos[(i * 8 - 1) -:8] != 0)
-                        wall_num <= ((wall_num + 1) <= 10)? wall_num + 1: 10;
-                end    
 
                 len_check <= 1;
             end    
@@ -206,8 +203,8 @@ module Check(
                         ori_snk[i] <= 0; 
                 end
                 // end of tail 
-                
                 // if the snake hit itself begin
+
                 if (dir_sig[3] == 1) begin
                     for (i = 49; i > 50 - snk_len; i = i - 1) begin 
                         // snk_pos[399:392] is the position of snake
