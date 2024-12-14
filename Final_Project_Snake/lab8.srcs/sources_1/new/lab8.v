@@ -152,7 +152,7 @@ apple_generator appgen(
     .apple_eat_pos(apple_eat),         // 蘋果是否被吃掉
     .snake_pos(snk_pos),  // 蛇的位置，每個節點 [7:0]
     .obstacle_pos(wall_pos), // 障礙物的位置，每個障礙物 [7:0]
-    .apple_pos(new_apple_pos)   // 蘋果的位置，每個蘋果 [7:0]
+    .apple_pos(new_apple_pos),   // 蘋果的位置，每個蘋果 [7:0]
     .apple_count(new_apple_count)
 );
 
