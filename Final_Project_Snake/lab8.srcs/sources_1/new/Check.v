@@ -351,7 +351,7 @@ module Check(
                     if(apl_eat != 0)
                         new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
                     else begin
-                        new_snkpos <= {next_pos, ori_snk[399:8]};
+                        new_snkpos <= {next_pos, snk_pos[399:8]};
                     end                                     
                 end else begin 
                     initialized <= 0; 
