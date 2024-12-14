@@ -200,9 +200,7 @@ module Check(
             if (s_check == S_dead) begin
 
                 // calculate the tail position
-                for (i = 0; i < 408 - snk_len * 8; i = i + 1) begin
-                    ori_snk[i] <= 0;
-                end
+                ori_snk[399 - (snk_len - 1) * 8 -:8] <= 0;
                 // end of tail 
                 // if the snake hit itself begin
 
