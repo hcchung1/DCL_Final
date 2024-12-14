@@ -6,7 +6,7 @@ module apple_generator (
     input wire [2:0] apple_eat_pos, // 蘋果被吃掉的位置
     input wire [399:0] snake_pos,  // 蛇的位置，每個節點 [7:0]
     input wire [79:0] obstacle_pos, // 障礙物的位置，每個障礙物 [7:0]
-    output reg [23:0] apple_pos,   // 蘋果的位置，每個蘋果 [7:0]
+    output reg [23:0] apple_pos   // 蘋果的位置，每個蘋果 [7:0]
 );
 
 reg [7:0] temp_pos;           // 暫時儲存生成的蘋果位置
