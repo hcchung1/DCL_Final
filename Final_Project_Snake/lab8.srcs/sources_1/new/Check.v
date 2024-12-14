@@ -164,8 +164,6 @@ module Check(
                 
                 if (state == 4) begin
                     initialized <= 1;
-                    is_dead     <= 0;
-                    apl_eat     <= 0;
                 end
             end
             // end of refresh          
@@ -173,6 +171,8 @@ module Check(
             // prepare the indexs needed begin
             if (s_check == S_pre) begin
 
+                is_dead     <= 0;
+                apl_eat     <= 0;
                 ori_snk <= snk_pos;
 
                 // calulate len snake
@@ -220,8 +220,8 @@ module Check(
                         is_dead <= 1;
                     end
 
-                    for (i = 10; i > 10 - wall_num; i = i - 1) begin 
-                        if (snk_pos[399:392] - 12 == wall_pos[(i * 8 - 1) -:8]) begin 
+                    for (i = 10; i > 0; i = i - 1) begin 
+                        if (snk_pos[399:392] - 12 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
                             is_dead <= 1;
                         end
                     end   
@@ -242,7 +242,7 @@ module Check(
                         is_dead <= 1;
                     end
 
-                    for (i = 10; i > 10 - wall_num; i = i - 1) begin 
+                    for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] + 12 == wall_pos[(i * 8 - 1) -:8]) begin 
                             is_dead <= 1;
                         end
@@ -264,8 +264,8 @@ module Check(
                         is_dead <= 1;
                     end
 
-                    for (i = 10; i > 10 - wall_num; i = i - 1) begin 
-                        if (snk_pos[399:392] - 1 == wall_pos[(i * 8 - 1) -:8]) begin 
+                    for (i = 10; i > 0; i = i - 1) begin 
+                        if (snk_pos[399:392] - 1 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
                             is_dead <= 1;
                         end
                     end   
@@ -286,7 +286,7 @@ module Check(
                         is_dead <= 1;
                     end
 
-                    for (i = 10; i > 10 - wall_num; i = i - 1) begin 
+                    for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] + 1 == wall_pos[(i * 8 - 1) -:8]) begin 
                             is_dead <= 1;
                         end
@@ -305,8 +305,8 @@ module Check(
             if (s_check == S_apl) begin
             
                 if (dir_sig[3] == 1) begin
-                    for (i = 3; i > 3 - apl_num; i = i - 1) begin 
-                        if (snk_pos[399:392] - 12 == apl_pos[(i * 8 - 1) -:8]) begin 
+                    for (i = 3; i > 0; i = i - 1) begin 
+                        if (snk_pos[399:392] - 12 == apl_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
                             apl_eat <= 4 - i;
                             apl_eaten_pos <= apl_pos[(i * 8 - 1) -:8];
                         end
@@ -314,7 +314,7 @@ module Check(
                 end
 
                 else if (dir_sig[2] == 1) begin
-                    for (i = 3; i > 3 - apl_num; i = i - 1) begin 
+                    for (i = 3; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] + 12 == apl_pos[(i * 8 - 1) -:8]) begin 
                             apl_eat <= 4 - i;
                             apl_eaten_pos <= apl_pos[(i * 8 - 1) -:8];
@@ -323,8 +323,8 @@ module Check(
                 end
 
                 else if (dir_sig[1] == 1) begin
-                    for (i = 3; i > 3 - apl_num; i = i - 1) begin 
-                        if (snk_pos[399:392] - 1 == apl_pos[(i * 8 - 1) -:8]) begin 
+                    for (i = 3; i > 0; i = i - 1) begin 
+                        if (snk_pos[399:392] - 1 == apl_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
                             apl_eat <= 4 - i;
                             apl_eaten_pos <= apl_pos[(i * 8 - 1) -:8];
                         end
@@ -332,7 +332,7 @@ module Check(
                 end
 
                 else if (dir_sig[0] == 1) begin
-                    for (i = 3; i > 3 - apl_num; i = i - 1) begin 
+                    for (i = 3; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] + 1 == apl_pos[(i * 8 - 1) -:8]) begin 
                             apl_eat <= 4 - i;
                             apl_eaten_pos <= apl_pos[(i * 8 - 1) -:8];
