@@ -731,6 +731,7 @@ always @(*) begin
         if (state == 6 && (stop_region1 || stop_region2)) begin
             rgb_next = 12'h000;
         end else rgb_next = (now_region && data_snk_o != 12'h0f0 && disp) ? data_snk_o : data_out;
+    end
   end
 end
 // End of the video data display code.
