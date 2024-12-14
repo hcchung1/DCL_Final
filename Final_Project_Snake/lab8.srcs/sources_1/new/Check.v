@@ -46,7 +46,7 @@ module Check(
     reg has_done = 0;
 
     // S_pre indexs
-    reg [399:0] ori_snk;
+    //reg [399:0] ori_snk;
     reg [2:0] apl_num = 0;
     reg [3:0] wall_num = 0;
     reg [5:0] snk_len = 0; 
@@ -172,7 +172,7 @@ module Check(
 
                 is_dead     <= 0;
                 apl_eat     <= 0;
-                ori_snk     <= snk_pos;
+                //ori_snk     <= snk_pos;
 
                 // calulate len snake
                 for (i = 50; i > 0; i = i - 1) begin
@@ -196,7 +196,8 @@ module Check(
             if (s_check == S_dead) begin
 
                 // calculate the tail position
-                ori_snk[399 - (snk_len - 1) * 8 -:8] <= 0;
+                //ori_snk[399 - (snk_len - 1) * 8 -:8] <= 0;
+                //ori_snk[367:360] <= 0;
                 // end of tail 
                 // if the snake hit itself begin
 
@@ -343,7 +344,10 @@ module Check(
                     if(apl_eat != 0)
                         new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
                     else begin
-                        new_snkpos <= {next_pos, ori_snk[399:8]};
+                        new_snkpos[399:392] <= next_pos;
+                        for (i = 0; i < snk_len - 1; i = i + 1) begin
+                            new_snkpos[(391 - (i - 1)*8) -:8] <= snk_pos[(399 - (i - 1)*8) -:8];
+                        end
                     end                                     
                 end else begin 
                     initialized <= 0; 
