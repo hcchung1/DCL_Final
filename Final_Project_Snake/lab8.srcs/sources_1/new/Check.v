@@ -28,6 +28,7 @@ module Check(
     input [23:0] apl_pos,  
     input [79:0] wall_pos,
     input [3:0] dir_sig,
+    input [1:0] mode,
 
     output snake_dead,
     output [2:0] apple_eat, // 0 是沒有 1是第一個被吃 etc.
@@ -62,6 +63,8 @@ module Check(
     reg dead_check = 0;
     reg have_dir = 0;
     reg [3:0] wall_colsn;
+    reg mod_0_hit;
+    reg nb_next;
 
     // S_apl indexs
     reg [2:0] apl_eat = 0;
@@ -181,6 +184,8 @@ module Check(
                 wall_colsn  <= 0;
                 ori_snk     <= snk_pos;
                 stone_snk   <= snk_pos;
+                mod_0_hit   <= 0;
+                nb_next     <= 0;
 
                 // calulate len snake
                 if (count != 0) begin
@@ -222,8 +227,15 @@ module Check(
                         end
                     end
 
-                    if(snk_pos[399:392] == 1 || snk_pos[399:392] == 1 || snk_pos[399:392] == 2 || snk_pos[399:392] == 3 || snk_pos[399:392] == 4 || snk_pos[399:392] == 5 || snk_pos[399:392] == 6 || snk_pos[399:392] == 7 || snk_pos[399:392] == 8 || snk_pos[399:392] == 9 || snk_pos[399:392] == 10 || snk_pos[399:392] == 11 || snk_pos[399:392] == 12) begin 
-                        is_dead <= 1;
+                    if (mod != 0) begin
+                        if(snk_pos[399:392] == 1 || snk_pos[399:392] == 1 || snk_pos[399:392] == 2 || snk_pos[399:392] == 3 || snk_pos[399:392] == 4 || snk_pos[399:392] == 5 || snk_pos[399:392] == 6 || snk_pos[399:392] == 7 || snk_pos[399:392] == 8 || snk_pos[399:392] == 9 || snk_pos[399:392] == 10 || snk_pos[399:392] == 11 || snk_pos[399:392] == 12) begin 
+                            is_dead <= 1;
+                        end
+                    end else begin
+                        if(snk_pos[399:392] == 1 || snk_pos[399:392] == 1 || snk_pos[399:392] == 2 || snk_pos[399:392] == 3 || snk_pos[399:392] == 4 || snk_pos[399:392] == 5 || snk_pos[399:392] == 6 || snk_pos[399:392] == 7 || snk_pos[399:392] == 8 || snk_pos[399:392] == 9 || snk_pos[399:392] == 10 || snk_pos[399:392] == 11 || snk_pos[399:392] == 12) begin
+                            nb_next <= snk_pos[399:392] + 108;
+                            mod_0_hit <= 1;
+                        end
                     end
 
                     for (i = 10; i > 0; i = i - 1) begin 
@@ -248,8 +260,15 @@ module Check(
                         end
                     end
 
-                    if(snk_pos[399:392] + 12 > b_tall) begin 
-                        is_dead <= 1;
+                    if (mod != 0) begin
+                        if(snk_pos[399:392] + 12 > b_tall) begin 
+                            is_dead <= 1;
+                        end
+                    end elae begin 
+                        if(snk_pos[399:392] + 12 > b_tall) begin
+                            nb_next <= snk_pos[399:392] - 108;
+                            mod_0_hit <= 1;
+                        end
                     end
 
                     for (i = 10; i > 0; i = i - 1) begin 
@@ -274,8 +293,15 @@ module Check(
                         end
                     end
 
-                    if (snk_pos[399:392]  == 1 || snk_pos[399:392]  == 13 || snk_pos[399:392]  == 25 || snk_pos[399:392]  == 37 || snk_pos[399:392]  == 49 || snk_pos[399:392]  == 61 || snk_pos[399:392]  == 73 || snk_pos[399:392]  == 85 || snk_pos[399:392]  == 97 || snk_pos[399:392]  == 109) begin 
-                        is_dead <= 1;
+                    if (mod != 0) begin
+                        if(snk_pos[399:392]  == 1 || snk_pos[399:392]  == 13 || snk_pos[399:392]  == 25 || snk_pos[399:392]  == 37 || snk_pos[399:392]  == 49 || snk_pos[399:392]  == 61 || snk_pos[399:392]  == 73 || snk_pos[399:392]  == 85 || snk_pos[399:392]  == 97 || snk_pos[399:392]  == 109) begin 
+                            is_dead <= 1;
+                        end
+                    end elae begin 
+                        if(snk_pos[399:392]  == 1 || snk_pos[399:392]  == 13 || snk_pos[399:392]  == 25 || snk_pos[399:392]  == 37 || snk_pos[399:392]  == 49 || snk_pos[399:392]  == 61 || snk_pos[399:392]  == 73 || snk_pos[399:392]  == 85 || snk_pos[399:392]  == 97 || snk_pos[399:392]  == 109) begin
+                            nb_next <= snk_pos[399:392] + 11;
+                            mod_0_hit <= 1;
+                        end
                     end
 
                     for (i = 10; i > 0; i = i - 1) begin 
@@ -300,8 +326,15 @@ module Check(
                         end
                     end
 
-                    if (snk_pos[399:392]  == 12 || snk_pos[399:392]  == 24 || snk_pos[399:392]  == 36 || snk_pos[399:392]  == 48 || snk_pos[399:392]  == 60 || snk_pos[399:392]  == 72 || snk_pos[399:392]  == 84 || snk_pos[399:392]  == 96 || snk_pos[399:392]  == 108 || snk_pos[399:392]  == 120) begin 
-                        is_dead <= 1;
+                    if (mod != 0) begin
+                        if(snk_pos[399:392]  == 12 || snk_pos[399:392]  == 24 || snk_pos[399:392]  == 36 || snk_pos[399:392]  == 48 || snk_pos[399:392]  == 60 || snk_pos[399:392]  == 72 || snk_pos[399:392]  == 84 || snk_pos[399:392]  == 96 || snk_pos[399:392]  == 108 || snk_pos[399:392]  == 120) begin 
+                            is_dead <= 1;
+                        end
+                    end elae begin 
+                        if(snk_pos[399:392]  == 12 || snk_pos[399:392]  == 24 || snk_pos[399:392]  == 36 || snk_pos[399:392]  == 48 || snk_pos[399:392]  == 60 || snk_pos[399:392]  == 72 || snk_pos[399:392]  == 84 || snk_pos[399:392]  == 96 || snk_pos[399:392]  == 108 || snk_pos[399:392]  == 120) begin
+                            nb_next <= snk_pos[399:392] - 11;
+                            mod_0_hit <= 1;
+                        end
                     end
 
                     for (i = 10; i > 0; i = i - 1) begin 
@@ -370,10 +403,12 @@ module Check(
             // check the next position of the snake begin
             if (s_check == S_pos) begin 
                 if (state == 4) begin                     
-                    if(apl_eat != 0)
+                    if(apl_eat != 0) begin
                         new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
-                    else if (wall_colsn != 0)begin
+                    end else if (wall_colsn != 0)begin
                         new_snkpos <= {next_pos, stone_snk[399:8]};
+                    end else if(mod_0_hit == 1) begin
+                        new_snkpos <= {nb_next, ori_snk[399:8]};
                     end else begin 
                         new_snkpos <= {next_pos, ori_snk[399:8]};
                     end                                    
