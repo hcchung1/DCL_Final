@@ -118,6 +118,8 @@ wire       sram_we, sram_en;
 integer i;
 reg [26:0] wait_clk;
 reg test;
+reg [4:0] apple_count;
+wire [4:0] new_apple_count;
 
 assign usr_led = P[2:0];
 
@@ -145,10 +147,13 @@ Check check(
 apple_generator appgen(
     .clk(clk),               // 時脈訊號
     .reset(reset_n),             // 重置訊號
+    .state(P),
+    .apple_count(apple_count),
     .apple_eat_pos(apple_eat),         // 蘋果是否被吃掉
     .snake_pos(snk_pos),  // 蛇的位置，每個節點 [7:0]
     .obstacle_pos(wall_pos), // 障礙物的位置，每個障礙物 [7:0]
     .apple_pos(new_apple_pos)   // 蘋果的位置，每個蘋果 [7:0]
+    .apple_count(new_apple_count)
 );
 
 // sram ram0(.clk(clk),.we(sram_we),.en(sram_en),.addr(sram_addr),.data_i(data_in),.data_o(data_out));
@@ -226,6 +231,7 @@ always @(posedge clk)begin
     init_finished <= 0;
     counter <= 0;
     wait_end <= 0;
+    apple_count <= 3;
   end else begin 
 
     P <= P_next;
@@ -240,6 +246,7 @@ always @(posedge clk)begin
       row_B = "   Snake Game   ";
       counter <= 0;
       wait_end <= 0;
+      apple_count <= 3;
     end else if(P == S_MAIN_START)begin 
       // when user switch any way for switch[0], start the game.
       init_finished <= 0;
@@ -312,8 +319,9 @@ always @(posedge clk)begin
       // [] maybe have signal to know if check is ended
       if(snk_pos != new_position)begin 
         if(apple_eat)begin 
-          // find the eaten apple position
+          // find the eaten apple position and remove it
           apple_pos[(31-(apple_eat)*8) -: 8] <= 8'b0;
+          apple_count <= apple_count - 1;
         end
         
         checkover <= 1;
@@ -329,13 +337,9 @@ always @(posedge clk)begin
       // [] check for signals used for the ending of recovery (re_done)
       if(apple_eat)begin 
         if(~re_done)begin 
-          for(i = 0; i < 5; i = i + 1)begin 
-            if(new_apple_pos[i*8 +: 8] == 8'b0)begin 
-              test <= 1;
-            end
-          end
-          if(~test)begin 
-            apple_pos <= new_apple_pos;
+          if(new_apple_pos != apple_pos)begin 
+            apple_pos <= new_apple_pos; // update apple position
+            apple_count <= new_apple_count; // update the number of apples
             re_done <= 1;
           end
         end
