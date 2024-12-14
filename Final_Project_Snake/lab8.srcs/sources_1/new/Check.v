@@ -179,13 +179,11 @@ module Check(
                     if (snk_pos[(i * 8 - 1) -:8] != 0)
                         snk_len <= snk_len + 1;
                     
-                    if (i <= 10) begin
-                        if (wall_pos[(i * 8 - 1) -:8] != 0)
+                    if (i <= 10 && (wall_pos[(i * 8 - 1) -:8] != 0)) begin
                         wall_num <= wall_num + 1;
                     end
 
-                    if (i <= 3) begin 
-                        if (apl_pos[(i * 8 - 1) -:8] != 0)
+                    if (i <= 3 && (apl_pos[(i * 8 - 1) -:8] != 0)) begin 
                         apl_num <= apl_num + 1;
                     end
                 end     
@@ -198,17 +196,14 @@ module Check(
             if (s_check == S_dead) begin
 
                 // calculate the tail position
-                for(i = 0; i <= 399; i = i + 1) begin
-                    if (i <= (399 - (snk_len - 1) * 8))
-                        ori_snk[i] <= 0; 
-                end
+                ori_snk[399 - (snk_len - 1) * 8 -:8] <= 0;
                 // end of tail 
                 // if the snake hit itself begin
 
                 if (dir_sig[3] == 1) begin
                     for (i = 49; i > 50 - snk_len; i = i - 1) begin 
                         // snk_pos[399:392] is the position of snake
-                        if (snk_pos[399:392] - 12 == snk_pos[(i * 8 - 1) -:8]) begin 
+                        if (snk_pos[399:392] - 12 == snk_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
                             is_dead <= 1;
                         end
                     end
@@ -252,7 +247,7 @@ module Check(
                 else if (dir_sig[1] == 1) begin
                     for (i = 49; i > 50 - snk_len; i = i - 1) begin 
                         // snk_pos[399:392] is the position of snake
-                        if (snk_pos[399:392] - 1 == snk_pos[(i * 8 - 1) -:8]) begin 
+                        if (snk_pos[399:392] - 1 == snk_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
                             is_dead <= 1;
                         end
                     end
@@ -348,7 +343,7 @@ module Check(
                     if(apl_eat != 0)
                         new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
                     else begin
-                        new_snkpos <= {next_pos, snk_pos[399:8]};
+                        new_snkpos <= {next_pos, ori_snk[399:8]};
                     end                                     
                 end else begin 
                     initialized <= 0; 
