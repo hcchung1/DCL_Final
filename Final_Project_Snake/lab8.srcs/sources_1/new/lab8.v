@@ -94,6 +94,7 @@ reg wait_end = 0;
 reg [399:0] snk_pos = 0; // at most 50 nodes
 reg [23:0] apple_pos = 0; // at most 3 apples
 reg [79:0] wall_pos = 0; // at most 10 walls
+reg [79:0] new_wall_pos = 0; // at most 10 walls
 
 reg [3:0] choice;
 reg [3:0] prev_ch;
@@ -119,6 +120,8 @@ integer i;
 reg [26:0] wait_clk;
 reg test;
 
+wire [3:0] wall_collision;
+
 assign usr_led = P[2:0];
 
 debounce btn_db0(.clk(clk),.btn_input(usr_btn[0]),.btn_output(btn_level[0]));
@@ -139,7 +142,8 @@ Check check(
   .snake_dead(snake_dead),
   .apple_eat(apple_eat),
   .new_position(new_position),
-  .check_done(check_done)
+  .check_done(check_done), 
+  .wall_collision(wall_collision)
 );
 
 apple_generator appgen(
@@ -150,7 +154,9 @@ apple_generator appgen(
     .apple_eat_pos(apple_eat),         // 蘋果被吃掉的位置
     .snake_pos(snk_pos),  // 蛇的位置，每個節點 [7:0]
     .obstacle_pos(wall_pos), // 障礙物的位置，每個障礙物 [7:0]
-    .apple_pos(new_apple_pos)   // 蘋果的位置，每個蘋果 [7:0]
+    .obstacle_hit_pos(wall_collision), // 障礙物被撞到的位置
+    .apple_pos(new_apple_pos),   // 蘋果的位置，每個蘋果 [7:0]
+    .obstacle_new_pos(new_wall_pos) // 新的障礙物位置
 );
 
 // sram ram0(.clk(clk),.we(sram_we),.en(sram_en),.addr(sram_addr),.data_i(data_in),.data_o(data_out));
@@ -225,6 +231,7 @@ always @(posedge clk)begin
     starting <= 0;
     snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
     apple_pos <= {8'd70, 8'd80, 8'd120};
+    wall_pos <= {8'd1, 8'd2, 8'120, 8'd15, 8'd18, 8'd20, 8'd25, 8'd30, 8'd35, 8'd40};
     init_finished <= 0;
     counter <= 0;
     wait_end <= 0;
@@ -237,6 +244,7 @@ always @(posedge clk)begin
       starting <= 0;
       snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
       apple_pos <= {8'd70, 8'd80, 8'd120};
+      wall_pos <= {8'd1, 8'd2, 8'120, 8'd15, 8'd18, 8'd20, 8'd25, 8'd30, 8'd35, 8'd40};
       init_finished <= 1;
       row_A = "  S_MAIN_INIT   ";
       row_B = "   Snake Game   ";
@@ -325,10 +333,13 @@ always @(posedge clk)begin
     end else if(P == S_MAIN_RE)begin 
 
       // [] check for signals used for the ending of recovery (re_done)
-      if(apple_eat)begin 
+      if(apple_eat || wall_pos)begin 
         if(~re_done)begin 
           if(new_apple_pos != apple_pos)begin 
             apple_pos <= new_apple_pos; // update apple position
+            re_done <= 1;
+          end else if(new_wall_pos != wall_pos)begin 
+            wall_pos <= new_wall_pos; // update wall position
             re_done <= 1;
           end
         end
