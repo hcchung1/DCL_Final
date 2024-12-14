@@ -333,7 +333,7 @@ always @(posedge clk)begin
     end else if(P == S_MAIN_RE)begin 
 
       // [] check for signals used for the ending of recovery (re_done)
-      if(apple_eat || wall_pos)begin 
+      if(apple_eat || wall_collision)begin 
         if(~re_done)begin 
           if(new_apple_pos != apple_pos)begin 
             apple_pos <= new_apple_pos; // update apple position
