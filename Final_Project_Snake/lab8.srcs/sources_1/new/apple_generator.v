@@ -2,6 +2,7 @@ module apple_generator (
     input wire clk,               // 時脈訊號
     input wire reset,             // 重置訊號
     input wire [2:0] state,
+    input wire [1:0] mode,        // 遊戲模式
     input wire [23:0] main_apple_pos, // 蘋果位置
     input wire [2:0] apple_eat_pos, // 蘋果被吃掉的位置
     input wire [399:0] snake_pos,  // 蛇的位置，每個節點 [7:0]
@@ -27,8 +28,6 @@ always @(posedge clk) begin
       // 生成隨機位置 (4 bits for X, 4 bits for Y)
       lfsr <= {lfsr[14:0], lfsr[15] ^ lfsr[13] ^ lfsr[12] ^ lfsr[10]};
       temp_pos <= lfsr[6:0];
-      
-      // 檢查是否與蛇或障礙物重疊
       if(temp_pos <= 120 && temp_pos > 0)begin 
         if (!is_overlap(temp_pos, snake_pos) && !is_overlap(temp_pos, obstacle_pos) && !is_overlap(temp_pos, apple_pos)) begin
           // 找到被吃掉的蘋果位置，並儲存蘋果位置

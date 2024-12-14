@@ -123,13 +123,14 @@ reg test;
 wire [3:0] wall_collision;
 
 assign usr_led = P[2:0];
+reg [1:0] mode = 2'b11;
 
 debounce btn_db0(.clk(clk),.btn_input(usr_btn[0]),.btn_output(btn_level[0]));
 debounce btn_db1(.clk(clk),.btn_input(usr_btn[1]),.btn_output(btn_level[1]));
 debounce btn_db2(.clk(clk),.btn_input(usr_btn[2]),.btn_output(btn_level[2]));
 debounce btn_db3(.clk(clk),.btn_input(usr_btn[3]),.btn_output(btn_level[3]));
 
-Screen screen(.clk(clk),.reset_n(reset_n),.usr_led(usr_led),.usr_btn(usr_btn),.usr_sw(usr_sw),.state(P),.choice(choice),.snk_pos(snk_pos),.apple_pos(apple_pos),.wall_pos(wall_pos),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
+Screen screen(.clk(clk),.reset_n(reset_n),.usr_led(usr_led),.usr_btn(usr_btn),.usr_sw(usr_sw),.state(P),.mode(mode),.choice(choice),.snk_pos(snk_pos),.apple_pos(apple_pos),.wall_pos(wall_pos),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
 
 Check check(
   .clk(clk),
@@ -139,6 +140,7 @@ Check check(
   .apl_pos(apple_pos),  
   .wall_pos(wall_pos),
   .dir_sig(choice),
+  .mode(mode),
   .snake_dead(snake_dead),
   .apple_eat(apple_eat),
   .new_position(new_position),
@@ -149,7 +151,7 @@ Check check(
 apple_generator appgen(
     .clk(clk),               // 時脈訊號
     .reset(reset_n),             // 重置訊號
-    .state(P),
+    .state(P),,mode(mode),
     .main_apple_pos(apple_pos), // 蘋果位置
     .apple_eat_pos(apple_eat),         // 蘋果被吃掉的位置
     .snake_pos(snk_pos),  // 蛇的位置，每個節點 [7:0]
@@ -291,15 +293,15 @@ always @(posedge clk)begin
       end else if(wait_clk < 50000000)begin 
         wait_clk <= wait_clk + 1;
         if(choice == 0)begin // when no choice has been made, and user press the button
-            if(btn_pressed[0] && prev_ch == 4'b0010)begin // if user press up when down is chosen
+            if(btn_pressed[0] && prev_ch != 4'b0010)begin // if user press up when down is chosen
               choice <= 4'b0001;
-            end else if(btn_pressed[1] && prev_ch == 4'b0001)begin // if user press down when up is chosen
+            end else if(btn_pressed[1] && prev_ch != 4'b0001)begin // if user press down when up is chosen
               choice <= 4'b0010;
-            end else if(btn_pressed[2] && prev_ch == 4'b0100)begin // if user press right when left is chosen
+            end else if(btn_pressed[2] && prev_ch != 4'b0100)begin // if user press right when left is chosen
               choice <= 4'b1000;
-            end else if(btn_pressed[3] && prev_ch == 4'b1000)begin // if user press left when right is chosen
+            end else if(btn_pressed[3] && prev_ch != 4'b1000)begin // if user press left when right is chosen
               choice <= 4'b0100;
-            end else choice <= btn_pressed[3:0];
+            end
         end
       end
 
