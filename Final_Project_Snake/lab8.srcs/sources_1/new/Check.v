@@ -82,7 +82,7 @@ module Check(
     assign apple_eat = apl_eat;
     assign new_position = new_snkpos;
     assign check_done = snk_len;
-    assign wall_collision = 
+    assign wall_collision = wall_colsn;
 
     ///////////////////////////////////////////////////////////////////////////////
     // s_check fsm begin
@@ -216,7 +216,7 @@ module Check(
                         end
                     end
 
-                    if(snk_pos[399:392] - 12 < 0) begin 
+                    if(snk_pos[399:392] == 1 || snk_pos[399:392] == 1 || snk_pos[399:392] == 2 || snk_pos[399:392] == 3 || snk_pos[399:392] == 4 || snk_pos[399:392] == 5 || snk_pos[399:392] == 6 || snk_pos[399:392] == 7 || snk_pos[399:392] == 8 || snk_pos[399:392] == 9 || snk_pos[399:392] == 10 || snk_pos[399:392] == 11 || snk_pos[399:392] == 12) begin 
                         is_dead <= 1;
                     end
 
