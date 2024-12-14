@@ -200,14 +200,12 @@ module Check(
             if (s_check == S_dead) begin
 
                 // calculate the tail position
-                for (i = 0; i < 408 - snk_len * 8; i = i + 1) begin
-                    ori_snk[i] <= 0;
-                end
+                ori_snk[399 - (snk_len - 1) * 8 -:8] <= 0;
                 // end of tail 
                 // if the snake hit itself begin
 
                 if (dir_sig[3] == 1) begin
-                    for (i = 49; i > 50 - snk_len; i = i - 1) begin 
+                    for (i = 49; i > 0; i = i - 1) begin 
                         // snk_pos[399:392] is the position of snake
                         if (snk_pos[399:392] - 12 == snk_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
                             is_dead <= 1;
@@ -229,7 +227,7 @@ module Check(
                 end
 
                 else if (dir_sig[2] == 1) begin
-                    for (i = 49; i > 50 - snk_len; i = i - 1) begin 
+                    for (i = 49; i > 0; i = i - 1) begin 
                         // snk_pos[399:392] is the position of snake
                         if (snk_pos[399:392] + 12 == snk_pos[(i * 8 - 1) -:8]) begin 
                             is_dead <= 1;
@@ -251,7 +249,7 @@ module Check(
                 end
 
                 else if (dir_sig[1] == 1) begin
-                    for (i = 49; i > 50 - snk_len; i = i - 1) begin 
+                    for (i = 49; i > 0; i = i - 1) begin 
                         // snk_pos[399:392] is the position of snake
                         if (snk_pos[399:392] - 1 == snk_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
                             is_dead <= 1;
@@ -273,7 +271,7 @@ module Check(
                 end
 
                 else if (dir_sig[0] == 1) begin
-                    for (i = 49; i > 50 - snk_len; i = i - 1) begin 
+                    for (i = 49; i > 0; i = i - 1) begin 
                         // snk_pos[399:392] is the position of snake
                         if (snk_pos[399:392] + 1 == snk_pos[(i * 8 - 1) -:8]) begin 
                             is_dead <= 1;
