@@ -32,7 +32,8 @@ module Check(
     output snake_dead,
     output [2:0] apple_eat, // 0 是沒有 1是第一個被吃 etc.
     output [399:0] new_position,
-    output [7:0] check_done
+    output [7:0] check_done,
+    output [3:0] wall_collision
     );
     // boundary indexs
     localparam b_tall = 120; 
@@ -59,6 +60,7 @@ module Check(
     reg is_dead = 0;
     reg dead_check = 0;
     reg have_dir = 0;
+    reg [3:0] wall_colsn;
 
     // S_apl indexs
     reg [2:0] apl_eat = 0;
@@ -80,6 +82,7 @@ module Check(
     assign apple_eat = apl_eat;
     assign new_position = new_snkpos;
     assign check_done = snk_len;
+    assign wall_collision = 
 
     ///////////////////////////////////////////////////////////////////////////////
     // s_check fsm begin
@@ -174,6 +177,7 @@ module Check(
 
                 is_dead     <= 0;
                 apl_eat     <= 0;
+                wall_colsn  <= 0;
                 ori_snk     <= snk_pos;
 
                 // calulate len snake
@@ -219,6 +223,7 @@ module Check(
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] - 12 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
                             is_dead <= 1;
+                            wall_colsn <= 11 - i;
                         end
                     end   
 
@@ -241,6 +246,7 @@ module Check(
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] + 12 == wall_pos[(i * 8 - 1) -:8]) begin 
                             is_dead <= 1;
+                            wall_colsn <= 11 - i;
                         end
                     end   
 
@@ -263,6 +269,7 @@ module Check(
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] - 1 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
                             is_dead <= 1;
+                            wall_colsn <= 11 - i;
                         end
                     end   
 
@@ -285,6 +292,7 @@ module Check(
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] + 1 == wall_pos[(i * 8 - 1) -:8]) begin 
                             is_dead <= 1;
+                            wall_colsn <= 11 - i;
                         end
                     end  
 
