@@ -46,11 +46,12 @@ module Check(
     reg has_done = 0;
 
     // S_pre indexs
-    //reg [399:0] ori_snk;
+    reg [399:0] ori_snk;
     reg [2:0] apl_num = 0;
     reg [3:0] wall_num = 0;
     reg [5:0] snk_len = 0; 
-    reg len_check = 0;    
+    reg len_check = 0;  
+    reg [5:0] count = 50;  
 
     // S_dead indexs
     reg [399:0] zero;
@@ -78,7 +79,7 @@ module Check(
     assign snake_dead = is_dead;
     assign apple_eat = apl_eat;
     assign new_position = new_snkpos;
-    assign check_done = have_dir;
+    assign check_done = snk_len;
 
     ///////////////////////////////////////////////////////////////////////////////
     // s_check fsm begin
@@ -145,9 +146,9 @@ module Check(
 
                 // S_pre initialize
                 apl_num   <= 0;
-                wall_num  <= 0; 
-                snk_len   <= 0;
+                wall_num  <= 0;
                 len_check <= 0;
+                count     <= 50;
 
                 // S_dead initialize
                 next_pos <= snk_pos[399:392];
@@ -163,6 +164,7 @@ module Check(
                 
                 if (state == 4) begin
                     initialized <= 1;
+                    snk_len   <= 0;
                 end
             end
             // end of refresh          
@@ -172,23 +174,25 @@ module Check(
 
                 is_dead     <= 0;
                 apl_eat     <= 0;
-                //ori_snk     <= snk_pos;
+                ori_snk     <= snk_pos;
 
                 // calulate len snake
-                for (i = 50; i > 0; i = i - 1) begin
-                    if (snk_pos[(i * 8 - 1) -:8] != 0)
+                if (count != 0) begin
+                    if (snk_pos[(count * 8 - 1) -:8] != 0)
                         snk_len <= snk_len + 1;
                     
-                    if (i <= 10 && (wall_pos[(i * 8 - 1) -:8] != 0)) begin
+                    if (count <= 10 && (wall_pos[(count * 8 - 1) -:8] != 0)) begin
                         wall_num <= wall_num + 1;
                     end
 
-                    if (i <= 3 && (apl_pos[(i * 8 - 1) -:8] != 0)) begin 
+                    if (count <= 3 && (apl_pos[(count * 8 - 1) -:8] != 0)) begin 
                         apl_num <= apl_num + 1;
                     end
+
+                    count <= count - 1;
                 end     
 
-                len_check <= 1;
+                if (count == 0) len_check <= 1;
             end    
             //end of prepare          
             
@@ -196,8 +200,9 @@ module Check(
             if (s_check == S_dead) begin
 
                 // calculate the tail position
-                //ori_snk[399 - (snk_len - 1) * 8 -:8] <= 0;
-                //ori_snk[367:360] <= 0;
+                for (i = 0; i < 408 - snk_len * 8; i = i + 1) begin
+                    ori_snk[i] <= 0;
+                end
                 // end of tail 
                 // if the snake hit itself begin
 
@@ -344,10 +349,7 @@ module Check(
                     if(apl_eat != 0)
                         new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
                     else begin
-                        new_snkpos[399:392] <= next_pos;
-                        for (i = 0; i < snk_len - 1; i = i + 1) begin
-                            new_snkpos[(391 - (i - 1)*8) -:8] <= snk_pos[(399 - (i - 1)*8) -:8];
-                        end
+                        new_snkpos <= {next_pos, ori_snk[399:8]};
                     end                                     
                 end else begin 
                     initialized <= 0; 
