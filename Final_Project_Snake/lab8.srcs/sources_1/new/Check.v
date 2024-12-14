@@ -79,7 +79,7 @@ module Check(
     assign snake_dead = is_dead;
     assign apple_eat = apl_eat;
     assign new_position = new_snkpos;
-    assign check_done = have_dir;
+    assign check_done = snk_len;
 
     ///////////////////////////////////////////////////////////////////////////////
     // s_check fsm begin
@@ -146,8 +146,7 @@ module Check(
 
                 // S_pre initialize
                 apl_num   <= 0;
-                wall_num  <= 0; 
-                snk_len   <= 0;
+                wall_num  <= 0;
                 len_check <= 0;
                 count     <= 50;
 
@@ -165,6 +164,7 @@ module Check(
                 
                 if (state == 4) begin
                     initialized <= 1;
+                    snk_len   <= 0;
                 end
             end
             // end of refresh          
@@ -192,7 +192,7 @@ module Check(
                     count <= count - 1;
                 end     
 
-                len_check <= 1;
+                if (count == 0) len_check <= 1;
             end    
             //end of prepare          
             
@@ -200,7 +200,9 @@ module Check(
             if (s_check == S_dead) begin
 
                 // calculate the tail position
-                ori_snk[399 - (snk_len - 1) * 8 -:8] <= 0;
+                for (i = 0; i < 408 - snk_len * 8; i = i + 1) begin
+                    ori_snk[i] <= 0;
+                end
                 // end of tail 
                 // if the snake hit itself begin
 
