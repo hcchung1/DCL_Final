@@ -148,7 +148,7 @@ apple_generator appgen(
     .clk(clk),               // 時脈訊號
     .reset(reset_n),             // 重置訊號
     .state(P),
-    .apple_count(apple_count),
+    .main_apple_count(apple_count),
     .apple_eat_pos(apple_eat),         // 蘋果是否被吃掉
     .snake_pos(snk_pos),  // 蛇的位置，每個節點 [7:0]
     .obstacle_pos(wall_pos), // 障礙物的位置，每個障礙物 [7:0]
