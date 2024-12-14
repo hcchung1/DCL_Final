@@ -733,9 +733,8 @@ always @(*) begin
             rgb_next = 12'h000;
         end else begin
             if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
-            else if (data_out == 12'h665) rgb_next = 12'hC30;
+            else if (data_out == 12'had8) rgb_next = 12'hC30;
             else rgb_next = data_out;
-            
         end
     end
   end
