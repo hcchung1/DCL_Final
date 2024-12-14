@@ -82,7 +82,7 @@ module Check(
     assign apple_eat = apl_eat;
     assign new_position = new_snkpos;
     assign check_done = snk_len;
-    assign wall_collision = 
+    assign wall_collision = wall_colsn;
 
     ///////////////////////////////////////////////////////////////////////////////
     // s_check fsm begin
