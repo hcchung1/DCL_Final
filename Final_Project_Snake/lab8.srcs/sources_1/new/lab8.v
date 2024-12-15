@@ -151,7 +151,7 @@ Check check(
 apple_generator appgen(
     .clk(clk),               // 時脈訊號
     .reset(reset_n),             // 重置訊號
-    .state(P),,mode(mode),
+    .state(P),.mode(mode),
     .main_apple_pos(apple_pos), // 蘋果位置
     .apple_eat_pos(apple_eat),         // 蘋果被吃掉的位置
     .snake_pos(snk_pos),  // 蛇的位置，每個節點 [7:0]
@@ -225,33 +225,109 @@ end
 // Main Block
 
 reg [30:0] counter;
+reg [30:0] init_clock;
+reg [1:0] init_showB;
+reg [15:0] lfsr; // 用於隨機數生成的 LFSR
+reg [2:0] apple_decide = 0;
+reg [3:0] wall_decide = 0;
+reg [7:0] temp_pos;
+
+function is_overlap( input [7:0] pos, input [399:0] entity_pos);
+    integer i;
+    begin
+        is_overlap = 0;
+        for (i = 0; i < 50; i = i + 1) begin
+            if (pos == entity_pos[i*8 +: 8]) begin
+                is_overlap = 1;
+            end
+        end
+    end
+endfunction
 
 always @(posedge clk)begin 
   if(~reset_n)begin 
+
     P <= S_MAIN_INIT;
     switch <= usr_sw;
     starting <= 0;
     snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
-    apple_pos <= {8'd70, 8'd80, 8'd120};
-    wall_pos <= {8'd1, 8'd2, 8'd119, 8'd15, 8'd18, 8'd20, 8'd25, 8'd30, 8'd35, 8'd40};
+    apple_pos <= 0;
+    wall_pos <= 0;
     init_finished <= 0;
     counter <= 0;
     wait_end <= 0;
+    mode <= 0;
+    init_clock <= 0;
+    init_showB <= 0;
+    lfsr <= 16'hACEF; // 初始化 LFSR
+
   end else begin 
 
     P <= P_next;
+
     if(P == S_MAIN_INIT)begin 
+
       // Initial all the things, include LCD, uart, LED, VGA??
+      // [x] let user decide which mode to play
       switch <= usr_sw;
       starting <= 0;
-      snk_pos <= {8'd65, 8'd64, 8'd63, 8'd62, 8'd61, 360'b0};
-      apple_pos <= {8'd70, 8'd80, 8'd120};
-      wall_pos <= {8'd1, 8'd2, 8'd119, 8'd15, 8'd18, 8'd20, 8'd25, 8'd30, 8'd35, 8'd40};
-      init_finished <= 1;
-      row_A = "  S_MAIN_INIT   ";
-      row_B = "   Snake Game   ";
+      lfsr <= {lfsr[14:0], lfsr[15] ^ lfsr[13] ^ lfsr[12] ^ lfsr[10]};
+      temp_pos <= lfsr[6:0];
+      snk_pos <= {8'd66, 8'd65, 8'd64, 8'd63, 8'd62, 360'b0}; // initialize snake position
+      if(apple_decide < 3)begin 
+        if(temp_pos <= 120 && temp_pos > 0)begin 
+          if (!is_overlap(temp_pos, snk_pos) && !is_overlap(temp_pos, wall_pos) && !is_overlap(temp_pos, apple_pos)) begin
+            apple_pos <= {temp_pos, apple_pos[23:16], apple_pos[15:8]};
+            apple_decide <= apple_decide + 1;
+          end
+        end
+      end else if(wall_decide < 10)begin 
+        if(temp_pos <= 120 && temp_pos > 0)begin 
+          if (!is_overlap(temp_pos, snk_pos) && !is_overlap(temp_pos, wall_pos) && !is_overlap(temp_pos, apple_pos)) begin
+            wall_pos <= {temp_pos, wall_pos[79:8]};
+            wall_decide <= wall_decide + 1;
+          end
+        end
+      end
+      
+      if(btn_pressed[0])begin 
+        // no border
+        mode <= 0;
+        init_finished <= 1;
+        wall_pos <= wall_pos;
+      end else if(btn_pressed[1])begin 
+        // 3 stones with border
+        mode <= 1;
+        init_finished <= 1;
+        wall_pos[55:0] <= 0;
+      end else if(btn_pressed[2])begin 
+        // 5 stones with border
+        mode <= 2;
+        init_finished <= 1;
+        wall_pos[39:0] <= 0;
+      end else if(btn_pressed[3])begin 
+        // 10 stones with border
+        mode <= 3;
+        init_finished <= 1;
+        wall_pos <= wall_pos;
+      end
+      init_clock <= init_clock + 1;
+      row_A = " Press for mode ";
+
+      if(init_clock == 200000000)begin 
+        init_showB <= init_showB + 1;
+        init_clock <= 0;
+      end
+      case(init_showB)
+        0: row_B = "btn0: no border ";
+        1: row_B = "btn1: 3  stones ";
+        2: row_B = "btn2: 5  stones ";
+        3: row_B = "btn3: 10 stones ";
+        default: row_B = "btn0: no border ";
+      endcase
       counter <= 0;
       wait_end <= 0;
+
     end else if(P == S_MAIN_START)begin 
       // when user switch any way for switch[0], start the game.
       init_finished <= 0;
@@ -268,19 +344,20 @@ always @(posedge clk)begin
       row_B = "switch sw0 start";
 
     end else if(P == S_MAIN_MOVE)begin 
+
       // VGA start changing the snake on the screen
-      //when changing over, go to state: S_MAIN_WAIT
+      // [x] when changing over, go to state: S_MAIN_WAIT
       wait_clk <= 0; // bzero(wait_clk)
       switch <= usr_sw; // update switches
       choice <= 4'b0000; // clear choice
       
       row_A = "  S_MAIN_MOVE   ";
-      row_B = {"   Snake Game  ", ((move_end)? "1" : "0")};
+      row_B = "   Snake Game   ";
       wait_end <= 0;
 
     end else if(P == S_MAIN_WAIT)begin 
 
-      // getting choice from user, upon getting the choice or wait for a second, go to state:S_MAIN_CHECK
+      // [x] getting choice from user, upon getting the choice or wait for a second, go to state:S_MAIN_CHECK
       if(wait_clk >= 50000000)begin // dec'50000000 -> hex'2FAF080
         if(choice == 0)begin 
           choice <= prev_ch;
@@ -293,14 +370,15 @@ always @(posedge clk)begin
       end else if(wait_clk < 50000000)begin 
         wait_clk <= wait_clk + 1;
         if(choice == 0)begin // when no choice has been made, and user press the button
+
             if(btn_pressed[0] && prev_ch != 4'b0010)begin // if user press up when down is chosen
               choice <= 4'b0001;
             end else if(btn_pressed[1] && prev_ch != 4'b0001)begin // if user press down when up is chosen
               choice <= 4'b0010;
             end else if(btn_pressed[2] && prev_ch != 4'b0100)begin // if user press right when left is chosen
-              choice <= 4'b1000;
-            end else if(btn_pressed[3] && prev_ch != 4'b1000)begin // if user press left when right is chosen
               choice <= 4'b0100;
+            end else if(btn_pressed[3] && prev_ch != 4'b1000)begin // if user press left when right is chosen
+              choice <= 4'b1000;
             end
         end
       end
@@ -310,7 +388,7 @@ always @(posedge clk)begin
 
       
 
-      // check if user want to pause at any moment when playing the game
+      // [x] check if user want to pause at any moment when playing the game
       if(switch[1] != usr_sw[1])begin 
         pause <= 1;
         switch <= usr_sw;
@@ -321,7 +399,7 @@ always @(posedge clk)begin
 
     end else if(P == S_MAIN_CHECK) begin 
 
-      // [] maybe have signal to know if check is ended
+      // [x] maybe have signal to know if check is ended
       if(snk_pos != new_position)begin 
         checkover <= 1;
       end
@@ -334,7 +412,7 @@ always @(posedge clk)begin
 
     end else if(P == S_MAIN_RE)begin 
 
-      // [] check for signals used for the ending of recovery (re_done)
+      // [x] check for signals used for the ending of recovery (re_done)
       if(apple_eat || wall_collision)begin 
         if(~re_done)begin 
           if(new_apple_pos != apple_pos)begin 
@@ -351,32 +429,44 @@ always @(posedge clk)begin
       end else begin // no apple been eaten -> directly leave after update snk_pos
         re_done <= 1;
       end
-      prev_ch <= choice; // save the previous choice
-      
-      snk_pos <= new_position;
+
+      prev_ch <= choice; // update the previous choice
+      snk_pos <= new_position; // update the snake position
       
 
       row_A <= "   S_MAIN_RE    ";
       row_B <= "   Snake Game   ";
 
     end else if(P == S_MAIN_PAUSE)begin 
-      // [] switch to leave PAUSE
 
+      // [x] switch to leave PAUSE
       if(switch[1] != usr_sw[1])begin 
         pause <= 0;
         switch <= usr_sw;
       end
-      wait_clk <= 0;
-
+      wait_clk <= 0; // when going back to S_MAIN_MOVE, reset the wait_clk
       row_A <= "  S_MAIN_PAUSE  ";
       row_B <= "switch sw1 leave";
 
     end else if(P == S_MAIN_END)begin 
-
       row_A <= "   S_MAIN_END   ";
       row_B <= "   Snake Game   ";
+      if(switch[0] != usr_sw[0])begin 
+
+        // [] if user switch any way for switch[0], restart the game, with remebering the highest score
+        // [] check.v needs to handles this.
+        P <= S_MAIN_INIT;
+        switch <= usr_sw;
+        ending <= 0;
+      end
+      apple_pos <= 0;
+      wall_pos <= 0;
+      apple_decide <= 0;
+      wall_decide <= 0;
+      snake_pos <= {8'd64, 8'd63, 8'd62, 8'd61, 8'd60, 360'b0};
     end
     
+    // 'test' for times that goto S_MAIN_RE
     if(P_next == S_MAIN_RE)begin 
       counter <= counter + 1;
     end
