@@ -234,8 +234,8 @@ initial begin
     Horizontal_pos[10] = 528;
     Horizontal_pos[11] = 576;
 end
-localparam GANEOVER_H = 31;
-localparam GANEOVER_W = 120;
+localparam GAMEOVER_H = 31;
+localparam GAMEOVER_W = 120;
 localparam GAMEOVER_VPOS = 100;
 localparam GAMEOVER_HPOS = 400;
 localparam NUMBER_H = 12;
@@ -257,7 +257,7 @@ assign stop_region2 = (pixel_y >= (12 << 1)) && (pixel_y < ((12 + 24) << 1)) &&
 
 wire gameover_region;
 assign gameover_region = (pixel_y >= (GAMEOVER_VPOS << 1)) && (pixel_y < ((GAMEOVER_VPOS + GANEOVER_H) << 1)) &&
-                        (pixel_x + (GANEOVER_W * 2) - 1 >= GAMEOVER_HPOS) && (pixel_x < GAMEOVER_HPOS + 1);
+                        (pixel_x + (GAMEOVER_W * 2) - 1 >= GAMEOVER_HPOS) && (pixel_x < GAMEOVER_HPOS + 1);
 wire number_region1, number_region2;
 assign number_region1 = (pixel_y >= (NUMBER1_VPOS << 1)) && (pixel_y < ((NUMBER1_VPOS + NUMBER_H) << 1)) &&
                         (pixel_x + (NUMBER_W * 2) - 1 >= NUMBER1_HPOS) && (pixel_x < NUMBER1_HPOS + 1);
