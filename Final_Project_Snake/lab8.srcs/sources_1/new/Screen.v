@@ -85,6 +85,7 @@ localparam FISH_HPOS   = 64;
 localparam FISH_W      = 24; // Width of the fish.
 localparam FISH_H      = 24; // Height of the fish.
 reg [17:0] fish_addr[0:15]; 
+reg [17:0] gameover_addr;
 // [0] head right
 // [1] head left
 // [2] head up
@@ -123,6 +124,7 @@ initial begin
     fish_addr[13] = VBUF_W*VBUF_H + FISH_W*FISH_H*13;
     fish_addr[14] = VBUF_W*VBUF_H + FISH_W*FISH_H*14;
     fish_addr[15] = VBUF_W*VBUF_H + FISH_W*FISH_H*15;
+    gameover_addr = VBUF_W*VBUF_H + 120*31*16;
 end
 
 // Instiantiate the VGA sync signal generator
@@ -231,6 +233,10 @@ assign stop_region1 = (pixel_y >= (12 << 1)) && (pixel_y < ((12 + 24) << 1)) &&
 
 assign stop_region2 = (pixel_y >= (12 << 1)) && (pixel_y < ((12 + 24) << 1)) &&
                         (pixel_x + (10 * 2) - 1 >= 625) && (pixel_x < 625 + 1);
+
+wire gameover_region;
+assign gameover_region = (pixel_y >= (50 << 1)) && (pixel_y < ((50 + 31) << 1)) &&
+                        (pixel_x + (120 * 2) - 1 >= 440) && (pixel_x < 440 + 1); // 120*31 ver: 50 hor: 440
                 
 genvar k, j;
 generate
@@ -371,6 +377,10 @@ always @(posedge clk) begin
     end else if (state == 3) begin
         is_finished <= 0;
         change <= 0;
+    end else if (state == 7) begin
+        for (idx = 0; idx < 120; idx = idx + 1) begin
+            mark[idx] <= 16;
+        end
     end
 
 end
@@ -751,6 +761,8 @@ always @ (posedge clk) begin
     end else if (now_region[119] && mark[119] != 16) begin
         snkreg_addr <= fish_addr[mark[119]] + ((pixel_y >> 1) - Vertical_pos[9]) * FISH_W + ((pixel_x + (FISH_W * 2 - 1) - Horizontal_pos[11]) >> 1);
         disp <= 1;
+    end else if (state == 7 && gameover_region) begin
+        snkreg_addr <= gameover_addr + ((pixel_y >> 1) - 50) * FISH_W + ((pixel_x + (FISH_W * 2 - 1) - 440) >> 1);
     end else 
         disp <= 0;
         
