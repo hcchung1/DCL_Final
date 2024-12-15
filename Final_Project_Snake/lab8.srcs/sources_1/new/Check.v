@@ -68,7 +68,7 @@ module Check(
     reg have_dir = 0;
     reg [3:0] wall_colsn;
     reg mod_0_hit;
-    reg nb_next;
+    reg [7:0] nb_next;
 
     // S_apl indexs
     reg [2:0] apl_eat = 0;
