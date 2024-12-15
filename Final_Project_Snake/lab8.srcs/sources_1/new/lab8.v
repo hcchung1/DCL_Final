@@ -376,9 +376,9 @@ always @(posedge clk)begin
               choice <= 4'b0001;
             end else if(btn_pressed[1] && prev_ch != 4'b0001)begin // if user press down when up is chosen
               choice <= 4'b0010;
-            end else if(btn_pressed[2] && prev_ch != 4'b0100)begin // if user press right when left is chosen
+            end else if(btn_pressed[2] && prev_ch != 4'b1000)begin // if user press right when left is chosen
               choice <= 4'b0100;
-            end else if(btn_pressed[3] && prev_ch != 4'b1000)begin // if user press left when right is chosen
+            end else if(btn_pressed[3] && prev_ch != 4'b0100)begin // if user press left when right is chosen
               choice <= 4'b1000;
             end
         end
