@@ -126,16 +126,16 @@ initial begin
     fish_addr[14] = VBUF_W*VBUF_H + FISH_W*FISH_H*14;
     fish_addr[15] = VBUF_W*VBUF_H + FISH_W*FISH_H*15;
     gameover_addr = VBUF_W*VBUF_H + FISH_W*FISH_H*16;
-    number_addr[0] = VBUF_W*VBUF_H + 120*31;
-    number_addr[1] = VBUF_W*VBUF_H + 120*31 + 120;
-    number_addr[2] = VBUF_W*VBUF_H + 120*31 + 120*2;
-    number_addr[3] = VBUF_W*VBUF_H + 120*31 + 120*3;
-    number_addr[4] = VBUF_W*VBUF_H + 120*31 + 120*4;
-    number_addr[5] = VBUF_W*VBUF_H + 120*31 + 120*5;
-    number_addr[6] = VBUF_W*VBUF_H + 120*31 + 120*6;
-    number_addr[7] = VBUF_W*VBUF_H + 120*31 + 120*7;
-    number_addr[8] = VBUF_W*VBUF_H + 120*31 + 120*8;
-    number_addr[9] = VBUF_W*VBUF_H + 120*31 + 120*9;
+    number_addr[0] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31;
+    number_addr[1] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120;
+    number_addr[2] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*2;
+    number_addr[3] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*3;
+    number_addr[4] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*4;
+    number_addr[5] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*5;
+    number_addr[6] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*6;
+    number_addr[7] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*7;
+    number_addr[8] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*8;
+    number_addr[9] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*9;
 end
 
 // Instiantiate the VGA sync signal generator
@@ -246,15 +246,17 @@ assign stop_region2 = (pixel_y >= (12 << 1)) && (pixel_y < ((12 + 24) << 1)) &&
                         (pixel_x + (10 * 2) - 1 >= 625) && (pixel_x < 625 + 1);
 
 wire gameover_region;
-assign gameover_region = (pixel_y >= (50 << 1)) && (pixel_y < ((50 + 31) << 1)) &&
-                        (pixel_x + (120 * 2) - 1 >= 440) && (pixel_x < 440 + 1); // 120*31 ver: 50 hor: 440
+assign gameover_region = (pixel_y >= (100 << 1)) && (pixel_y < ((50 + 31) << 1)) &&
+                        (pixel_x + (120 * 2) - 1 >= 440) && (pixel_x < 440 + 1); // 120*31 ver: 100 hor: 440
 
 wire number_region1, number_region2;
-assign number_region1 = (pixel_y >= (100 << 1)) && (pixel_y < ((100 + 12) << 1)) &&
-                        (pixel_x + (10 * 2) - 1 >= 600) && (pixel_x < 600 + 1); // 10*12 ver: 100 hor: 600
+assign number_region1 = (pixel_y >= (170 << 1)) && (pixel_y < ((170 + 12) << 1)) &&
+                        (pixel_x + (10 * 2) - 1 >= 600) && (pixel_x < 600 + 1); // 10*12 ver: 170 hor: 600
 
-assign number_region2 = (pixel_y >= (100 << 1)) && (pixel_y < ((100 + 12) << 1)) &&
-                        (pixel_x + (10 * 2) - 1 >= 620) && (pixel_x < 620 + 1); // 10*12 ver: 100 hor: 620
+assign number_region2 = (pixel_y >= (170 << 1)) && (pixel_y < ((170 + 12) << 1)) &&
+                        (pixel_x + (10 * 2) - 1 >= 620) && (pixel_x < 620 + 1); // 10*12 ver: 170 hor: 620
+
+
                 
 genvar k, j;
 generate
@@ -782,25 +784,25 @@ always @ (posedge clk) begin
         snkreg_addr <= fish_addr[mark[119]] + ((pixel_y >> 1) - Vertical_pos[9]) * FISH_W + ((pixel_x + (FISH_W * 2 - 1) - Horizontal_pos[11]) >> 1);
         disp <= 1;
     end else if (state == 7 && gameover_region) begin
-        snkreg_addr <= gameover_addr + ((pixel_y >> 1) - 50) * 120 + ((pixel_x + (120 * 2 - 1) - 440) >> 1);
+        snkreg_addr <= gameover_addr + ((pixel_y >> 1) - 100) * 120 + ((pixel_x + (120 * 2 - 1) - 440) >> 1);
     end else if (number_region1) begin
         disp <= 0;
         if (sc >= 40) 
-            snkreg_addr <= number_addr[4] + ((pixel_y >> 1) - 100) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
+            snkreg_addr <= number_addr[4] + ((pixel_y >> 1) - 170) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
         else if (sc >= 30)
-            snkreg_addr <= number_addr[3] + ((pixel_y >> 1) - 100) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
+            snkreg_addr <= number_addr[3] + ((pixel_y >> 1) - 170) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
         else if (sc >= 20)
-            snkreg_addr <= number_addr[2] + ((pixel_y >> 1) - 100) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
+            snkreg_addr <= number_addr[2] + ((pixel_y >> 1) - 170) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
         else if (sc >= 10)
-            snkreg_addr <= number_addr[1] + ((pixel_y >> 1) - 100) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
+            snkreg_addr <= number_addr[1] + ((pixel_y >> 1) - 170) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
         else
-            snkreg_addr <= number_addr[0] + ((pixel_y >> 1) - 100) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
+            snkreg_addr <= number_addr[0] + ((pixel_y >> 1) - 170) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
     end else if (number_region2) begin
         disp <= 0;
         if (sc % 10 == 0) 
-            snkreg_addr <= number_addr[0] + ((pixel_y >> 1) - 100) * 10 + ((pixel_x + (10 * 2 - 1) - 620) >> 1);
+            snkreg_addr <= number_addr[0] + ((pixel_y >> 1) - 170) * 10 + ((pixel_x + (10 * 2 - 1) - 620) >> 1);
         else
-            snkreg_addr <= number_addr[sc % 10] + ((pixel_y >> 1) - 100) * 10 + ((pixel_x + (10 * 2 - 1) - 620) >> 1);
+            snkreg_addr <= number_addr[sc % 10] + ((pixel_y >> 1) - 170) * 10 + ((pixel_x + (10 * 2 - 1) - 620) >> 1);
     end else 
         disp <= 0;
    
@@ -829,6 +831,7 @@ always @(*) begin
             rgb_next = 12'h000;
         end else begin
             if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
+            else if (state == 7 && gameover_region) rgb_next = data_snk_o;
             else if ((number_region1 || number_region2) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
             else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30; // dark_green to red
             else if (mode == 3 && data_out == 12'hceb) rgb_next = 12'he78; 
