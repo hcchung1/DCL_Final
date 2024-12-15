@@ -228,12 +228,24 @@ module Check(
                     end
 
                     if (mode != 0) begin
-                        if(snk_pos[399:392] == 1 || snk_pos[399:392] == 1 || snk_pos[399:392] == 2 || snk_pos[399:392] == 3 || snk_pos[399:392] == 4 || snk_pos[399:392] == 5 || snk_pos[399:392] == 6 || snk_pos[399:392] == 7 || snk_pos[399:392] == 8 || snk_pos[399:392] == 9 || snk_pos[399:392] == 10 || snk_pos[399:392] == 11 || snk_pos[399:392] == 12) begin 
+                        if(snk_pos[399:392] == 1 || snk_pos[399:392] == 2 || snk_pos[399:392] == 3 || snk_pos[399:392] == 4 || snk_pos[399:392] == 5 || snk_pos[399:392] == 6 || snk_pos[399:392] == 7 || snk_pos[399:392] == 8 || snk_pos[399:392] == 9 || snk_pos[399:392] == 10 || snk_pos[399:392] == 11 || snk_pos[399:392] == 12) begin 
                             is_dead <= 1;
                         end
                     end else begin
-                        if(snk_pos[399:392] == 1 || snk_pos[399:392] == 1 || snk_pos[399:392] == 2 || snk_pos[399:392] == 3 || snk_pos[399:392] == 4 || snk_pos[399:392] == 5 || snk_pos[399:392] == 6 || snk_pos[399:392] == 7 || snk_pos[399:392] == 8 || snk_pos[399:392] == 9 || snk_pos[399:392] == 10 || snk_pos[399:392] == 11 || snk_pos[399:392] == 12) begin
+                        if(snk_pos[399:392] == 1 || snk_pos[399:392] == 2 || snk_pos[399:392] == 3 || snk_pos[399:392] == 4 || snk_pos[399:392] == 5 || snk_pos[399:392] == 6 || snk_pos[399:392] == 7 || snk_pos[399:392] == 8 || snk_pos[399:392] == 9 || snk_pos[399:392] == 10 || snk_pos[399:392] == 11 || snk_pos[399:392] == 12) begin
                             nb_next <= snk_pos[399:392] + 108;
+                            for (i = 10; i > 0; i = i - 1) begin
+                                if ((snk_pos[399:392] + 108) == wall_pos[(i * 8 - 1) -:8]) begin 
+                                    wall_colsn <= 11 - i;    
+                                end
+                            end
+
+                            for (i = 3; i > 0; i = i - 1) begin
+                                if ((snk_pos[399:392] + 108) == apl_pos[(i * 8 - 1) -:8]) begin 
+                                    apl_eat <= 4 - i;    
+                                end
+                            end
+
                             mod_0_hit <= 1;
                         end
                     end
@@ -267,6 +279,18 @@ module Check(
                     end else begin 
                         if(snk_pos[399:392] + 12 > b_tall) begin
                             nb_next <= snk_pos[399:392] - 108;
+                            for (i = 10; i > 0; i = i - 1) begin
+                                if ((snk_pos[399:392] - 108) == wall_pos[(i * 8 - 1) -:8]) begin 
+                                    wall_colsn <= 11 - i;    
+                                end
+                            end
+
+                            for (i = 3; i > 0; i = i - 1) begin
+                                if ((snk_pos[399:392] - 108) == apl_pos[(i * 8 - 1) -:8]) begin 
+                                    apl_eat <= 4 - i;    
+                                end
+                            end
+
                             mod_0_hit <= 1;
                         end
                     end
@@ -300,6 +324,18 @@ module Check(
                     end else begin 
                         if(snk_pos[399:392]  == 1 || snk_pos[399:392]  == 13 || snk_pos[399:392]  == 25 || snk_pos[399:392]  == 37 || snk_pos[399:392]  == 49 || snk_pos[399:392]  == 61 || snk_pos[399:392]  == 73 || snk_pos[399:392]  == 85 || snk_pos[399:392]  == 97 || snk_pos[399:392]  == 109) begin
                             nb_next <= snk_pos[399:392] + 11;
+                            for (i = 10; i > 0; i = i - 1) begin
+                                if ((snk_pos[399:392] + 11) == wall_pos[(i * 8 - 1) -:8]) begin 
+                                    wall_colsn <= 11 - i;    
+                                end
+                            end
+
+                            for (i = 3; i > 0; i = i - 1) begin
+                                if ((snk_pos[399:392] + 11) == apl_pos[(i * 8 - 1) -:8]) begin 
+                                    apl_eat <= 4 - i;    
+                                end
+                            end
+
                             mod_0_hit <= 1;
                         end
                     end
@@ -333,6 +369,18 @@ module Check(
                     end else begin 
                         if(snk_pos[399:392]  == 12 || snk_pos[399:392]  == 24 || snk_pos[399:392]  == 36 || snk_pos[399:392]  == 48 || snk_pos[399:392]  == 60 || snk_pos[399:392]  == 72 || snk_pos[399:392]  == 84 || snk_pos[399:392]  == 96 || snk_pos[399:392]  == 108 || snk_pos[399:392]  == 120) begin
                             nb_next <= snk_pos[399:392] - 11;
+                            for (i = 10; i > 0; i = i - 1) begin
+                                if ((snk_pos[399:392] - 11) == wall_pos[(i * 8 - 1) -:8]) begin 
+                                    wall_colsn <= 11 - i;    
+                                end
+                            end
+
+                            for (i = 3; i > 0; i = i - 1) begin
+                                if ((snk_pos[399:392] - 11) == apl_pos[(i * 8 - 1) -:8]) begin 
+                                    apl_eat <= 4 - i;    
+                                end
+                            end
+
                             mod_0_hit <= 1;
                         end
                     end
