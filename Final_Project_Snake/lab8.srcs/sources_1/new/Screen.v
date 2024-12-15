@@ -740,6 +740,7 @@ always @(*) begin
             else if (mode == 3 && data_out == 12'hefd) rgb_next = 12'hebd;
             else if (mode == 2 && data_out == 12'had8) rgb_next = 12'h26f;
             else if (mode == 2 && data_out == 12'hceb) rgb_next = 12'h46f;  
+            else if (mode == 2 && data_out == 12'hefd) rgb_next = 12'hfbf;
             else rgb_next = data_out;
         end
     end
