@@ -276,6 +276,16 @@ module Check(
                             end
 
                             mod_0_hit <= 1;
+                        end else begin
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] - 12 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
+                                    if(snk_len >= 5) begin
+                                        wall_colsn <= 11 - i;                                
+                                    end else begin
+                                        is_dead <= 1;
+                                    end    
+                                end
+                            end   
                         end
                     end
 
@@ -326,6 +336,16 @@ module Check(
                             end
 
                             mod_0_hit <= 1;
+                        end else begin
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] + 12 == wall_pos[(i * 8 - 1) -:8]) begin 
+                                    if(snk_len >= 5) begin
+                                        wall_colsn <= 11 - i;                                
+                                    end else begin
+                                        is_dead <= 1;
+                                    end    
+                                end
+                            end   
                         end
                     end
 
@@ -375,6 +395,16 @@ module Check(
                             end
 
                             mod_0_hit <= 1;
+                        end else begin
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] - 1 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
+                                    if(snk_len >= 5) begin
+                                        wall_colsn <= 11 - i;                                
+                                    end else begin
+                                        is_dead <= 1;
+                                    end    
+                                end
+                            end   
                         end
                     end
 
@@ -424,6 +454,16 @@ module Check(
                             end
 
                             mod_0_hit <= 1;
+                        end else begin
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] + 1 == wall_pos[(i * 8 - 1) -:8]) begin 
+                                    if(snk_len >= 5) begin
+                                        wall_colsn <= 11 - i;                                
+                                    end else begin
+                                        is_dead <= 1;
+                                    end    
+                                end
+                            end   
                         end
                     end
 
@@ -486,11 +526,14 @@ module Check(
                     if(apl_eat != 0) begin
                         new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
                         apl_score <= snk_len - 4; 
-                    end else if (wall_colsn != 0)begin
+                    end else if (wall_colsn != 0 && mod_0_hit == 0)begin
                         new_snkpos <= {next_pos, stone_snk[399:8]};
                         apl_score <= snk_len - 5;
-                    end else if(mod_0_hit == 1) begin
+                    end else if (mod_0_hit == 1 && wall_colsn == 0) begin
                         new_snkpos <= {nb_next, ori_snk[399:8]};
+                    end else if (mod_0_hit == 1 && wall_colsn != 0)begin 
+                        new_snkpos <= {nb_next, stone_snk[399:8]};
+                        apl_score <= snk_len - 5;
                     end else begin 
                         new_snkpos <= {next_pos, ori_snk[399:8]};
                     end                                                    
