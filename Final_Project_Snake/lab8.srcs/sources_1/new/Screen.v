@@ -86,6 +86,7 @@ localparam FISH_W      = 24; // Width of the fish.
 localparam FISH_H      = 24; // Height of the fish.
 reg [17:0] fish_addr[0:15]; 
 reg [17:0] gameover_addr;
+reg [17:0] number_addr[0:9];
 // [0] head right
 // [1] head left
 // [2] head up
@@ -124,7 +125,17 @@ initial begin
     fish_addr[13] = VBUF_W*VBUF_H + FISH_W*FISH_H*13;
     fish_addr[14] = VBUF_W*VBUF_H + FISH_W*FISH_H*14;
     fish_addr[15] = VBUF_W*VBUF_H + FISH_W*FISH_H*15;
-    gameover_addr = VBUF_W*VBUF_H + 120*31*16;
+    gameover_addr = VBUF_W*VBUF_H + FISH_W*FISH_H*16;
+    number_addr[0] = VBUF_W*VBUF_H + 120*31;
+    number_addr[1] = VBUF_W*VBUF_H + 120*31 + 120;
+    number_addr[2] = VBUF_W*VBUF_H + 120*31 + 120*2;
+    number_addr[3] = VBUF_W*VBUF_H + 120*31 + 120*3;
+    number_addr[4] = VBUF_W*VBUF_H + 120*31 + 120*4;
+    number_addr[5] = VBUF_W*VBUF_H + 120*31 + 120*5;
+    number_addr[6] = VBUF_W*VBUF_H + 120*31 + 120*6;
+    number_addr[7] = VBUF_W*VBUF_H + 120*31 + 120*7;
+    number_addr[8] = VBUF_W*VBUF_H + 120*31 + 120*8;
+    number_addr[9] = VBUF_W*VBUF_H + 120*31 + 120*9;
 end
 
 // Instiantiate the VGA sync signal generator
@@ -147,7 +158,7 @@ reg  [17:0] snkreg_addr;
 // ------------------------------------------------------------------------
 // The following code describes an initialized SRAM memory block that
 // stores a 320x240 12-bit seabed image, plus two 64x32 fish images.
-sram #(.DATA_WIDTH(12), .ADDR_WIDTH(18), .RAM_SIZE(VBUF_W*VBUF_H+FISH_W*FISH_H*16))
+sram #(.DATA_WIDTH(12), .ADDR_WIDTH(18), .RAM_SIZE(VBUF_W*VBUF_H+FISH_W*FISH_H*16+120*31+120*10), .FILE("background.mem"))
   ram0 (.clk(clk), .we(sram_we), .en(sram_en),
           .addr(sram_addr), .addr_snk(snake_addr),  .data_i(data_in), .data_o(data_out), .data_snk_o(data_snk_o));
 
@@ -237,6 +248,13 @@ assign stop_region2 = (pixel_y >= (12 << 1)) && (pixel_y < ((12 + 24) << 1)) &&
 wire gameover_region;
 assign gameover_region = (pixel_y >= (50 << 1)) && (pixel_y < ((50 + 31) << 1)) &&
                         (pixel_x + (120 * 2) - 1 >= 440) && (pixel_x < 440 + 1); // 120*31 ver: 50 hor: 440
+
+wire number_region1, number_region2;
+assign number_region1 = (pixel_y >= (100 << 1)) && (pixel_y < ((100 + 12) << 1)) &&
+                        (pixel_x + (10 * 2) - 1 >= 600) && (pixel_x < 600 + 1); // 10*12 ver: 100 hor: 600
+
+assign number_region2 = (pixel_y >= (100 << 1)) && (pixel_y < ((100 + 12) << 1)) &&
+                        (pixel_x + (10 * 2) - 1 >= 620) && (pixel_x < 620 + 1); // 10*12 ver: 100 hor: 620
                 
 genvar k, j;
 generate
@@ -388,6 +406,7 @@ end
 assign move_end = is_finished;
 integer m,n;
 reg disp;
+reg [5:0] sc;
 
 always @ (posedge clk) begin
   if (~reset_n) begin
@@ -399,6 +418,7 @@ always @ (posedge clk) begin
 //                   ((pixel_y>>1)-FISH_VPOS)*FISH_W +
 //                   ((pixel_x +(FISH_W*2-1)-pos)>>1);
   end else begin
+    
     // Scale up a 320x240 image for the 640x480 display.
     // (pixel_x, pixel_y) ranges from (0,0) to (639, 479)
     if (now_region[0] && mark[0] != 16) begin
@@ -762,12 +782,32 @@ always @ (posedge clk) begin
         snkreg_addr <= fish_addr[mark[119]] + ((pixel_y >> 1) - Vertical_pos[9]) * FISH_W + ((pixel_x + (FISH_W * 2 - 1) - Horizontal_pos[11]) >> 1);
         disp <= 1;
     end else if (state == 7 && gameover_region) begin
-        snkreg_addr <= gameover_addr + ((pixel_y >> 1) - 50) * FISH_W + ((pixel_x + (FISH_W * 2 - 1) - 440) >> 1);
+        snkreg_addr <= gameover_addr + ((pixel_y >> 1) - 50) * 120 + ((pixel_x + (120 * 2 - 1) - 440) >> 1);
+    end else if (number_region1) begin
+        disp <= 0;
+        if (sc >= 40) 
+            snkreg_addr <= number_addr[4] + ((pixel_y >> 1) - 100) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
+        else if (sc >= 30)
+            snkreg_addr <= number_addr[3] + ((pixel_y >> 1) - 100) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
+        else if (sc >= 20)
+            snkreg_addr <= number_addr[2] + ((pixel_y >> 1) - 100) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
+        else if (sc >= 10)
+            snkreg_addr <= number_addr[1] + ((pixel_y >> 1) - 100) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
+        else
+            snkreg_addr <= number_addr[0] + ((pixel_y >> 1) - 100) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
+    end else if (number_region2) begin
+        disp <= 0;
+        if (sc % 10 == 0) 
+            snkreg_addr <= number_addr[0] + ((pixel_y >> 1) - 100) * 10 + ((pixel_x + (10 * 2 - 1) - 620) >> 1);
+        else
+            snkreg_addr <= number_addr[sc % 10] + ((pixel_y >> 1) - 100) * 10 + ((pixel_x + (10 * 2 - 1) - 620) >> 1);
     end else 
         disp <= 0;
-        
-    pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);   
-
+   
+    
+        pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);   
+        sc <= score;
+    
   end
 end
 // End of the AGU code.
@@ -789,6 +829,7 @@ always @(*) begin
             rgb_next = 12'h000;
         end else begin
             if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
+            else if ((number_region1 || number_region2) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
             else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30; // dark_green to red
             else if (mode == 3 && data_out == 12'hceb) rgb_next = 12'he78; 
             else if (mode == 3 && data_out == 12'hefd) rgb_next = 12'hebd;
