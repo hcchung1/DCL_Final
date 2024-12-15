@@ -256,7 +256,7 @@ assign stop_region2 = (pixel_y >= (12 << 1)) && (pixel_y < ((12 + 24) << 1)) &&
                         (pixel_x + (10 * 2) - 1 >= 625) && (pixel_x < 625 + 1);
 
 wire gameover_region;
-assign gameover_region = (pixel_y >= (GAMEOVER_VPOS << 1)) && (pixel_y < ((GAMEOVER_VPOS + GANEOVER_H) << 1)) &&
+assign gameover_region = (pixel_y >= (GAMEOVER_VPOS << 1)) && (pixel_y < ((GAMEOVER_VPOS + GAMEOVER_H) << 1)) &&
                         (pixel_x + (GAMEOVER_W * 2) - 1 >= GAMEOVER_HPOS) && (pixel_x < GAMEOVER_HPOS + 1);
 wire number_region1, number_region2;
 assign number_region1 = (pixel_y >= (NUMBER1_VPOS << 1)) && (pixel_y < ((NUMBER1_VPOS + NUMBER_H) << 1)) &&
