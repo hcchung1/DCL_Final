@@ -35,7 +35,8 @@ module Check(
     output [399:0] new_position,
     output [7:0] check_done,
     output [3:0] wall_collision,
-    output [5:0] apl_score
+    output [5:0] score,
+    output [5:0] highest_score
     );
     // boundary indexs
     localparam b_tall = 120; 
@@ -56,7 +57,8 @@ module Check(
     reg [5:0] snk_len = 0; 
     reg len_check = 0;  
     reg [5:0] count = 50;  
-    reg [5:0] score = 0;
+    reg [5:0] apl_score = 0;
+    reg [5:0] high_score = 0;
 
     // S_dead indexs
     reg [399:0] zero;
@@ -83,7 +85,7 @@ module Check(
 
     integer  i;
 
-    assign apl_score = score;
+    assign score = apl_score;
     assign snake_dead = is_dead;
     assign apple_eat = apl_eat;
     assign new_position = new_snkpos;
@@ -130,11 +132,12 @@ module Check(
 
         if (~reset_n) begin 
             // S_pre initialize
-            apl_num   <= 0;
-            wall_num  <= 0; 
-            snk_len   <= 0;
-            len_check <= 0;
-            score     <= 0;
+            apl_num    <= 0;
+            wall_num   <= 0; 
+            snk_len    <= 0;
+            len_check  <= 0;
+            apl_score  <= 0;
+            high_score <= 0;
 
             // S_dead initialize
             next_pos   <= 0;
@@ -154,6 +157,10 @@ module Check(
             // refresh all indexs begin
             if (s_check == S_init) begin
 
+                if (apl_score >= high_score) begin
+                    high_score <= apl_score;
+                end
+
                 // S_pre initialize
                 apl_num   <= 0;
                 wall_num  <= 0;
@@ -171,6 +178,9 @@ module Check(
                 // S_pos initialize
                 new_snkpos  <= snk_pos;
                 pos_check   <= 0;
+
+                // end_game initialize
+                edgm_check <= 0;
                 
                 if (state == 4) begin
                     initialized <= 1;
@@ -488,7 +498,7 @@ module Check(
                         new_snkpos <= {next_pos, ori_snk[399:8]};
                     end                   
 
-                    score <= (snk_len <= 4)? 0: (snk_len - 5);              
+                    apl_score <= (snk_len <= 4)? 0: (snk_len - 5);              
                 end else begin 
                     initialized <= 0; 
                     pos_check <= 1;
@@ -496,7 +506,10 @@ module Check(
             end
 
             if (s_check == S_endgame) begin
-               new_snkpos <= 400'b0;   
+                new_snkpos <= 400'b0;   
+                if (state == 0) begin
+                    edgm_check <= 1;
+                end
             end
             //end of position check                          
         end

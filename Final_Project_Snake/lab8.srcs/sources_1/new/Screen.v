@@ -32,6 +32,8 @@ module Screen(
     input  [399:0] snk_pos,
     input  [23:0] apple_pos,
     input  [79:0] wall_pos,
+    input  [5:0] score,
+    input  [5:0] highest_score,
     output move_end,
 
 
@@ -243,6 +245,7 @@ generate
     end
 endgenerate
 
+reg init_finished;
 
 always @(posedge clk) begin
     if (~reset_n || state == 0) begin
@@ -253,9 +256,50 @@ always @(posedge clk) begin
         length <= 0;
         change <= 0;
         prev_snake <= 0;
+        init_finished <= 0;
         for (i = 0; i < 120; i = i + 1) begin
             mark[i] <= 16;
         end
+    end else if (state == 1 && init_finished) begin
+        snake <= snake << 8;
+        prev_snake <= snake[399:392];
+        if (snake[399:392] != 0) begin
+            length <= length + 1;
+            if (length == 0) begin
+                if (snake[399:392] == snake[391:384] + 1) begin // head right
+                    mark[snake[399:392]-1] <= 0;
+                end else if (snake[399:392] == snake[391:384] - 1) begin // head left
+                    mark[snake[399:392]-1] <= 1;
+                end else if (snake[399:392] == snake[391:384] - 12) begin // head up
+                    mark[snake[399:392]-1] <= 2;
+                end else if (snake[399:392] == snake[391:384] + 12) begin // head down
+                    mark[snake[399:392]-1] <= 3;
+                end
+            end else if (snake[391:384] != 0) begin
+                if ((snake[399:392] == snake[391:384] + 1 && snake[399:392] == prev_snake - 1) || (snake[399:392] == snake[391:384] - 1 && snake[399:392] == prev_snake + 1) ) // left-right
+                    mark[snake[399:392]-1] <= 5;
+                else if ((snake[399:392] == snake[391:384] + 12 && snake[399:392] == prev_snake - 12) || (snake[399:392] == snake[391:384] - 12 && snake[399:392] == prev_snake + 12)) // up-down 
+                    mark[snake[399:392]-1] <= 4;
+                else if ((snake[399:392] == snake[391:384] - 1 && snake[399:392] == prev_snake - 12) || (snake[399:392] == snake[391:384] - 12 && snake[399:392] == prev_snake - 1)) // right-up / down-left
+                    mark[snake[399:392]-1] <= 12;
+                else if ((snake[399:392] == snake[391:384] - 1 && snake[399:392] == prev_snake + 12) || (snake[399:392] == snake[391:384] + 12 && snake[399:392] == prev_snake - 1)) // right-down / up-left
+                    mark[snake[399:392]-1] <= 13;
+                else if ((snake[399:392] == snake[391:384] + 1 && snake[399:392] == prev_snake + 12) || (snake[399:392] == snake[391:384] + 12 && snake[399:392] == prev_snake + 1)) // left-down / up-right
+                    mark[snake[399:392]-1] <= 10;
+                else if ((snake[399:392] == snake[391:384] + 1 && snake[399:392] == prev_snake - 12) || (snake[399:392] == snake[391:384] - 12 && snake[399:392] == prev_snake + 1)) // left-up / down-right
+                    mark[snake[399:392]-1] <= 11;
+            end else if (snake[391:384] == 0) begin
+                init_finished <= 1;
+                if (snake[399:392] == prev_snake + 1) // tail right
+                    mark[snake[399:392]-1] <= 6;
+                else if (snake[399:392] == prev_snake - 1) // tail left
+                    mark[snake[399:392]-1] <= 7;
+                else if (snake[399:392] == prev_snake - 12) // tail up
+                    mark[snake[399:392]-1] <= 8;
+                else if (snake[399:392] == prev_snake + 12) // tail down
+                    mark[snake[399:392]-1] <= 9;
+            end
+        end    
     end else if (state == 2 && is_finished == 0) begin
         if (change == 0) begin
             for (i = 0; i < 120; i = i + 1) begin
@@ -733,7 +777,12 @@ always @(*) begin
             rgb_next = 12'h000;
         end else begin
             if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
-            else if (data_out == 12'had8) rgb_next = 12'hC30;
+            else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30;
+            else if (mode == 3 && data_out == 12'hceb) rgb_next = 12'he78;
+            else if (mode == 3 && data_out == 12'hefd) rgb_next = 12'hebd;
+            else if (mode == 2 && data_out == 12'had8) rgb_next = 12'h26f;
+            else if (mode == 2 && data_out == 12'hceb) rgb_next = 12'h46f;  
+            else if (mode == 2 && data_out == 12'hefd) rgb_next = 12'hfbf;
             else rgb_next = data_out;
         end
     end
