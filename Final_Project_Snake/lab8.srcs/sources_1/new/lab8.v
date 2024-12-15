@@ -388,8 +388,6 @@ always @(posedge clk)begin
       // check if the user input some choice before choice has made
       // [x] if user input up when down is chosen, then change the choice to up; if user input left when right is chosen, then change the choice to left; and so on.
 
-      
-
       // [x] check if user want to pause at any moment when playing the game
       if(switch[1] != usr_sw[1])begin 
         pause <= 1;
@@ -465,7 +463,7 @@ always @(posedge clk)begin
       wall_pos <= 0;
       apple_decide <= 0;
       wall_decide <= 0;
-      snake_pos <= {8'd64, 8'd63, 8'd62, 8'd61, 8'd60, 360'b0};
+      snk_pos <= {8'd64, 8'd63, 8'd62, 8'd61, 8'd60, 360'b0};
     end
     
     // 'test' for times that goto S_MAIN_RE
