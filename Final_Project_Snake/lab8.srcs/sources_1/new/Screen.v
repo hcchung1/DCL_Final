@@ -278,7 +278,7 @@ always @(posedge clk) begin
             end else if (snake[391:384] != 0) begin
                 if ((snake[399:392] == snake[391:384] + 1 && snake[399:392] == prev_snake - 1) || (snake[399:392] == snake[391:384] - 1 && snake[399:392] == prev_snake + 1) || (snake[399:392] == prev_snake - 11 && snake[399:392] == snake[391:384] - 1) || (snake[399:392] == snake[391:384] - 11 && snake[399:392] == prev_snake - 1)) // left-right
                     mark[snake[399:392]-1] <= 5;
-                else if ((snake[399:392] == snake[391:384] + 12 && snake[399:392] == prev_snake - 12) || (snake[399:392] == snake[391:384] - 12 && snake[399:392] == prev_snake + 12)) // up-down 
+                else if ((snake[399:392] == snake[391:384] + 12 && snake[399:392] == prev_snake - 12) || (snake[399:392] == snake[391:384] - 12 && snake[399:392] == prev_snake + 12) || (snake[399:392] == prev_snake + 108 && snake[399:392] == snake[391:384] - 12) || (snake[399:392] == prev_snake - 12 && snake[399:392] == snake[391:384] + 108)) // up-down 
                     mark[snake[399:392]-1] <= 4;
                 else if ((snake[399:392] == snake[391:384] - 1 && snake[399:392] == prev_snake - 12) || (snake[399:392] == snake[391:384] - 12 && snake[399:392] == prev_snake - 1)) // right-up / down-left
                     mark[snake[399:392]-1] <= 12;
@@ -777,8 +777,8 @@ always @(*) begin
             rgb_next = 12'h000;
         end else begin
             if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
-            else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30;
-            else if (mode == 3 && data_out == 12'hceb) rgb_next = 12'he78;
+            else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30; // dark_green to red
+            else if (mode == 3 && data_out == 12'hceb) rgb_next = 12'he78; 
             else if (mode == 3 && data_out == 12'hefd) rgb_next = 12'hebd;
             else if (mode == 2 && data_out == 12'had8) rgb_next = 12'h26f;
             else if (mode == 2 && data_out == 12'hceb) rgb_next = 12'h46f;  
