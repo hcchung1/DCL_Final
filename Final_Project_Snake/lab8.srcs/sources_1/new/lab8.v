@@ -124,6 +124,7 @@ wire [3:0] wall_collision;
 
 assign usr_led = P[2:0];
 reg [1:0] mode = 2'b11;
+wire [5:0] score;
 
 debounce btn_db0(.clk(clk),.btn_input(usr_btn[0]),.btn_output(btn_level[0]));
 debounce btn_db1(.clk(clk),.btn_input(usr_btn[1]),.btn_output(btn_level[1]));
@@ -145,7 +146,8 @@ Check check(
   .apple_eat(apple_eat),
   .new_position(new_position),
   .check_done(check_done), 
-  .wall_collision(wall_collision)
+  .wall_collision(wall_collision),
+  .apl_score(score)
 );
 
 apple_generator appgen(
@@ -394,7 +396,7 @@ always @(posedge clk)begin
         switch <= usr_sw;
       end
 
-      row_A = {apple_eat + "0", " S_MAIN_WAIT ", (((snk_pos[399:396] > 9)?"7":"0") + snk_pos[399:396]), (((snk_pos[395:392] > 9)?"7":"0") + snk_pos[395:392])};
+      row_A = {apple_eat + "0", check_done + "0" ,"S_MAIN_WAIT ", (((snk_pos[399:396] > 9)?"7":"0") + snk_pos[399:396]), (((snk_pos[395:392] > 9)?"7":"0") + snk_pos[395:392])};
       row_B = {(((wait_clk[26:24] > 9)?"7":"0") + wait_clk[26:24]), (((wait_clk[23:20] > 9)?"7":"0") + wait_clk[23:20]), (((wait_clk[19:16] > 9)?"7":"0") + wait_clk[19:16]), (((wait_clk[15:12] > 9)?"7":"0") + wait_clk[15:12]), (((wait_clk[11:8] > 9)?"7":"0") + wait_clk[11:8]), (((wait_clk[7:4] > 9)?"7":"0") + wait_clk[7:4]) ,(((wait_clk[3:0] > 9)?"7":"0") + wait_clk[3:0]), " ", ((choice[3])?"U":" "), ((choice[2])?"D":" "), ((choice[1])?"L":" "), ((choice[0])?"R":" "), " ", ((pause)?"P":" "), " ", (((choice > 9)?"7":"0") + choice)};
 
     end else if(P == S_MAIN_CHECK) begin 
