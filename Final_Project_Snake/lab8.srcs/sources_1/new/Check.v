@@ -86,6 +86,7 @@ module Check(
     integer  i;
 
     assign score = apl_score;
+    assign highest_score = high_score;
     assign snake_dead = is_dead;
     assign apple_eat = apl_eat;
     assign new_position = new_snkpos;
