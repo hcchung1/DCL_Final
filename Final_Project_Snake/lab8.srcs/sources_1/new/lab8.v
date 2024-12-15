@@ -123,7 +123,7 @@ reg test;
 wire [3:0] wall_collision;
 
 assign usr_led = P[2:0];
-reg [1:0] mode = 2'b11;
+reg [1:0] mode = 2'b00;
 wire [5:0] score;
 wire [5:0] highest_score;
 
