@@ -264,6 +264,8 @@ always @(posedge clk)begin
     init_clock <= 0;
     init_showB <= 0;
     lfsr <= 16'hACEF; // 初始化 LFSR
+    apple_decide <= 0;
+    wall_decide <= 0;
 
   end else begin 
 
