@@ -234,6 +234,16 @@ initial begin
     Horizontal_pos[10] = 528;
     Horizontal_pos[11] = 576;
 end
+localparam GANEOVER_H = 31;
+localparam GANEOVER_W = 120;
+localparam GAMEOVER_VPOS = 100;
+localparam GAMEOVER_HPOS = 400;
+localparam NUMBER_H = 12;
+localparam NUMBER_W = 10;
+localparam NUMBER1_VPOS = 200;
+localparam NUMBER2_VPOS = 200;
+localparam NUMBER1_HPOS = 600;
+localparam NUMBER2_HPOS = 620;
 wire [119:0] now_region;
 // assign now_region =
 //            pixel_y >= (Vertical_pos<<1) && pixel_y < (Vertical_pos+FISH_H)<<1 &&
@@ -246,15 +256,13 @@ assign stop_region2 = (pixel_y >= (12 << 1)) && (pixel_y < ((12 + 24) << 1)) &&
                         (pixel_x + (10 * 2) - 1 >= 625) && (pixel_x < 625 + 1);
 
 wire gameover_region;
-assign gameover_region = (pixel_y >= (100 << 1)) && (pixel_y < ((50 + 31) << 1)) &&
-                        (pixel_x + (120 * 2) - 1 >= 440) && (pixel_x < 440 + 1); // 120*31 ver: 100 hor: 440
-
+assign gameover_region = (pixel_y >= (GAMEOVER_VPOS << 1)) && (pixel_y < ((GAMEOVER_VPOS + GANEOVER_H) << 1)) &&
+                        (pixel_x + (GANEOVER_W * 2) - 1 >= GAMEOVER_HPOS) && (pixel_x < GAMEOVER_HPOS + 1);
 wire number_region1, number_region2;
-assign number_region1 = (pixel_y >= (170 << 1)) && (pixel_y < ((170 + 12) << 1)) &&
-                        (pixel_x + (10 * 2) - 1 >= 600) && (pixel_x < 600 + 1); // 10*12 ver: 170 hor: 600
-
-assign number_region2 = (pixel_y >= (170 << 1)) && (pixel_y < ((170 + 12) << 1)) &&
-                        (pixel_x + (10 * 2) - 1 >= 620) && (pixel_x < 620 + 1); // 10*12 ver: 170 hor: 620
+assign number_region1 = (pixel_y >= (NUMBER1_VPOS << 1)) && (pixel_y < ((NUMBER1_VPOS + NUMBER_H) << 1)) &&
+                        (pixel_x + (NUMBER_W * 2) - 1 >= NUMBER1_HPOS) && (pixel_x < NUMBER1_HPOS + 1);
+assign number_region2 = (pixel_y >= (NUMBER2_VPOS << 1)) && (pixel_y < ((NUMBER2_VPOS + NUMBER_H) << 1)) &&
+                        (pixel_x + (NUMBER_W * 2) - 1 >= NUMBER2_HPOS) && (pixel_x < NUMBER2_HPOS + 1);
 
 
                 
@@ -274,7 +282,7 @@ endgenerate
 always @(posedge clk) begin
     if (~reset_n || state == 0) begin
         is_finished <= 0;
-        snake <= 0;
+        snake <= snk_pos;
         apple <= 0;
         wall <= 0;
         length <= 0;
@@ -781,29 +789,30 @@ always @ (posedge clk) begin
         disp <= 1;
     end else if (state == 7 && gameover_region) begin
         disp <= 0;
-        snkreg_addr <= gameover_addr + ((pixel_y >> 1) - 100) * 120 + ((pixel_x + (120 * 2 - 1) - 440) >> 1);
+        snkreg_addr <= gameover_addr + ((pixel_y >> 1) - GAMEOVER_VPOS) * GAMEOVER_W + ((pixel_x + (GAMEOVER_W * 2 - 1) - GAMEOVER_HPOS) >> 1);
     end else if (number_region1) begin
         disp <= 0;
-        if (sc >= 40) 
-            snkreg_addr <= number_addr[4] + ((pixel_y >> 1) - 170) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
+        if (sc >= 50)
+            snkreg_addr <= number_addr[5] + ((pixel_y >> 1) - NUMBER1_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER1_HPOS) >> 1);
+        else if (sc >= 40)
+            snkreg_addr <= number_addr[4] + ((pixel_y >> 1) - NUMBER1_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER1_HPOS) >> 1);
         else if (sc >= 30)
-            snkreg_addr <= number_addr[3] + ((pixel_y >> 1) - 170) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
+            snkreg_addr <= number_addr[3] + ((pixel_y >> 1) - NUMBER1_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER1_HPOS) >> 1);
         else if (sc >= 20)
-            snkreg_addr <= number_addr[2] + ((pixel_y >> 1) - 170) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
+            snkreg_addr <= number_addr[2] + ((pixel_y >> 1) - NUMBER1_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER1_HPOS) >> 1);
         else if (sc >= 10)
-            snkreg_addr <= number_addr[1] + ((pixel_y >> 1) - 170) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
+            snkreg_addr <= number_addr[1] + ((pixel_y >> 1) - NUMBER1_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER1_HPOS) >> 1);
         else
-            snkreg_addr <= number_addr[0] + ((pixel_y >> 1) - 170) * 10 + ((pixel_x + (10 * 2 - 1) - 600) >> 1);
+            snkreg_addr <= number_addr[0] + ((pixel_y >> 1) - NUMBER1_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER1_HPOS) >> 1);
     end else if (number_region2) begin
         disp <= 0;
         if (sc % 10 == 0) 
-            snkreg_addr <= number_addr[0] + ((pixel_y >> 1) - 170) * 10 + ((pixel_x + (10 * 2 - 1) - 620) >> 1);
+            snkreg_addr <= number_addr[0] + ((pixel_y >> 1) - NUMBER2_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER2_HPOS) >> 1);
         else
-            snkreg_addr <= number_addr[sc % 10] + ((pixel_y >> 1) - 170) * 10 + ((pixel_x + (10 * 2 - 1) - 620) >> 1);
+            snkreg_addr <= number_addr[sc % 10] + ((pixel_y >> 1) - NUMBER2_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER2_HPOS) >> 1);
     end else 
         disp <= 0;
    
-    
         pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);   
         sc <= score;
     
@@ -825,17 +834,17 @@ always @(*) begin
     if (state == 1) rgb_next = data_out;
     else begin
         if (state == 6 && (stop_region1 || stop_region2)) rgb_next = 12'h000;
-            else if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
-            else if (state == 7 && gameover_region && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
-            else if ((number_region1 || number_region2) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
+        else if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
+        else if (state == 7 && gameover_region && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
+        else if ((number_region1 || number_region2) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
             // else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30; // dark_green to red
             // else if (mode == 3 && data_out == 12'hceb) rgb_next = 12'he78; 
             // else if (mode == 3 && data_out == 12'hefd) rgb_next = 12'hebd;
             // else if (mode == 2 && data_out == 12'had8) rgb_next = 12'h26f;
             // else if (mode == 2 && data_out == 12'hceb) rgb_next = 12'h46f;  
             // else if (mode == 2 && data_out == 12'hefd) rgb_next = 12'hfbf;
-            else rgb_next = data_out;
-        end
+        else rgb_next = data_out;
+        
     end
   end
 end
