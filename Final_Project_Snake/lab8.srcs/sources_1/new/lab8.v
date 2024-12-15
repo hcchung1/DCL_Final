@@ -125,13 +125,14 @@ wire [3:0] wall_collision;
 assign usr_led = P[2:0];
 reg [1:0] mode = 2'b11;
 wire [5:0] score;
+wire [5:0] highest_score;
 
 debounce btn_db0(.clk(clk),.btn_input(usr_btn[0]),.btn_output(btn_level[0]));
 debounce btn_db1(.clk(clk),.btn_input(usr_btn[1]),.btn_output(btn_level[1]));
 debounce btn_db2(.clk(clk),.btn_input(usr_btn[2]),.btn_output(btn_level[2]));
 debounce btn_db3(.clk(clk),.btn_input(usr_btn[3]),.btn_output(btn_level[3]));
 
-Screen screen(.clk(clk),.reset_n(reset_n),.usr_led(usr_led),.usr_btn(usr_btn),.usr_sw(usr_sw),.state(P),.mode(mode),.choice(choice),.snk_pos(snk_pos),.apple_pos(apple_pos),.wall_pos(wall_pos),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
+Screen screen(.clk(clk),.reset_n(reset_n),.usr_led(usr_led),.usr_btn(usr_btn),.usr_sw(usr_sw),.state(P),.mode(mode),.choice(choice),.snk_pos(snk_pos),.apple_pos(apple_pos),.wall_pos(wall_pos),.score(score),.highest_score(score),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
 
 Check check(
   .clk(clk),
@@ -147,7 +148,8 @@ Check check(
   .new_position(new_position),
   .check_done(check_done), 
   .wall_collision(wall_collision),
-  .apl_score(score)
+  .apl_score(score),
+  .highest_score(highest_score)
 );
 
 apple_generator appgen(
@@ -206,7 +208,7 @@ always @(*) begin
     S_MAIN_CHECK: // check the choice
       if((checkover))P_next = S_MAIN_RE;
       else P_next = S_MAIN_CHECK;
-    S_MAIN_PAUSE: // [] switch to leave PAUSE
+    S_MAIN_PAUSE: // [x] switch to leave PAUSE
       if(~pause) P_next = S_MAIN_MOVE;
       else if(snake_dead) P_next = S_MAIN_END;
       else P_next = S_MAIN_PAUSE;
@@ -364,11 +366,8 @@ always @(posedge clk)begin
         if(choice == 0)begin 
           choice <= prev_ch;
         end
-        if(usr_sw[2] != switch[2])begin
-          switch <= usr_sw; 
-          wait_end <= 1;
-          checkover <= 0;
-        end
+        wait_end <= 1;
+        checkover <= 0;
       end else if(wait_clk < 50000000)begin 
         wait_clk <= wait_clk + 1;
         if(choice == 0)begin // when no choice has been made, and user press the button
