@@ -32,6 +32,8 @@ module Screen(
     input  [399:0] snk_pos,
     input  [23:0] apple_pos,
     input  [79:0] wall_pos,
+    input  [5:0] score,
+    input  [5:0] highest_score,
     output move_end,
 
 
@@ -733,7 +735,11 @@ always @(*) begin
             rgb_next = 12'h000;
         end else begin
             if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
-            else if (data_out == 12'had8) rgb_next = 12'hC30;
+            else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30;
+            else if (mode == 3 && data_out == 12'hceb) rgb_next = 12'he78;
+            else if (mode == 3 && data_out == 12'hefd) rgb_next = 12'hebd;
+            else if (mode == 2 && data_out == 12'had8) rgb_next = 12'h26f;
+            else if (mode == 2 && data_out == 12'hceb) rgb_next = 12'h46f;  
             else rgb_next = data_out;
         end
     end
