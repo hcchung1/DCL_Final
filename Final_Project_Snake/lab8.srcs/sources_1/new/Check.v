@@ -34,7 +34,8 @@ module Check(
     output [2:0] apple_eat, // 0 是沒有 1是第一個被吃 etc.
     output [399:0] new_position,
     output [7:0] check_done,
-    output [3:0] wall_collision
+    output [3:0] wall_collision,
+    output [5:0] apl_score
     );
     // boundary indexs
     localparam b_tall = 120; 
@@ -55,6 +56,7 @@ module Check(
     reg [5:0] snk_len = 0; 
     reg len_check = 0;  
     reg [5:0] count = 50;  
+    reg [5:0] score = 0;
 
     // S_dead indexs
     reg [399:0] zero;
@@ -81,11 +83,11 @@ module Check(
 
     integer  i;
 
-    assign snake_length = snk_len;
+    assign apl_score = score;
     assign snake_dead = is_dead;
     assign apple_eat = apl_eat;
     assign new_position = new_snkpos;
-    assign check_done = snk_len;
+    assign check_done = score;
     assign wall_collision = wall_colsn;
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -128,10 +130,11 @@ module Check(
 
         if (~reset_n) begin 
             // S_pre initialize
-            apl_num  <= 0;
-            wall_num <= 0; 
-            snk_len  <= 0;
+            apl_num   <= 0;
+            wall_num  <= 0; 
+            snk_len   <= 0;
             len_check <= 0;
+            score     <= 0;
 
             // S_dead initialize
             next_pos   <= 0;
@@ -236,7 +239,12 @@ module Check(
                             nb_next <= snk_pos[399:392] + 108;
                             for (i = 10; i > 0; i = i - 1) begin
                                 if ((snk_pos[399:392] + 108) == wall_pos[(i * 8 - 1) -:8]) begin 
-                                    wall_colsn <= 11 - i;    
+                                    if(snk_len >= 5) begin
+                                        wall_colsn <= 11 - i;
+                                        snk_len <= snk_len - 1;
+                                    end else begin
+                                        is_dead <= 1;
+                                    end    
                                 end
                             end
 
@@ -254,9 +262,10 @@ module Check(
                         if (snk_pos[399:392] - 12 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
                             if(snk_len >= 5) begin
                                 wall_colsn <= 11 - i;
+                                snk_len <= snk_len - 1;
                             end else begin
                                 is_dead <= 1;
-                            end
+                            end    
                         end
                     end   
 
@@ -281,7 +290,12 @@ module Check(
                             nb_next <= snk_pos[399:392] - 108;
                             for (i = 10; i > 0; i = i - 1) begin
                                 if ((snk_pos[399:392] - 108) == wall_pos[(i * 8 - 1) -:8]) begin 
-                                    wall_colsn <= 11 - i;    
+                                    if(snk_len >= 5) begin
+                                        wall_colsn <= 11 - i;
+                                        snk_len <= snk_len - 1;
+                                    end else begin
+                                        is_dead <= 1;
+                                    end        
                                 end
                             end
 
@@ -299,9 +313,10 @@ module Check(
                         if (snk_pos[399:392] + 12 == wall_pos[(i * 8 - 1) -:8]) begin 
                             if(snk_len >= 5) begin
                                 wall_colsn <= 11 - i;
+                                snk_len <= snk_len - 1;
                             end else begin
                                 is_dead <= 1;
-                            end
+                            end    
                         end
                     end   
 
@@ -326,7 +341,12 @@ module Check(
                             nb_next <= snk_pos[399:392] + 11;
                             for (i = 10; i > 0; i = i - 1) begin
                                 if ((snk_pos[399:392] + 11) == wall_pos[(i * 8 - 1) -:8]) begin 
-                                    wall_colsn <= 11 - i;    
+                                    if(snk_len >= 5) begin
+                                        wall_colsn <= 11 - i;
+                                        snk_len <= snk_len - 1;
+                                    end else begin
+                                        is_dead <= 1;
+                                    end    
                                 end
                             end
 
@@ -344,9 +364,10 @@ module Check(
                         if (snk_pos[399:392] - 1 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
                             if(snk_len >= 5) begin
                                 wall_colsn <= 11 - i;
+                                snk_len <= snk_len - 1;
                             end else begin
                                 is_dead <= 1;
-                            end
+                            end    
                         end
                     end   
 
@@ -371,7 +392,12 @@ module Check(
                             nb_next <= snk_pos[399:392] - 11;
                             for (i = 10; i > 0; i = i - 1) begin
                                 if ((snk_pos[399:392] - 11) == wall_pos[(i * 8 - 1) -:8]) begin 
-                                    wall_colsn <= 11 - i;    
+                                    if(snk_len >= 5) begin
+                                        wall_colsn <= 11 - i;
+                                        snk_len <= snk_len - 1;
+                                    end else begin
+                                        is_dead <= 1;
+                                    end    
                                 end
                             end
 
@@ -389,6 +415,7 @@ module Check(
                         if (snk_pos[399:392] + 1 == wall_pos[(i * 8 - 1) -:8]) begin 
                             if(snk_len >= 5) begin
                                 wall_colsn <= 11 - i;
+                                snk_len <= snk_len - 1;
                             end else begin
                                 is_dead <= 1;
                             end
@@ -459,7 +486,9 @@ module Check(
                         new_snkpos <= {nb_next, ori_snk[399:8]};
                     end else begin 
                         new_snkpos <= {next_pos, ori_snk[399:8]};
-                    end                                    
+                    end                   
+
+                    score <= (snk_len <= 4)? 0: (snk_len - 5);              
                 end else begin 
                     initialized <= 0; 
                     pos_check <= 1;
