@@ -276,7 +276,7 @@ always @(posedge clk) begin
                     mark[snake[399:392]-1] <= 3;
                 end
             end else if (snake[391:384] != 0) begin
-                if ((snake[399:392] == snake[391:384] + 1 && snake[399:392] == prev_snake - 1) || (snake[399:392] == snake[391:384] - 1 && snake[399:392] == prev_snake + 1) ) // left-right
+                if ((snake[399:392] == snake[391:384] + 1 && snake[399:392] == prev_snake - 1) || (snake[399:392] == snake[391:384] - 1 && snake[399:392] == prev_snake + 1) || (snake[399:392] == prev_snake - 11 && snake[399:392] == snake[391:384] - 1) || (snake[399:392] == snake[391:384] - 11 && snake[399:392] == prev_snake - 1)) // left-right
                     mark[snake[399:392]-1] <= 5;
                 else if ((snake[399:392] == snake[391:384] + 12 && snake[399:392] == prev_snake - 12) || (snake[399:392] == snake[391:384] - 12 && snake[399:392] == prev_snake + 12)) // up-down 
                     mark[snake[399:392]-1] <= 4;
