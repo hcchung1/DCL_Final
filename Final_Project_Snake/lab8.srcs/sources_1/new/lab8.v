@@ -148,7 +148,7 @@ Check check(
   .new_position(new_position),
   .check_done(check_done), 
   .wall_collision(wall_collision),
-  .apl_score(score),
+  .score(score),
   .highest_score(highest_score)
 );
 
