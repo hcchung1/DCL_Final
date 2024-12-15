@@ -271,8 +271,6 @@ generate
     end
 endgenerate
 
-reg init_finished;
-
 always @(posedge clk) begin
     if (~reset_n || state == 0) begin
         is_finished <= 0;
@@ -282,11 +280,10 @@ always @(posedge clk) begin
         length <= 0;
         change <= 0;
         prev_snake <= 0;
-        init_finished <= 0;
         for (i = 0; i < 120; i = i + 1) begin
             mark[i] <= 16;
         end
-    end else if (state == 1 && init_finished) begin
+    end else if (state == 1 && snake != 0) begin
         snake <= snake << 8;
         prev_snake <= snake[399:392];
         if (snake[399:392] != 0) begin
@@ -315,7 +312,6 @@ always @(posedge clk) begin
                 else if ((snake[399:392] == snake[391:384] + 1 && snake[399:392] == prev_snake - 12) || (snake[399:392] == snake[391:384] - 12 && snake[399:392] == prev_snake + 1)) // left-up / down-right
                     mark[snake[399:392]-1] <= 11;
             end else if (snake[391:384] == 0) begin
-                init_finished <= 1;
                 if (snake[399:392] == prev_snake + 1) // tail right
                     mark[snake[399:392]-1] <= 6;
                 else if (snake[399:392] == prev_snake - 1) // tail left
@@ -784,6 +780,7 @@ always @ (posedge clk) begin
         snkreg_addr <= fish_addr[mark[119]] + ((pixel_y >> 1) - Vertical_pos[9]) * FISH_W + ((pixel_x + (FISH_W * 2 - 1) - Horizontal_pos[11]) >> 1);
         disp <= 1;
     end else if (state == 7 && gameover_region) begin
+        disp <= 0;
         snkreg_addr <= gameover_addr + ((pixel_y >> 1) - 100) * 120 + ((pixel_x + (120 * 2 - 1) - 440) >> 1);
     end else if (number_region1) begin
         disp <= 0;
@@ -827,18 +824,16 @@ always @(*) begin
   else begin
     if (state == 1) rgb_next = data_out;
     else begin
-        if (state == 6 && (stop_region1 || stop_region2)) begin
-            rgb_next = 12'h000;
-        end else begin
-            if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
-            else if (state == 7 && gameover_region) rgb_next = data_snk_o;
+        if (state == 6 && (stop_region1 || stop_region2)) rgb_next = 12'h000;
+            else if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
+            else if (state == 7 && gameover_region && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
             else if ((number_region1 || number_region2) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
-            else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30; // dark_green to red
-            else if (mode == 3 && data_out == 12'hceb) rgb_next = 12'he78; 
-            else if (mode == 3 && data_out == 12'hefd) rgb_next = 12'hebd;
-            else if (mode == 2 && data_out == 12'had8) rgb_next = 12'h26f;
-            else if (mode == 2 && data_out == 12'hceb) rgb_next = 12'h46f;  
-            else if (mode == 2 && data_out == 12'hefd) rgb_next = 12'hfbf;
+            // else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30; // dark_green to red
+            // else if (mode == 3 && data_out == 12'hceb) rgb_next = 12'he78; 
+            // else if (mode == 3 && data_out == 12'hefd) rgb_next = 12'hebd;
+            // else if (mode == 2 && data_out == 12'had8) rgb_next = 12'h26f;
+            // else if (mode == 2 && data_out == 12'hceb) rgb_next = 12'h46f;  
+            // else if (mode == 2 && data_out == 12'hefd) rgb_next = 12'hfbf;
             else rgb_next = data_out;
         end
     end
