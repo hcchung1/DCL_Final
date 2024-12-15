@@ -235,7 +235,7 @@ module Check(
                 if (dir_sig[3] == 1) begin
                     for (i = 49; i > 0; i = i - 1) begin 
                         // snk_pos[399:392] is the position of snake
-                        if (snk_pos[399:392] - 12 == snk_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
+                        if (snk_pos[399:392] - 12 == snk_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0 && snk_pos[399:392] - 12 != snk_pos[((51-snk_len)*8)-1 -:8]) begin 
                             is_dead <= 1;
                         end
                     end
@@ -245,13 +245,12 @@ module Check(
                             is_dead <= 1;
                         end
                     end else begin
-                        if(snk_pos[399:392] == 1 || snk_pos[399:392] == 2 || snk_pos[399:392] == 3 || snk_pos[399:392] == 4 || snk_pos[399:392] == 5 || snk_pos[399:392] == 6 || snk_pos[399:392] == 7 || snk_pos[399:392] == 8 || snk_pos[399:392] == 9 || snk_pos[399:392] == 10 || snk_pos[399:392] == 11 || snk_pos[399:392] == 12) begin
+                        if (snk_pos[399:392] == 1 || snk_pos[399:392] == 2 || snk_pos[399:392] == 3 || snk_pos[399:392] == 4 || snk_pos[399:392] == 5 || snk_pos[399:392] == 6 || snk_pos[399:392] == 7 || snk_pos[399:392] == 8 || snk_pos[399:392] == 9 || snk_pos[399:392] == 10 || snk_pos[399:392] == 11 || snk_pos[399:392] == 12) begin
                             nb_next <= snk_pos[399:392] + 108;
                             for (i = 10; i > 0; i = i - 1) begin
                                 if ((snk_pos[399:392] + 108) == wall_pos[(i * 8 - 1) -:8]) begin 
                                     if(snk_len >= 5) begin
-                                        wall_colsn <= 11 - i;
-                                        snk_len <= snk_len - 1;
+                                        wall_colsn <= 11 - i;                                        
                                     end else begin
                                         is_dead <= 1;
                                     end    
@@ -271,8 +270,7 @@ module Check(
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] - 12 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
                             if(snk_len >= 5) begin
-                                wall_colsn <= 11 - i;
-                                snk_len <= snk_len - 1;
+                                wall_colsn <= 11 - i;                                
                             end else begin
                                 is_dead <= 1;
                             end    
@@ -286,7 +284,7 @@ module Check(
                 else if (dir_sig[2] == 1) begin
                     for (i = 49; i > 0; i = i - 1) begin 
                         // snk_pos[399:392] is the position of snake
-                        if (snk_pos[399:392] + 12 == snk_pos[(i * 8 - 1) -:8]) begin 
+                        if (snk_pos[399:392] + 12 == snk_pos[(i * 8 - 1) -:8] && snk_pos[399:392] + 12 != snk_pos[((51-snk_len)*8)-1 -:8]) begin 
                             is_dead <= 1;
                         end
                     end
@@ -301,8 +299,7 @@ module Check(
                             for (i = 10; i > 0; i = i - 1) begin
                                 if ((snk_pos[399:392] - 108) == wall_pos[(i * 8 - 1) -:8]) begin 
                                     if(snk_len >= 5) begin
-                                        wall_colsn <= 11 - i;
-                                        snk_len <= snk_len - 1;
+                                        wall_colsn <= 11 - i;                                        
                                     end else begin
                                         is_dead <= 1;
                                     end        
@@ -322,8 +319,7 @@ module Check(
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] + 12 == wall_pos[(i * 8 - 1) -:8]) begin 
                             if(snk_len >= 5) begin
-                                wall_colsn <= 11 - i;
-                                snk_len <= snk_len - 1;
+                                wall_colsn <= 11 - i;                                
                             end else begin
                                 is_dead <= 1;
                             end    
@@ -337,7 +333,7 @@ module Check(
                 else if (dir_sig[1] == 1) begin
                     for (i = 49; i > 0; i = i - 1) begin 
                         // snk_pos[399:392] is the position of snake
-                        if (snk_pos[399:392] - 1 == snk_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
+                        if (snk_pos[399:392] - 1 == snk_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0 && snk_pos[399:392] - 1 != snk_pos[((51-snk_len)*8)-1 -:8]) begin 
                             is_dead <= 1;
                         end
                     end
@@ -352,8 +348,7 @@ module Check(
                             for (i = 10; i > 0; i = i - 1) begin
                                 if ((snk_pos[399:392] + 11) == wall_pos[(i * 8 - 1) -:8]) begin 
                                     if(snk_len >= 5) begin
-                                        wall_colsn <= 11 - i;
-                                        snk_len <= snk_len - 1;
+                                        wall_colsn <= 11 - i;                                        
                                     end else begin
                                         is_dead <= 1;
                                     end    
@@ -373,8 +368,7 @@ module Check(
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] - 1 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
                             if(snk_len >= 5) begin
-                                wall_colsn <= 11 - i;
-                                snk_len <= snk_len - 1;
+                                wall_colsn <= 11 - i;                                
                             end else begin
                                 is_dead <= 1;
                             end    
@@ -388,7 +382,7 @@ module Check(
                 else if (dir_sig[0] == 1) begin
                     for (i = 49; i > 0; i = i - 1) begin 
                         // snk_pos[399:392] is the position of snake
-                        if (snk_pos[399:392] + 1 == snk_pos[(i * 8 - 1) -:8]) begin 
+                        if (snk_pos[399:392] + 1 == snk_pos[(i * 8 - 1) -:8] && snk_pos[399:392] + 1 != snk_pos[((51-snk_len)*8)-1 -:8]) begin 
                             is_dead <= 1;
                         end
                     end
@@ -403,8 +397,7 @@ module Check(
                             for (i = 10; i > 0; i = i - 1) begin
                                 if ((snk_pos[399:392] - 11) == wall_pos[(i * 8 - 1) -:8]) begin 
                                     if(snk_len >= 5) begin
-                                        wall_colsn <= 11 - i;
-                                        snk_len <= snk_len - 1;
+                                        wall_colsn <= 11 - i;                                        
                                     end else begin
                                         is_dead <= 1;
                                     end    
@@ -424,8 +417,7 @@ module Check(
                     for (i = 10; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] + 1 == wall_pos[(i * 8 - 1) -:8]) begin 
                             if(snk_len >= 5) begin
-                                wall_colsn <= 11 - i;
-                                snk_len <= snk_len - 1;
+                                wall_colsn <= 11 - i;                                
                             end else begin
                                 is_dead <= 1;
                             end
@@ -490,15 +482,15 @@ module Check(
                 if (state == 4) begin                     
                     if(apl_eat != 0) begin
                         new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
+                        apl_score <= snk_len - 4; 
                     end else if (wall_colsn != 0)begin
                         new_snkpos <= {next_pos, stone_snk[399:8]};
+                        apl_score <= snk_len - 5;
                     end else if(mod_0_hit == 1) begin
                         new_snkpos <= {nb_next, ori_snk[399:8]};
                     end else begin 
                         new_snkpos <= {next_pos, ori_snk[399:8]};
-                    end                   
-
-                    apl_score <= (snk_len <= 4)? 0: (snk_len - 5);              
+                    end                                                    
                 end else begin 
                     initialized <= 0; 
                     pos_check <= 1;
