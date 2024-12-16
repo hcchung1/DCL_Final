@@ -25,7 +25,7 @@ module Screen(
     input  [3:0] usr_led,
     input  [3:0] usr_btn,
     input  [3:0] usr_sw,
-    input  hurt;
+    input  hurt,
     input  [2:0] state,  // main state machine state
     input  [1:0] mode,   // game mode
     input  [3:0] choice,  // 
@@ -821,7 +821,7 @@ end
 // End of the AGU code.
 // ------------------------------------------------------------------------
 
-// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------ 
 // Send the video data in the sram to the VGA controller
 always @(posedge clk) begin
   if (pixel_tick) rgb_reg <= rgb_next;
@@ -834,8 +834,9 @@ always @(*) begin
     if (state == 1) rgb_next = data_out;
     else begin
         if (state == 6 && (stop_region1 || stop_region2)) rgb_next = 12'h000;
-        else if(now_region && data_snk_o != 12'h0f0 && disp > 0 && disp < 14 && hurt == 1) rgb_next = data_snk_o - 12'h0f0;
-        else if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
+        else if(now_region && data_snk_o != 12'h0f0 && disp > 0 && disp < 14 && hurt == 1)begin  
+            rgb_next = {data_snk_o[7:4], 8'b0};
+        end else if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
         else if (state == 7 && gameover_region && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
         else if ((number_region1 || number_region2) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
             // else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30; // dark_green to red
