@@ -834,7 +834,7 @@ always @(*) begin
     if (state == 1) rgb_next = data_out;
     else begin
         if (state == 6 && (stop_region1 || stop_region2)) rgb_next = 12'h000;
-        else if(now_region && data_snk_o != 12'h0f0 && disp > 0 && disp < 14 && hurt == 1)begin  
+        else if(now_region && data_snk_o != 12'h0f0 && disp > 0 && disp < 15 && hurt == 1)begin  
             rgb_next = {data_snk_o[7:4], 8'b0};
         end else if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
         else if (state == 7 && gameover_region && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
