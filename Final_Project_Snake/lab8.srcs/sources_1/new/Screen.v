@@ -242,8 +242,8 @@ localparam NUMBER_H = 30;
 localparam NUMBER_W = 25;
 localparam NUMBER1_VPOS = 200;
 localparam NUMBER2_VPOS = 200;
-localparam NUMBER1_HPOS = 600;
-localparam NUMBER2_HPOS = 625;
+localparam NUMBER1_HPOS = 605;
+localparam NUMBER2_HPOS = 635;
 wire [119:0] now_region;
 // assign now_region =
 //            pixel_y >= (Vertical_pos<<1) && pixel_y < (Vertical_pos+FISH_H)<<1 &&
