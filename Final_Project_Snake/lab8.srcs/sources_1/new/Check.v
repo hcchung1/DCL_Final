@@ -42,8 +42,8 @@ module Check(
     localparam b_tall = 120; 
 
     // fsm s_check
-    localparam S_init = 0, S_pre = 1, S_dead = 2, S_apl = 3, S_pos = 4, S_endgame = 5;
-    reg [2:0] s_check = 0, s_check_next = 0;    
+    localparam S_init = 0, S_pre = 1, S_dead = 2, S_apl = 3, S_pos = 4, S_endgame = 5, S_lenadd = 6;
+    reg [4:0] s_check = 0, s_check_next = 0;    
 
     // S_init index
     reg initialized;
@@ -73,7 +73,11 @@ module Check(
     // S_apl indexs
     reg [2:0] apl_eat = 0;
     reg [7:0] apl_eaten_pos = 0;
-    reg apl_check = 0;
+    reg apl_check = 0;   
+
+    // S_lenadd indexs
+    reg [2:0] len_add = 0;
+    reg lenadd_check = 0;
 
     // S_pos indexs
     reg [399:0] new_snkpos = 0;
@@ -114,8 +118,11 @@ module Check(
                     else if (dead_check == 1 && is_dead == 0) s_check_next = S_apl;
                     else s_check_next = S_dead;
 
-            S_apl:  if (apl_check == 1) s_check_next = S_pos;
+            S_apl:  if (apl_check == 1) s_check_next = S_lenadd;
                     else s_check_next = S_apl;
+
+            S_lenadd: if (lenadd_check == 1) s_check_next = S_pos;
+                      else s_check_next = S_lenadd;
 
             S_pos:  if (pos_check == 1) s_check_next = S_init;
                     else s_check_next = S_pos;
@@ -149,6 +156,7 @@ module Check(
             apl_eat       <= 0;
             apl_eaten_pos <= 0;
             apl_check     <= 0;
+            len_add <= 0;
 
             // S_pos initialize
             pos_check  <= 0;
@@ -174,7 +182,7 @@ module Check(
 
                 // S_apl initialize                
                 apl_eaten_pos <= 0;
-                apl_check     <= 0;
+                apl_check     <= 0;                
 
                 // S_pos initialize
                 new_snkpos  <= snk_pos;
@@ -200,6 +208,16 @@ module Check(
                 stone_snk   <= snk_pos;
                 mod_0_hit   <= 0;
                 nb_next     <= 0;
+
+                if (mode == 0) begin 
+                    if (len_add == 2) len_add <= 0;
+                end else if (mode == 1) begin
+                    if (len_add == 3) len_add <= 0;
+                end else if (mode == 2) begin 
+                    if (len_add == 4) len_add <= 0;
+                end else if (mode == 3) begin
+                    if (len_add == 5) len_add <= 0;
+                end
 
                 // calulate len snake
                 if (count != 0) begin
@@ -482,7 +500,7 @@ module Check(
                 if (dir_sig[3] == 1) begin
                     for (i = 3; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] - 12 == apl_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
-                            apl_eat <= 4 - i;
+                            apl_eat <= 4 - i;    
                             apl_eaten_pos <= apl_pos[(i * 8 - 1) -:8];
                         end
                     end          
@@ -500,7 +518,7 @@ module Check(
                 else if (dir_sig[1] == 1) begin
                     for (i = 3; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] - 1 == apl_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
-                            apl_eat <= 4 - i;
+                            apl_eat <= 4 - i;    
                             apl_eaten_pos <= apl_pos[(i * 8 - 1) -:8];
                         end
                     end          
@@ -509,7 +527,7 @@ module Check(
                 else if (dir_sig[0] == 1) begin
                     for (i = 3; i > 0; i = i - 1) begin 
                         if (snk_pos[399:392] + 1 == apl_pos[(i * 8 - 1) -:8]) begin 
-                            apl_eat <= 4 - i;
+                            apl_eat <= 4 - i;    
                             apl_eaten_pos <= apl_pos[(i * 8 - 1) -:8];
                         end
                     end          
@@ -518,12 +536,27 @@ module Check(
                 apl_check <= 1;
 
             end
-            //end of apple check           
+            //end of apple check  
+            if (s_check == S_lenadd) begin 
+                if (apl_eat != 0) begin
+                    len_add <= len_add + 1;
+                end
+                lenadd_check <= 1;
+            end         
             
             // check the next position of the snake begin
             if (s_check == S_pos) begin 
                 if (state == 4) begin                     
-                    if(apl_eat != 0) begin
+                    if(len_add == 2 && mode == 0) begin
+                        new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
+                        apl_score <= snk_len - 4; 
+                    end else if (len_add == 3 && mode == 1) begin
+                        new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
+                        apl_score <= snk_len - 4; 
+                    end else if (len_add == 4 && mode == 2) begin
+                        new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
+                        apl_score <= snk_len - 4; 
+                    end else if (len_add == 5 && mode == 3) begin
                         new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
                         apl_score <= snk_len - 4; 
                     end else if (wall_colsn != 0 && mod_0_hit == 0)begin
@@ -545,6 +578,7 @@ module Check(
 
             if (s_check == S_endgame) begin
                 new_snkpos <= 400'b0;   
+                len_add <= 0;
                 if (state == 0) begin
                     edgm_check <= 1;
                 end
