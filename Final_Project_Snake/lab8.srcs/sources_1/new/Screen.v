@@ -127,15 +127,15 @@ initial begin
     fish_addr[15] = VBUF_W*VBUF_H + FISH_W*FISH_H*15;
     gameover_addr = VBUF_W*VBUF_H + FISH_W*FISH_H*16;
     number_addr[0] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31;
-    number_addr[1] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120;
-    number_addr[2] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*2;
-    number_addr[3] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*3;
-    number_addr[4] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*4;
-    number_addr[5] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*5;
-    number_addr[6] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*6;
-    number_addr[7] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*7;
-    number_addr[8] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*8;
-    number_addr[9] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 120*9;
+    number_addr[1] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750;
+    number_addr[2] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*2;
+    number_addr[3] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*3;
+    number_addr[4] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*4;
+    number_addr[5] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*5;
+    number_addr[6] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*6;
+    number_addr[7] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*7;
+    number_addr[8] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*8;
+    number_addr[9] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*9;
 end
 
 // Instiantiate the VGA sync signal generator
@@ -158,7 +158,7 @@ reg  [17:0] snkreg_addr;
 // ------------------------------------------------------------------------
 // The following code describes an initialized SRAM memory block that
 // stores a 320x240 12-bit seabed image, plus two 64x32 fish images.
-sram #(.DATA_WIDTH(12), .ADDR_WIDTH(18), .RAM_SIZE(VBUF_W*VBUF_H+FISH_W*FISH_H*16+120*31+120*10), .FILE("background.mem"))
+sram #(.DATA_WIDTH(12), .ADDR_WIDTH(18), .RAM_SIZE(VBUF_W*VBUF_H+FISH_W*FISH_H*16+120*31+750*10), .FILE("background.mem"))
   ram0 (.clk(clk), .we(sram_we), .en(sram_en),
           .addr(sram_addr), .addr_snk(snake_addr),  .data_i(data_in), .data_o(data_out), .data_snk_o(data_snk_o));
 
@@ -238,12 +238,12 @@ localparam GAMEOVER_H = 31;
 localparam GAMEOVER_W = 120;
 localparam GAMEOVER_VPOS = 100;
 localparam GAMEOVER_HPOS = 400;
-localparam NUMBER_H = 12;
-localparam NUMBER_W = 10;
+localparam NUMBER_H = 30;
+localparam NUMBER_W = 25;
 localparam NUMBER1_VPOS = 200;
 localparam NUMBER2_VPOS = 200;
-localparam NUMBER1_HPOS = 600;
-localparam NUMBER2_HPOS = 620;
+localparam NUMBER1_HPOS = 590;
+localparam NUMBER2_HPOS = 615;
 wire [119:0] now_region;
 // assign now_region =
 //            pixel_y >= (Vertical_pos<<1) && pixel_y < (Vertical_pos+FISH_H)<<1 &&
@@ -831,23 +831,20 @@ always @(*) begin
   if (~video_on)
     rgb_next = 12'h000; // Synchronization period, must set RGB values to zero.
   else begin
-    if (state == 1) rgb_next = data_out;
-    else begin
-        if (state == 6 && (stop_region1 || stop_region2)) rgb_next = 12'h000;
-        else if(now_region && data_snk_o != 12'h0f0 && disp > 0 && disp < 15 && hurt == 1)begin  
-            rgb_next = {data_snk_o[7:4], 8'b0};
-        end else if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
-        else if (state == 7 && gameover_region && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
-        else if ((number_region1 || number_region2) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
+    if (state == 6 && (stop_region1 || stop_region2)) rgb_next = 12'h000;
+    else if (now_region && data_snk_o != 12'h0f0 && disp > 0 && disp < 15 && hurt == 1) begin  
+        rgb_next = {data_snk_o[7:4], 8'b0};
+    end else if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
+    else if (state == 7 && gameover_region && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
+    else if ((number_region1 || number_region2) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
             // else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30; // dark_green to red
             // else if (mode == 3 && data_out == 12'hceb) rgb_next = 12'he78; 
             // else if (mode == 3 && data_out == 12'hefd) rgb_next = 12'hebd;
             // else if (mode == 2 && data_out == 12'had8) rgb_next = 12'h26f;
             // else if (mode == 2 && data_out == 12'hceb) rgb_next = 12'h46f;  
             // else if (mode == 2 && data_out == 12'hefd) rgb_next = 12'hfbf;
-        else rgb_next = data_out;
+    else rgb_next = data_out;
         
-    end
   end
 end
 // End of the video data display code.
