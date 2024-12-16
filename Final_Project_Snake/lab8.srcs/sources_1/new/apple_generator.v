@@ -37,31 +37,49 @@ always @(posedge clk) begin
             apple_pos <= {apple_pos[23:16], temp_pos, apple_pos[7:0]};
           end else if(apple_eat_pos == 3)begin 
             apple_pos <= {apple_pos[23:16], apple_pos[15:8], temp_pos};
-          end else if(obstacle_hit_pos == 1 && temp_pos != snake_pos[399:392] + 1 && temp_pos != snake_pos[399:392]-1)begin 
+          end else if(obstacle_hit_pos == 1 && 
+                      temp_pos != snake_pos[399:392] + 1 && 
+                      temp_pos != snake_pos[399:392] - 1)begin 
             obstacle_new_pos <= {temp_pos, obstacle_pos[71:0]};
-          end else if(obstacle_hit_pos == 2 && temp_pos != snake_pos[399:392] + 1 && temp_pos != snake_pos[399:392]-1)begin
+          end else if(obstacle_hit_pos == 2 && 
+                      temp_pos != snake_pos[399:392] + 1 && 
+                      temp_pos != snake_pos[399:392] - 1)begin
             obstacle_new_pos <= {obstacle_pos[79:72], temp_pos, obstacle_pos[63:0]};
-          end else if(obstacle_hit_pos == 3 && temp_pos != snake_pos[399:392] + 1 && temp_pos != snake_pos[399:392]-1)begin 
+          end else if(obstacle_hit_pos == 3 && 
+                      temp_pos != snake_pos[399:392] + 1 && 
+                      temp_pos != snake_pos[399:392] - 1)begin 
             obstacle_new_pos <= {obstacle_pos[79:64], temp_pos, obstacle_pos[55:0]};
-          end else if(obstacle_hit_pos == 4 && temp_pos != snake_pos[399:392] + 1 && temp_pos != snake_pos[399:392]-1)begin 
+          end else if(obstacle_hit_pos == 4 && 
+                      temp_pos != snake_pos[399:392] + 1 && 
+                      temp_pos != snake_pos[399:392] - 1)begin 
             obstacle_new_pos <= {obstacle_pos[79:56], temp_pos, obstacle_pos[47:0]};
-          end else if(obstacle_hit_pos == 5 && temp_pos != snake_pos[399:392] + 1 && temp_pos != snake_pos[399:392]-1)begin 
+          end else if(obstacle_hit_pos == 5 && 
+                      temp_pos != snake_pos[399:392] + 1 && 
+                      temp_pos != snake_pos[399:392] - 1)begin 
             obstacle_new_pos <= {obstacle_pos[79:48], temp_pos, obstacle_pos[39:0]};
-          end else if(obstacle_hit_pos == 6 && temp_pos != snake_pos[399:392] + 1 && temp_pos != snake_pos[399:392]-1)begin 
+          end else if(obstacle_hit_pos == 6 && 
+                      temp_pos != snake_pos[399:392] + 1 && 
+                      temp_pos != snake_pos[399:392] - 1)begin 
             obstacle_new_pos <= {obstacle_pos[79:40], temp_pos, obstacle_pos[31:0]};
-          end else if(obstacle_hit_pos == 7 && temp_pos != snake_pos[399:392] + 1 && temp_pos != snake_pos[399:392]-1)begin 
+          end else if(obstacle_hit_pos == 7 && 
+                      temp_pos != snake_pos[399:392] + 1 && 
+                      temp_pos != snake_pos[399:392] - 1)begin 
             obstacle_new_pos <= {obstacle_pos[79:32], temp_pos, obstacle_pos[23:0]};
-          end else if(obstacle_hit_pos == 8 && temp_pos != snake_pos[399:392] + 1 && temp_pos != snake_pos[399:392]-1)begin 
+          end else if(obstacle_hit_pos == 8 && 
+                      temp_pos != snake_pos[399:392] + 1 && 
+                      temp_pos != snake_pos[399:392] - 1)begin 
             obstacle_new_pos <= {obstacle_pos[79:24], temp_pos, obstacle_pos[15:0]};
-          end else if(obstacle_hit_pos == 9 && temp_pos != snake_pos[399:392] + 1 && temp_pos != snake_pos[399:392]-1)begin 
+          end else if(obstacle_hit_pos == 9 && 
+                      temp_pos != snake_pos[399:392] + 1 && 
+                      temp_pos != snake_pos[399:392] - 1)begin 
             obstacle_new_pos <= {obstacle_pos[79:16], temp_pos, obstacle_pos[7:0]};
-          end else if(obstacle_hit_pos == 10 && temp_pos != snake_pos[399:392] + 1 && temp_pos != snake_pos[399:392]-1)begin 
+          end else if(obstacle_hit_pos == 10 && 
+                      temp_pos != snake_pos[399:392] + 1 && 
+                      temp_pos != snake_pos[399:392] - 1)begin 
             obstacle_new_pos <= {obstacle_pos[79:8], temp_pos};
           end
         end
-        
       end
-    
     end else begin 
       apple_pos <= main_apple_pos;
       obstacle_new_pos <= obstacle_pos;

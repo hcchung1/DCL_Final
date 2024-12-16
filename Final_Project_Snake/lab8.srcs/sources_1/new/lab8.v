@@ -81,13 +81,6 @@ wire [7:0] check_done;
 reg pause;
 reg ending;
 
-wire state; // state 
-assign state = P;
-
-
-wire checking;
-assign checking = (P == S_MAIN_CHECK);
-
 reg starting;
 reg wait_end = 0;
 
@@ -126,13 +119,14 @@ assign usr_led = P[2:0];
 reg [1:0] mode = 2'b00;
 wire [5:0] score;
 wire [5:0] highest_score;
+reg hurt = 0;
 
 debounce btn_db0(.clk(clk),.btn_input(usr_btn[0]),.btn_output(btn_level[0]));
 debounce btn_db1(.clk(clk),.btn_input(usr_btn[1]),.btn_output(btn_level[1]));
 debounce btn_db2(.clk(clk),.btn_input(usr_btn[2]),.btn_output(btn_level[2]));
 debounce btn_db3(.clk(clk),.btn_input(usr_btn[3]),.btn_output(btn_level[3]));
 
-Screen screen(.clk(clk),.reset_n(reset_n),.usr_led(usr_led),.usr_btn(usr_btn),.usr_sw(usr_sw),.state(P),.mode(mode),.choice(choice),.snk_pos(snk_pos),.apple_pos(apple_pos),.wall_pos(wall_pos),.score(score),.highest_score(score),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
+Screen screen(.clk(clk),.reset_n(reset_n),.usr_led(usr_led),.usr_btn(usr_btn),.usr_sw(usr_sw),.hurt(hurt),.state(P),.mode(mode),.choice(choice),.snk_pos(snk_pos),.apple_pos(apple_pos),.wall_pos(wall_pos),.score(score),.highest_score(score),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
 
 Check check(
   .clk(clk),
@@ -235,6 +229,9 @@ reg [15:0] lfsr; // 用於隨機數生成的 LFSR
 reg [2:0] apple_decide = 0;
 reg [3:0] wall_decide = 0;
 reg [7:0] temp_pos;
+reg [30:0] hurt_clk = 0;
+reg hurt_palse = 0;
+reg [30:0] hurt_palse_clk = 0;
 
 function is_overlap( input [7:0] pos, input [399:0] entity_pos);
     integer i;
@@ -266,6 +263,10 @@ always @(posedge clk)begin
     lfsr <= 16'hACEF; // 初始化 LFSR
     apple_decide <= 0;
     wall_decide <= 0;
+    hurt_clk <= 0;
+    hurt <= 0;
+    hurt_palse <= 0;
+    hurt_palse_clk <= 0;
 
   end else begin 
 
@@ -331,6 +332,10 @@ always @(posedge clk)begin
         3: row_B = "btn3: 10 stones ";
         default: row_B = "btn0: no border ";
       endcase
+      hurt_clk <= 0;
+      hurt <= 0;
+      hurt_palse <= 0;
+      hurt_palse_clk <= 0;
       counter <= 0;
       wait_end <= 0;
 
@@ -415,6 +420,9 @@ always @(posedge clk)begin
 
       // [x] check for signals used for the ending of recovery (re_done)
       if(apple_eat || wall_collision)begin 
+        if(wall_collision)begin 
+          hurt <= 1;
+        end
         if(~re_done)begin 
           if(new_apple_pos != apple_pos)begin 
             apple_pos <= new_apple_pos; // update apple position
@@ -466,10 +474,27 @@ always @(posedge clk)begin
       wall_decide <= 0;
       snk_pos <= {8'd64, 8'd63, 8'd62, 8'd61, 8'd60, 360'b0};
     end
-    
-    // 'test' for times that goto S_MAIN_RE
-    if(P_next == S_MAIN_RE)begin 
-      counter <= counter + 1;
+
+    if(hurt)begin 
+      hurt_clk <= hurt_clk + 1;
+      if(hurt_clk == 200000000)begin 
+        hurt <= 0;
+        hurt_clk <= 0;
+      end else if(hurt_clk < 200000000)begin 
+        hurt_palse_clk <= hurt_palse_clk + 1;
+        if(hurt_palse_clk == 30000000)begin 
+          hurt_palse <= ~hurt_palse;
+          hurt_palse_clk <= 0;
+        end
+      end
+    end else begin 
+      hurt_palse_clk <= 0;
+      hurt_palse <= 0;
+      hurt_clk <= 0;
+    end
+
+    if(P != P_next)begin 
+      switch <= usr_sw;
     end
   end
   
