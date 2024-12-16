@@ -121,12 +121,23 @@ wire [5:0] score;
 wire [5:0] highest_score;
 reg hurt = 0;
 
+reg [30:0] counter;
+reg [30:0] init_clock;
+reg [1:0] init_showB;
+reg [15:0] lfsr; // 用於隨機數生成的 LFSR
+reg [2:0] apple_decide = 0;
+reg [3:0] wall_decide = 0;
+reg [7:0] temp_pos;
+reg [30:0] hurt_clk = 0;
+reg hurt_palse = 0;
+reg [30:0] hurt_palse_clk = 0;
+
 debounce btn_db0(.clk(clk),.btn_input(usr_btn[0]),.btn_output(btn_level[0]));
 debounce btn_db1(.clk(clk),.btn_input(usr_btn[1]),.btn_output(btn_level[1]));
 debounce btn_db2(.clk(clk),.btn_input(usr_btn[2]),.btn_output(btn_level[2]));
 debounce btn_db3(.clk(clk),.btn_input(usr_btn[3]),.btn_output(btn_level[3]));
 
-Screen screen(.clk(clk),.reset_n(reset_n),.usr_led(usr_led),.usr_btn(usr_btn),.usr_sw(usr_sw),.hurt(hurt),.state(P),.mode(mode),.choice(choice),.snk_pos(snk_pos),.apple_pos(apple_pos),.wall_pos(wall_pos),.score(score),.highest_score(score),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
+Screen screen(.clk(clk),.reset_n(reset_n),.usr_led(usr_led),.usr_btn(usr_btn),.usr_sw(usr_sw),.hurt(hurt_palse),.state(P),.mode(mode),.choice(choice),.snk_pos(snk_pos),.apple_pos(apple_pos),.wall_pos(wall_pos),.score(score),.highest_score(score),.move_end(move_end),.VGA_HSYNC(VGA_HSYNC),.VGA_VSYNC(VGA_VSYNC),.VGA_RED(VGA_RED),.VGA_GREEN(VGA_GREEN),.VGA_BLUE(VGA_BLUE));
 
 Check check(
   .clk(clk),
@@ -222,16 +233,7 @@ end
 // -----------------------------------------------------------------
 // Main Block
 
-reg [30:0] counter;
-reg [30:0] init_clock;
-reg [1:0] init_showB;
-reg [15:0] lfsr; // 用於隨機數生成的 LFSR
-reg [2:0] apple_decide = 0;
-reg [3:0] wall_decide = 0;
-reg [7:0] temp_pos;
-reg [30:0] hurt_clk = 0;
-reg hurt_palse = 0;
-reg [30:0] hurt_palse_clk = 0;
+
 
 function is_overlap( input [7:0] pos, input [399:0] entity_pos);
     integer i;
@@ -482,7 +484,7 @@ always @(posedge clk)begin
         hurt_clk <= 0;
       end else if(hurt_clk < 200000000)begin 
         hurt_palse_clk <= hurt_palse_clk + 1;
-        if(hurt_palse_clk == 30000000)begin 
+        if(hurt_palse_clk == 20000000)begin 
           hurt_palse <= ~hurt_palse;
           hurt_palse_clk <= 0;
         end
