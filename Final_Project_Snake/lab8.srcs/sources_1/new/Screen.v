@@ -138,6 +138,7 @@ initial begin
     number_addr[7] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*7;
     number_addr[8] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*8;
     number_addr[9] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*9;
+    highest_score_addr = 34*50;
 end
 
 // Instiantiate the VGA sync signal generator
@@ -877,8 +878,8 @@ always @(*) begin
         rgb_next = {data_snk_o[7:4], 8'b0};
     end else if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
     else if (state == 7 && gameover_region && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
-    else if (state == 7 && score_region && data_snk_o != 12'h0f0) rgb_next = text_out1;
-    else if (state == 7 && highest_score_region && data_snk_o != 12'h0f0) rgb_next = text_out2;
+    else if (state == 7 && score_region && text_out1 != 12'h0f0) rgb_next = text_out1;
+    else if (state == 7 && highest_score_region && text_out2 != 12'h0f0) rgb_next = text_out2;
     else if ((number_region1 || number_region2) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
             // else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30; // dark_green to red
             // else if (mode == 3 && data_out == 12'hceb) rgb_next = 12'he78; 
