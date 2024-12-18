@@ -87,6 +87,8 @@ localparam FISH_H      = 24; // Height of the fish.
 reg [17:0] fish_addr[0:15]; 
 reg [17:0] gameover_addr;
 reg [17:0] number_addr[0:9];
+reg [17:0] score_addr;
+reg [17:0] highest_score_addr;
 // [0] head right
 // [1] head left
 // [2] head up
@@ -136,6 +138,8 @@ initial begin
     number_addr[7] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*7;
     number_addr[8] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*8;
     number_addr[9] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*9;
+    score_addr = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*10;
+    highest_score_addr = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*10 + 50*34;
 end
 
 // Instiantiate the VGA sync signal generator
@@ -158,7 +162,7 @@ reg  [17:0] snkreg_addr;
 // ------------------------------------------------------------------------
 // The following code describes an initialized SRAM memory block that
 // stores a 320x240 12-bit seabed image, plus two 64x32 fish images.
-sram #(.DATA_WIDTH(12), .ADDR_WIDTH(18), .RAM_SIZE(VBUF_W*VBUF_H+FISH_W*FISH_H*16+120*31+750*10), .FILE("background.mem"))
+sram #(.DATA_WIDTH(12), .ADDR_WIDTH(18), .RAM_SIZE(VBUF_W*VBUF_H+FISH_W*FISH_H*16+120*31+750*10+50*34+118*34), .FILE("background.mem"))
   ram0 (.clk(clk), .we(sram_we), .en(sram_en),
           .addr(sram_addr), .addr_snk(snake_addr),  .data_i(data_in), .data_o(data_out), .data_snk_o(data_snk_o));
 
@@ -242,8 +246,17 @@ localparam NUMBER_H = 30;
 localparam NUMBER_W = 25;
 localparam NUMBER1_VPOS = 200;
 localparam NUMBER2_VPOS = 200;
-localparam NUMBER1_HPOS = 615;
+localparam NUMBER1_HPOS = 620;
 localparam NUMBER2_HPOS = 650;
+localparam SCORE_H = 34;
+localparam SCORE_W = 50;
+localparam SCORE_VPOS = 130;
+localparam SCORE_HPOS = 370;
+localparam HIGHEST_SCORE_H = 34;
+localparam HIGHEST_SCORE_W = 118;
+localparam HIGHEST_SCORE_VPOS = 170;
+localparam HIGHEST_SCORE_HPOS = 370;
+
 wire [119:0] now_region;
 // assign now_region =
 //            pixel_y >= (Vertical_pos<<1) && pixel_y < (Vertical_pos+FISH_H)<<1 &&
@@ -258,6 +271,14 @@ assign stop_region2 = (pixel_y >= (12 << 1)) && (pixel_y < ((12 + 24) << 1)) &&
 wire gameover_region;
 assign gameover_region = (pixel_y >= (GAMEOVER_VPOS << 1)) && (pixel_y < ((GAMEOVER_VPOS + GAMEOVER_H) << 1)) &&
                         (pixel_x + (GAMEOVER_W * 2) - 1 >= GAMEOVER_HPOS) && (pixel_x < GAMEOVER_HPOS + 1);
+
+wire score_region;
+assign score_region = (pixel_y >= (SCORE_VPOS << 1)) && (pixel_y < ((SCORE_VPOS + SCORE_H) << 1)) &&
+                        (pixel_x + (SCORE_W * 2) - 1 >= SCORE_HPOS) && (pixel_x < SCORE_HPOS + 1);
+wire highest_score_region;
+assign highest_score_region = (pixel_y >= (HIGHEST_SCORE_VPOS << 1)) && (pixel_y < ((HIGHEST_SCORE_VPOS + HIGHEST_SCORE_H) << 1)) &&
+                        (pixel_x + (HIGHEST_SCORE_W * 2) - 1 >= HIGHEST_SCORE_HPOS) && (pixel_x < HIGHEST_SCORE_HPOS + 1);
+
 wire number_region1, number_region2;
 assign number_region1 = (pixel_y >= (NUMBER1_VPOS << 1)) && (pixel_y < ((NUMBER1_VPOS + NUMBER_H) << 1)) &&
                         (pixel_x + (NUMBER_W * 2) - 1 >= NUMBER1_HPOS) && (pixel_x < NUMBER1_HPOS + 1);
@@ -791,6 +812,12 @@ always @ (posedge clk) begin
     end else if (state == 7 && gameover_region) begin
         disp <= 0;
         snkreg_addr <= gameover_addr + ((pixel_y >> 1) - GAMEOVER_VPOS) * GAMEOVER_W + ((pixel_x + (GAMEOVER_W * 2 - 1) - GAMEOVER_HPOS) >> 1);
+    end else if (state == 7 && score_region) begin
+        disp <= 0;
+        snkreg_addr <= score_addr + ((pixel_y >> 1) - SCORE_VPOS) * SCORE_W + ((pixel_x + (SCORE_W * 2 - 1) - SCORE_HPOS) >> 1);
+    end else if (state == 7 && highest_score_region) begin
+        disp <= 0;
+        snkreg_addr <= highest_score_addr + ((pixel_y >> 1) - HIGHEST_SCORE_VPOS) * HIGHEST_SCORE_W + ((pixel_x + (HIGHEST_SCORE_W * 2 - 1) - HIGHEST_SCORE_HPOS) >> 1);
     end else if (number_region1) begin
         disp <= 0;
         if (sc >= 50)
@@ -836,7 +863,7 @@ always @(*) begin
     else if (now_region && data_snk_o != 12'h0f0 && disp > 0 && disp < 15 && hurt == 1) begin  
         rgb_next = {data_snk_o[7:4], 8'b0};
     end else if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
-    else if (state == 7 && gameover_region && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
+    else if (state == 7 && (gameover_region || score_region || highest_score_region) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
     else if ((number_region1 || number_region2) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
             // else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30; // dark_green to red
             // else if (mode == 3 && data_out == 12'hceb) rgb_next = 12'he78; 
