@@ -242,8 +242,8 @@ localparam NUMBER_H = 30;
 localparam NUMBER_W = 25;
 localparam NUMBER1_VPOS = 200;
 localparam NUMBER2_VPOS = 200;
-localparam NUMBER1_HPOS = 610;
-localparam NUMBER2_HPOS = 640;
+localparam NUMBER1_HPOS = 615;
+localparam NUMBER2_HPOS = 650;
 wire [119:0] now_region;
 // assign now_region =
 //            pixel_y >= (Vertical_pos<<1) && pixel_y < (Vertical_pos+FISH_H)<<1 &&
@@ -372,13 +372,13 @@ always @(posedge clk) begin
                         mark[snake[399:392]-1] <= 11;
                 end else if (snake[391:384] == 0) begin
                     change <= 2;
-                    if ((snake[399:392] == prev_snake + 1) || (snake[399:392] == prev_snake + 11)) begin // tail right
+                    if ((snake[399:392] == prev_snake + 1) || (snake[399:392] == prev_snake - 11)) begin // tail right
                         mark[snake[399:392]-1] <= 6;
-                    end else if ((snake[399:392] == prev_snake - 1) || (snake[399:392] == prev_snake - 11)) begin // tail left
+                    end else if ((snake[399:392] == prev_snake - 1) || (snake[399:392] == prev_snake + 11)) begin // tail left
                         mark[snake[399:392]-1] <= 7;
-                    end else if ((snake[399:392] == prev_snake - 12) || (snake[399:392] == prev_snake - 108)) begin // tail up
+                    end else if ((snake[399:392] == prev_snake - 12) || (snake[399:392] == prev_snake + 108)) begin // tail up
                         mark[snake[399:392]-1] <= 8;
-                    end else if ((snake[399:392] == prev_snake + 12) || (snake[399:392] == prev_snake + 108)) begin // tail down
+                    end else if ((snake[399:392] == prev_snake + 12) || (snake[399:392] == prev_snake - 108)) begin // tail down
                         mark[snake[399:392]-1] <= 9;
                     end
                 end
