@@ -348,19 +348,19 @@ always @(posedge clk) begin
             if (snake[399:392] != 0) begin
                 length <= length + 1;
                 if (length == 0) begin
-                    if ((snake[399:392] == snake[391:384] + 1) || (snake[399:392] == snake[391:384] + 11)) begin // head right
+                    if ((snake[399:392] == snake[391:384] + 1) || (snake[399:392] == snake[391:384] - 11)) begin // head right
                         mark[snake[399:392]-1] <= 0;
-                    end else if ((snake[399:392] == snake[391:384] - 1) || (snake[399:392] == snake[391:384] - 11)) begin // head left
+                    end else if ((snake[399:392] == snake[391:384] - 1) || (snake[399:392] == snake[391:384] + 11)) begin // head left
                         mark[snake[399:392]-1] <= 1;
-                    end else if ((snake[399:392] == snake[391:384] - 12) || (snake[399:392] == snake[391:384] - 108)) begin // head up
+                    end else if ((snake[399:392] == snake[391:384] - 12) || (snake[399:392] == snake[391:384] + 108)) begin // head up
                         mark[snake[399:392]-1] <= 2;
-                    end else if ((snake[399:392] == snake[391:384] + 12) || (snake[399:392] == snake[391:384] + 108)) begin // head down
+                    end else if ((snake[399:392] == snake[391:384] + 12) || (snake[399:392] == snake[391:384] - 108)) begin // head down
                         mark[snake[399:392]-1] <= 3;
                     end
                 end else if (snake[391:384] != 0) begin
-                    if ((snake[399:392] == snake[391:384] + 1 && snake[399:392] == prev_snake - 1) || (snake[399:392] == snake[391:384] - 1 && snake[399:392] == prev_snake + 1) || (snake[399:392] == snake[391:384] + 1 && snake[399:392] == prev_snake + 11) || (snake[399:392] == snake[391:384] + 1 && snake[399:392] == prev_snake - 1) || (snake[399:392] == snake[391:384] - 11 && snake[399:392] == prev_snake - 1) || (snake[399:392] == snake[391:384] - 1 && snake[399:392] == prev_snake - 11)) // left-right
+                    if ((snake[399:392] == snake[391:384] + 1 && snake[399:392] == prev_snake - 1) || (snake[399:392] == snake[391:384] - 1 && snake[399:392] == prev_snake + 1) || (snake[399:392] == snake[391:384] + 1 && snake[399:392] == prev_snake + 11) || (snake[399:392] == snake[391:384] + 11 && snake[399:392] == prev_snake + 1) || (snake[399:392] == snake[391:384] - 11 && snake[399:392] == prev_snake - 1) || (snake[399:392] == snake[391:384] - 1 && snake[399:392] == prev_snake - 11)) // left-right
                         mark[snake[399:392]-1] <= 5;
-                    else if ((snake[399:392] == snake[391:384] + 12 && snake[399:392] == prev_snake - 12) || (snake[399:392] == snake[391:384] - 12 && snake[399:392] == prev_snake + 12) || (snake[399:392] == snake[391:384] + 12 && snake[399:392] == prev_snake - 108) || (snake[399:392] == snake[391:384] - 108 && snake[399:392] == prev_snake + 12) || (snake[399:392] == snake[391:384] - 12 && snake[399:392] == prev_snake + 108) || (snake[399:392] == snake[391:384] + 108 && snake[399:392] == prev_snake - 12)) // up-down 
+                    else if ((snake[399:392] == snake[391:384] + 12 && snake[399:392] == prev_snake - 12) || (snake[399:392] == snake[391:384] - 12 && snake[399:392] == prev_snake + 12) || (snake[399:392] == snake[391:384] + 12 && snake[399:392] == prev_snake + 108) || (snake[399:392] == snake[391:384] + 108 && snake[399:392] == prev_snake + 12) || (snake[399:392] == snake[391:384] - 12 && snake[399:392] == prev_snake - 108) || (snake[399:392] == snake[391:384] - 108 && snake[399:392] == prev_snake - 12)) // up-down 
                         mark[snake[399:392]-1] <= 4;
                     else if ((snake[399:392] == snake[391:384] - 1 && snake[399:392] == prev_snake - 12) || (snake[399:392] == snake[391:384] - 12 && snake[399:392] == prev_snake - 1) || (snake[399:392] == snake[391:384] - 1 && snake[399:392] == prev_snake + 108) || (snake[399:392] == snake[391:384] + 108 && snake[399:392] == prev_snake - 1) || (snake[399:392] == snake[391:384] - 12 && snake[399:392] == prev_snake + 11) || (snake[399:392] == snake[391:384] + 11 && snake[399:392] == prev_snake - 12)) // left-down / up-right (2)
                         mark[snake[399:392]-1] <= 12;
