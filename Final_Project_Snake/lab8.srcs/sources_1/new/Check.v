@@ -720,6 +720,8 @@ module Check(
                         end else apl_score <= 0;
                     end else if (mod_0_hit == 1 && wall_colsn == 0) begin
                         new_snkpos <= {nb_next, ori_snk[399:8]};
+                        if (snk_len >= 5) apl_score <= snk_len - 5;
+                        else apl_score <= 0;
                     end else if (mod_0_hit == 1 && wall_colsn != 0)begin 
                         new_snkpos <= {nb_next, stone_snk[399:8]};
                         if (snk_len >= 6) begin
@@ -727,7 +729,8 @@ module Check(
                         end else apl_score <= 0;
                     end else begin 
                         new_snkpos <= {next_pos, ori_snk[399:8]};
-                            apl_score <= snk_len - 5;
+                        if (snk_len >= 5) apl_score <= snk_len - 5;
+                        else apl_score <= 0;
                     end                                                    
                 end else begin 
                     initialized <= 0; 
