@@ -42,7 +42,7 @@ module Check(
     localparam b_tall = 120; 
 
     // fsm s_check
-    localparam S_init = 0, S_pre = 1, S_dead = 2, S_apl = 3, S_pos = 4, S_endgame = 5, S_lenadd = 6;
+    localparam S_init = 0, S_pre = 1, S_dead = 2, S_apl = 3, S_pos = 4, S_endgame = 5, S_lenadd = 6, S_walltime = 7;
     reg [4:0] s_check = 0, s_check_next = 0;    
 
     // S_init index
@@ -69,6 +69,11 @@ module Check(
     reg [3:0] wall_colsn;
     reg mod_0_hit;
     reg [7:0] nb_next;
+    reg [3:0] cool_count = 0;
+    reg cool_time = 0;
+    reg hit_wall_cnt = 0;
+    reg wall_vaild = 0;
+    reg walltime_chk = 0;
 
     // S_apl indexs
     reg [2:0] apl_eat = 0;
@@ -122,7 +127,11 @@ module Check(
                     else s_check_next = S_apl;
 
             S_lenadd: if (lenadd_check == 1) s_check_next = S_pos;
-                      else s_check_next = S_lenadd;
+                      else s_check_next = S_walltime;
+
+            S_walltime: if (walltime_chk == 1 && is_dead != 1) s_check_next = S_pos;
+                        else if (walltime_chk == 1 && is_dead == 1) s_check_next = S_endgame;
+                        else s_check_next = S_walltime;
 
             S_pos:  if (pos_check == 1) s_check_next = S_init;
                     else s_check_next = S_pos;
@@ -151,6 +160,10 @@ module Check(
             next_pos   <= 0;
             is_dead    <= 0;
             dead_check <= 0;
+            cool_count <= 0;
+            cool_time <= 0;
+            hit_wall_cnt <= 0;
+            wall_vaild <= 0;
 
             // S_apl initialize
             apl_eat       <= 0;
@@ -171,10 +184,11 @@ module Check(
                 end
 
                 // S_pre initialize
-                apl_num   <= 0;
-                wall_num  <= 0;
-                len_check <= 0;
-                count     <= 50;
+                apl_num    <= 0;
+                wall_num   <= 0;
+                len_check  <= 0;
+                count      <= 50;
+                wall_vaild <= 0;
 
                 // S_dead initialize
                 next_pos <= snk_pos[399:392];
@@ -263,17 +277,41 @@ module Check(
                         if(snk_pos[399:392] == 1 || snk_pos[399:392] == 2 || snk_pos[399:392] == 3 || snk_pos[399:392] == 4 || snk_pos[399:392] == 5 || snk_pos[399:392] == 6 || snk_pos[399:392] == 7 || snk_pos[399:392] == 8 || snk_pos[399:392] == 9 || snk_pos[399:392] == 10 || snk_pos[399:392] == 11 || snk_pos[399:392] == 12) begin 
                             is_dead <= 1;
                         end
-
-                        for (i = 10; i > 0; i = i - 1) begin 
-                            if (snk_pos[399:392] - 12 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
-                                if(snk_len >= 5) begin
-                                    wall_colsn <= 11 - i;                                
-                                end else begin
-                                    is_dead <= 1;
-                                end    
+                        if (mode == 1) begin 
+                            if (cool_time == 1) begin
+                                cool_count <= cool_count + 1;
                             end
-                        end   
 
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] - 12 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
+                                    wall_colsn <= 11 - i;
+                                    hit_wall_cnt <= hit_wall_cnt + 1;
+                                    if (hit_wall_cnt == 1) cool_time <= 0;
+                                    else cool_time <= 1;     
+                                end
+                            end       
+                        end
+
+                        else if (mode == 2) begin 
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] - 12 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
+                                    wall_colsn <= 11 - i;
+                                    hit_wall_cnt <= hit_wall_cnt + 1;
+                                end
+                            end       
+                        end
+
+                        else if (mode == 3) begin 
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] - 12 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 12) != 0) begin 
+                                    if(snk_len >= 5) begin
+                                        wall_colsn <= 11 - i;                                                                    
+                                    end else begin
+                                        is_dead <= 1;
+                                    end    
+                                end
+                            end       
+                        end
                     end else begin
                         if (snk_pos[399:392] == 1 || snk_pos[399:392] == 2 || snk_pos[399:392] == 3 || snk_pos[399:392] == 4 || snk_pos[399:392] == 5 || snk_pos[399:392] == 6 || snk_pos[399:392] == 7 || snk_pos[399:392] == 8 || snk_pos[399:392] == 9 || snk_pos[399:392] == 10 || snk_pos[399:392] == 11 || snk_pos[399:392] == 12) begin
                             nb_next <= snk_pos[399:392] + 108;
@@ -324,15 +362,41 @@ module Check(
                             is_dead <= 1;
                         end
 
-                        for (i = 10; i > 0; i = i - 1) begin 
-                            if (snk_pos[399:392] + 12 == wall_pos[(i * 8 - 1) -:8]) begin 
-                                if(snk_len >= 5) begin
-                                    wall_colsn <= 11 - i;                                
-                                end else begin
-                                    is_dead <= 1;
-                                end    
+                        if (mode == 1) begin 
+                            if (cool_time == 1) begin
+                                cool_count <= cool_count + 1;
                             end
-                        end   
+
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] + 12 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] + 12) != 0) begin 
+                                    wall_colsn <= 11 - i;
+                                    hit_wall_cnt <= hit_wall_cnt + 1;
+                                    if (hit_wall_cnt == 1) cool_time <= 0;
+                                    else cool_time <= 1;                                                                    
+                                end
+                            end       
+                        end
+
+                        else if (mode == 2) begin 
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] + 12 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] + 12) != 0) begin 
+                                    wall_colsn <= 11 - i;
+                                    hit_wall_cnt <= hit_wall_cnt + 1;  
+                                end                                                                     
+                            end       
+                        end
+
+                        else if (mode == 3) begin 
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] + 12 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] + 12) != 0) begin 
+                                    if(snk_len >= 5) begin
+                                        wall_colsn <= 11 - i;                                                                    
+                                    end else begin
+                                        is_dead <= 1;
+                                    end    
+                                end
+                            end       
+                        end  
 
                     end else begin 
                         if(snk_pos[399:392] + 12 > b_tall) begin
@@ -384,15 +448,41 @@ module Check(
                             is_dead <= 1;
                         end
 
-                        for (i = 10; i > 0; i = i - 1) begin 
-                            if (snk_pos[399:392] - 1 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
-                                if(snk_len >= 5) begin
-                                    wall_colsn <= 11 - i;                                
-                                end else begin
-                                    is_dead <= 1;
-                                end    
+                        if (mode == 1) begin 
+                            if (cool_time == 1) begin
+                                cool_count <= cool_count + 1;
                             end
-                        end   
+
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] - 1 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
+                                    wall_colsn <= 11 - i;
+                                    hit_wall_cnt <= hit_wall_cnt + 1;
+                                    if (hit_wall_cnt == 1) cool_time <= 0;
+                                    else cool_time <= 1;     
+                                end
+                            end       
+                        end
+
+                        else if (mode == 2) begin 
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] - 1 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
+                                    wall_colsn <= 11 - i;
+                                    hit_wall_cnt <= hit_wall_cnt + 1;    
+                                end
+                            end       
+                        end
+
+                        else if (mode == 3) begin 
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] - 1 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] - 1) != 0) begin 
+                                    if(snk_len >= 5) begin
+                                        wall_colsn <= 11 - i;                                                                    
+                                    end else begin
+                                        is_dead <= 1;
+                                    end    
+                                end
+                            end       
+                        end 
                     end else begin 
                         if(snk_pos[399:392]  == 1 || snk_pos[399:392]  == 13 || snk_pos[399:392]  == 25 || snk_pos[399:392]  == 37 || snk_pos[399:392]  == 49 || snk_pos[399:392]  == 61 || snk_pos[399:392]  == 73 || snk_pos[399:392]  == 85 || snk_pos[399:392]  == 97 || snk_pos[399:392]  == 109) begin
                             nb_next <= snk_pos[399:392] + 11;
@@ -443,14 +533,40 @@ module Check(
                             is_dead <= 1;
                         end
 
-                        for (i = 10; i > 0; i = i - 1) begin 
-                            if (snk_pos[399:392] + 1 == wall_pos[(i * 8 - 1) -:8]) begin 
-                                if(snk_len >= 5) begin
-                                    wall_colsn <= 11 - i;                                
-                                end else begin
-                                    is_dead <= 1;
-                                end
+                        if (mode == 1) begin 
+                            if (cool_time == 1) begin
+                                cool_count <= cool_count + 1;
                             end
+
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] + 1 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] + 1) != 0) begin 
+                                    wall_colsn <= 11 - i;
+                                    hit_wall_cnt <= hit_wall_cnt + 1;
+                                    if (hit_wall_cnt == 1) cool_time <= 0;
+                                    else cool_time <= 1;       
+                                end
+                            end       
+                        end
+
+                        else if (mode == 2) begin 
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] + 1 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] + 1) != 0) begin 
+                                    wall_colsn <= 11 - i;
+                                    hit_wall_cnt <= hit_wall_cnt + 1;    
+                                end
+                            end       
+                        end
+
+                        else if (mode == 3) begin 
+                            for (i = 10; i > 0; i = i - 1) begin 
+                                if (snk_pos[399:392] + 1 == wall_pos[(i * 8 - 1) -:8] && (snk_pos[399:392] + 1) != 0) begin 
+                                    if(snk_len >= 5) begin
+                                        wall_colsn <= 11 - i;                                                                    
+                                    end else begin
+                                        is_dead <= 1;
+                                    end    
+                                end
+                            end       
                         end  
                     end else begin 
                         if(snk_pos[399:392]  == 12 || snk_pos[399:392]  == 24 || snk_pos[399:392]  == 36 || snk_pos[399:392]  == 48 || snk_pos[399:392]  == 60 || snk_pos[399:392]  == 72 || snk_pos[399:392]  == 84 || snk_pos[399:392]  == 96 || snk_pos[399:392]  == 108 || snk_pos[399:392]  == 120) begin
@@ -543,6 +659,29 @@ module Check(
                 end
                 lenadd_check <= 1;
             end         
+
+            if (s_check == S_walltime) begin
+                if (mode == 1) begin
+                    if (cool_count == 10 && hit_wall_cnt != 2) begin
+                        cool_time <= 0;
+                        cool_count <= 0;
+                        hit_wall_cnt <= 0;
+                    end
+                end
+                else if (mode != 3) begin
+                    if (hit_wall_cnt == 2 && snk_len < 5) begin
+                        hit_wall_cnt <= 0;
+                        is_dead <= 1;
+                    end
+
+                    if (hit_wall_cnt == 2 && snk_len >= 5) begin
+                        wall_vaild <= 1;
+                        hit_wall_cnt <= 0;
+                    end
+                end else wall_vaild <= 1;
+
+                walltime_chk <= 1;
+            end
             
             // check the next position of the snake begin
             if (s_check == S_pos) begin 
@@ -559,16 +698,21 @@ module Check(
                     end else if (len_add == 5 && mode == 3) begin
                         new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
                         apl_score <= snk_len - 4; 
-                    end else if (wall_colsn != 0 && mod_0_hit == 0)begin
+                    end else if (wall_colsn != 0 && mod_0_hit == 0 && wall_vaild) begin // mode 1
                         new_snkpos <= {next_pos, stone_snk[399:8]};
-                        apl_score <= snk_len - 5;
+                        if (snk_len >= 6) begin
+                            apl_score <= snk_len - 6;
+                        end else apl_score <= 0;
                     end else if (mod_0_hit == 1 && wall_colsn == 0) begin
                         new_snkpos <= {nb_next, ori_snk[399:8]};
                     end else if (mod_0_hit == 1 && wall_colsn != 0)begin 
                         new_snkpos <= {nb_next, stone_snk[399:8]};
-                        apl_score <= snk_len - 5;
+                        if (snk_len >= 6) begin
+                            apl_score <= snk_len - 6;
+                        end else apl_score <= 0;
                     end else begin 
                         new_snkpos <= {next_pos, ori_snk[399:8]};
+                            apl_score <= snk_len - 5;
                     end                                                    
                 end else begin 
                     initialized <= 0; 
@@ -579,6 +723,10 @@ module Check(
             if (s_check == S_endgame) begin
                 new_snkpos <= 400'b0;   
                 len_add <= 0;
+                apl_score <= 0;
+                cool_count <= 0;
+                cool_time <= 0;
+                hit_wall_cnt <= 0;
                 if (state == 0) begin
                     edgm_check <= 1;
                 end
