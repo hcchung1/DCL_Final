@@ -245,15 +245,15 @@ localparam NUMBER_H = 30;
 localparam NUMBER_W = 25;
 localparam NUMBER1_VPOS = 200;
 localparam NUMBER2_VPOS = 200;
-localparam NUMBER1_HPOS = 620;
+localparam NUMBER1_HPOS = 618;
 localparam NUMBER2_HPOS = 650;
 localparam SCORE_H = 34;
 localparam SCORE_W = 50;
-localparam SCORE_VPOS = 130;
+localparam SCORE_VPOS = 135;
 localparam SCORE_HPOS = 370;
 localparam HIGHEST_SCORE_H = 34;
 localparam HIGHEST_SCORE_W = 118;
-localparam HIGHEST_SCORE_VPOS = 170;
+localparam HIGHEST_SCORE_VPOS = 175;
 localparam HIGHEST_SCORE_HPOS = 370;
 
 wire [16:0] addr1;
