@@ -894,24 +894,24 @@ always @ (posedge clk) begin
             snkreg_addr <= number_addr[sc % 10] + ((pixel_y >> 1) - NUMBER4_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER4_HPOS) >> 1);
     end else if (number_region5 && state == 7) begin
         disp <= 0;
-        if (sc >= 50)
+        if (highest_score >= 50)
             snkreg_addr <= number_addr[5] + ((pixel_y >> 1) - NUMBER5_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER5_HPOS) >> 1);
-        else if (sc >= 40)
+        else if (highest_score >= 40)
             snkreg_addr <= number_addr[4] + ((pixel_y >> 1) - NUMBER5_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER5_HPOS) >> 1);
-        else if (sc >= 30)
+        else if (highest_score >= 30)
             snkreg_addr <= number_addr[3] + ((pixel_y >> 1) - NUMBER5_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER5_HPOS) >> 1);
-        else if (sc >= 20)
+        else if (highest_score >= 20)
             snkreg_addr <= number_addr[2] + ((pixel_y >> 1) - NUMBER5_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER5_HPOS) >> 1);
-        else if (sc >= 10)
+        else if (highest_score >= 10)
             snkreg_addr <= number_addr[1] + ((pixel_y >> 1) - NUMBER5_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER5_HPOS) >> 1);
         else
             snkreg_addr <= number_addr[0] + ((pixel_y >> 1) - NUMBER5_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER5_HPOS) >> 1);
     end else if (number_region6 && state == 7) begin
         disp <= 0;
-        if (sc % 10 == 0) 
+        if (highest_score % 10 == 0) 
             snkreg_addr <= number_addr[0] + ((pixel_y >> 1) - NUMBER6_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER6_HPOS) >> 1);
         else
-            snkreg_addr <= number_addr[sc % 10] + ((pixel_y >> 1) - NUMBER6_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER6_HPOS) >> 1);
+            snkreg_addr <= number_addr[highest_score % 10] + ((pixel_y >> 1) - NUMBER6_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER6_HPOS) >> 1);
     end else 
         disp <= 0;
    
