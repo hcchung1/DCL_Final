@@ -248,14 +248,14 @@ localparam NUMBER2_VPOS = 200;
 localparam NUMBER1_HPOS = 619;
 localparam NUMBER2_HPOS = 650;
 
-localparam NUMBER3_VPOS = 135;
-localparam NUMBER4_VPOS = 135;
-localparam NUMBER5_VPOS = 175;
-localparam NUMBER6_VPOS = 175;
+localparam NUMBER3_VPOS = 140;
+localparam NUMBER4_VPOS = 140;
+localparam NUMBER5_VPOS = 180;
+localparam NUMBER6_VPOS = 180;
 localparam NUMBER3_HPOS = 370;
 localparam NUMBER4_HPOS = 405;
-localparam NUMBER5_HPOS = 370;
-localparam NUMBER6_HPOS = 405;
+localparam NUMBER5_HPOS = 405;
+localparam NUMBER6_HPOS = 440;
 
 localparam SCORE_H = 34;
 localparam SCORE_W = 50;
