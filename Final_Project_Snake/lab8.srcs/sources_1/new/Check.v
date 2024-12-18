@@ -74,6 +74,7 @@ module Check(
     reg hit_wall_cnt = 0;
     reg wall_vaild = 0;
     reg walltime_chk = 0;
+    reg mode_0_s = 0;
 
     // S_apl indexs
     reg [2:0] apl_eat = 0;
@@ -193,6 +194,7 @@ module Check(
                 // S_dead initialize
                 next_pos <= snk_pos[399:392];
                 dead_check <= 0;
+                mode_0_s <= 0;
 
                 // S_apl initialize                
                 apl_eaten_pos <= 0;
@@ -342,6 +344,8 @@ module Check(
                                     end    
                                 end
                             end   
+
+                            mode_0_s <= 1;
                         end
                     end
 
@@ -427,7 +431,9 @@ module Check(
                                         is_dead <= 1;
                                     end    
                                 end
-                            end   
+                            end  
+
+                            mode_0_s <= 1; 
                         end
                     end
 
@@ -513,6 +519,8 @@ module Check(
                                     end    
                                 end
                             end   
+
+                            mode_0_s <= 1;
                         end
                     end
 
@@ -598,6 +606,8 @@ module Check(
                                     end    
                                 end
                             end   
+
+                            mode_0_s <= 1;
                         end
                     end
 
@@ -699,6 +709,11 @@ module Check(
                         new_snkpos <= {apl_eaten_pos, snk_pos[399:8]};
                         apl_score <= snk_len - 4; 
                     end else if (wall_colsn != 0 && mod_0_hit == 0 && wall_vaild) begin // mode 1
+                        new_snkpos <= {next_pos, stone_snk[399:8]};
+                        if (snk_len >= 6) begin
+                            apl_score <= snk_len - 6;
+                        end else apl_score <= 0;
+                    end else if (mode_0_s == 1 && wall_colsn != 0) begin
                         new_snkpos <= {next_pos, stone_snk[399:8]};
                         if (snk_len >= 6) begin
                             apl_score <= snk_len - 6;
