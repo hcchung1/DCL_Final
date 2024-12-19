@@ -252,9 +252,9 @@ localparam NUMBER3_VPOS = 140;
 localparam NUMBER4_VPOS = 140;
 localparam NUMBER5_VPOS = 180;
 localparam NUMBER6_VPOS = 180;
-localparam NUMBER3_HPOS = 340;
+localparam NUMBER3_HPOS = 343;
 localparam NUMBER4_HPOS = 371;
-localparam NUMBER5_HPOS = 400;
+localparam NUMBER5_HPOS = 403;
 localparam NUMBER6_HPOS = 431;
 
 localparam SCORE_H = 34;
@@ -330,6 +330,8 @@ generate
     end
 endgenerate
 
+reg [5:0] sc, high;
+
 always @(posedge clk) begin
     if (~reset_n || state == 0) begin
         is_finished <= 0;
@@ -339,6 +341,8 @@ always @(posedge clk) begin
         length <= 0;
         change <= 0;
         prev_snake <= 0;
+        sc <= 0;
+        high <= 0;
         for (i = 0; i < 120; i = i + 1) begin
             mark[i] <= 16;
         end
@@ -452,6 +456,10 @@ always @(posedge clk) begin
         
     end else if (state == 3) begin
         is_finished <= 0;
+        sc <= score;
+        if (sc >= high) begin
+            high <= sc;
+        end
         change <= 0;
     end else if (state == 7) begin
         for (idx = 0; idx < 120; idx = idx + 1) begin
@@ -464,7 +472,6 @@ end
 assign move_end = is_finished;
 integer m,n;
 reg [4:0] disp;
-reg [5:0] sc, high;
 
 always @ (posedge clk) begin
   if (~reset_n) begin
@@ -472,7 +479,6 @@ always @ (posedge clk) begin
     snkreg_addr <= 0;
     screg_addr <= 0;
     hcreg_addr <= 0;
-    sc <= 0;
     high <= 0;
     disp <= 1;
 //   else if (fish_region)
@@ -874,24 +880,24 @@ always @ (posedge clk) begin
             snkreg_addr <= number_addr[sc % 10] + ((pixel_y >> 1) - NUMBER2_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER2_HPOS) >> 1);
     end else if (number_region3 && state == 7) begin
         disp <= 0;
-        if (sc >= 50)
+        if (high >= 50)
             snkreg_addr <= number_addr[5] + ((pixel_y >> 1) - NUMBER3_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER3_HPOS) >> 1);
-        else if (sc >= 40)
+        else if (high >= 40)
             snkreg_addr <= number_addr[4] + ((pixel_y >> 1) - NUMBER3_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER3_HPOS) >> 1);
-        else if (sc >= 30)
+        else if (high >= 30)
             snkreg_addr <= number_addr[3] + ((pixel_y >> 1) - NUMBER3_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER3_HPOS) >> 1);
-        else if (sc >= 20)
+        else if (high >= 20)
             snkreg_addr <= number_addr[2] + ((pixel_y >> 1) - NUMBER3_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER3_HPOS) >> 1);
-        else if (sc >= 10)
+        else if (high >= 10)
             snkreg_addr <= number_addr[1] + ((pixel_y >> 1) - NUMBER3_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER3_HPOS) >> 1);
         else
             snkreg_addr <= number_addr[0] + ((pixel_y >> 1) - NUMBER3_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER3_HPOS) >> 1);
     end else if (number_region4 && state == 7) begin
         disp <= 0;
-        if (sc % 10 == 0) 
+        if (high % 10 == 0) 
             snkreg_addr <= number_addr[0] + ((pixel_y >> 1) - NUMBER4_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER4_HPOS) >> 1);
         else
-            snkreg_addr <= number_addr[sc % 10] + ((pixel_y >> 1) - NUMBER4_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER4_HPOS) >> 1);
+            snkreg_addr <= number_addr[high % 10] + ((pixel_y >> 1) - NUMBER4_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER4_HPOS) >> 1);
     end else if (number_region5 && state == 7) begin
         disp <= 0;
         if (highest_score >= 50)
@@ -914,9 +920,8 @@ always @ (posedge clk) begin
             snkreg_addr <= number_addr[highest_score % 10] + ((pixel_y >> 1) - NUMBER6_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER6_HPOS) >> 1);
     end else 
         disp <= 0;
-   
+        snkreg_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);
         pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);   
-        if (state != 7) sc <= score;
     
   end
 end
@@ -936,7 +941,7 @@ always @(*) begin
     if (state == 6 && (stop_region1 || stop_region2)) rgb_next = 12'h000;
     else if (now_region && data_snk_o != 12'h0f0 && disp > 0 && disp < 15 && hurt == 1) begin  
         rgb_next = {data_snk_o[7:4], 8'b0};
-    end else if (now_region && data_snk_o != 12'h0f0 && disp) rgb_next = data_snk_o;
+    end else if (now_region && data_snk_o != 12'h0f0 && disp && state != 7) rgb_next = data_snk_o;
     else if (state == 7 && gameover_region && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
     else if (state == 7 && score_region && text_out1 != 12'h0f0) rgb_next = text_out1;
     else if (state == 7 && highest_score_region && text_out2 != 12'h0f0) rgb_next = text_out2;
@@ -944,8 +949,8 @@ always @(*) begin
     else if (state == 7 && (number_region5 || number_region6) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
     else if ((number_region1 || number_region2) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
     else if (mode == 0 && state > 0) rgb_next = {data_out[7:4], data_out[11:8], 4'b0};
-    else if (mode == 2) rgb_next = {4'b0, data_out[3:0], data_out[7:4]};
-    else if (mode == 3) rgb_next = {data_out[7:4], 4'b0110, 4'b1011};
+    else if (mode == 2 && state > 0) rgb_next = {4'b0, data_out[3:0], data_out[7:4]};
+    else if (mode == 3 && state > 0) rgb_next = {data_out[7:4], data_out[11:8], data_out[3:0]};
             // else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30; // dark_green to red
             // else if (mode == 3 && data_out == 12'hceb) rgb_next = 12'he78; 
             // else if (mode == 3 && data_out == 12'hefd) rgb_next = 12'hebd;
