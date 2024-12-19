@@ -138,6 +138,7 @@ initial begin
     number_addr[7] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*7;
     number_addr[8] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*8;
     number_addr[9] = VBUF_W*VBUF_H + FISH_W*FISH_H*16 + 120*31 + 750*9;
+    score_addr = 0;
     highest_score_addr = 34*50;
 end
 
@@ -154,7 +155,7 @@ clk_divider#(2) clk_divider0(
   .clk_out(vga_clk)
 );
 
-wire [16:0] snake_addr;
+wire [17:0] snake_addr;
 wire [11:0] data_snk_o;
 reg  [17:0] snkreg_addr;
 
@@ -246,16 +247,17 @@ localparam NUMBER_W = 25;
 localparam NUMBER1_VPOS = 200;
 localparam NUMBER2_VPOS = 200;
 localparam NUMBER1_HPOS = 619;
-localparam NUMBER2_HPOS = 650;
+localparam NUMBER2_HPOS = 651;
 
 localparam NUMBER3_VPOS = 140;
 localparam NUMBER4_VPOS = 140;
 localparam NUMBER5_VPOS = 180;
 localparam NUMBER6_VPOS = 180;
-localparam NUMBER3_HPOS = 343;
-localparam NUMBER4_HPOS = 371;
-localparam NUMBER5_HPOS = 403;
-localparam NUMBER6_HPOS = 431;
+
+localparam NUMBER3_HPOS = 345;
+localparam NUMBER4_HPOS = 380;
+localparam NUMBER5_HPOS = 405;
+localparam NUMBER6_HPOS = 440;
 
 localparam SCORE_H = 34;
 localparam SCORE_W = 50;
@@ -479,7 +481,6 @@ always @ (posedge clk) begin
     snkreg_addr <= 0;
     screg_addr <= 0;
     hcreg_addr <= 0;
-    high <= 0;
     disp <= 1;
 //   else if (fish_region)
 //     pixel_addr <= fish_addr[fish_clock[23]] +
@@ -918,11 +919,10 @@ always @ (posedge clk) begin
             snkreg_addr <= number_addr[0] + ((pixel_y >> 1) - NUMBER6_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER6_HPOS) >> 1);
         else
             snkreg_addr <= number_addr[highest_score % 10] + ((pixel_y >> 1) - NUMBER6_VPOS) * NUMBER_W + ((pixel_x + (NUMBER_W * 2 - 1) - NUMBER6_HPOS) >> 1);
-    end else 
+    end else begin
         disp <= 0;
-        snkreg_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);
-        pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);   
-    
+    end 
+        pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1); 
   end
 end
 // End of the AGU code.
