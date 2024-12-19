@@ -943,6 +943,8 @@ always @(*) begin
     else if (state == 7 && (number_region3 || number_region4) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
     else if (state == 7 && (number_region5 || number_region6) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
     else if ((number_region1 || number_region2) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
+    else if (mode == 3) rgb_next = {data_out[7:4], 8'b0};
+    else if (mode == 2) rgb_next = {8'b0, data_out[7:4]};
             // else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30; // dark_green to red
             // else if (mode == 3 && data_out == 12'hceb) rgb_next = 12'he78; 
             // else if (mode == 3 && data_out == 12'hefd) rgb_next = 12'hebd;
