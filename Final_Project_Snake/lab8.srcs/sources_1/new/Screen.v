@@ -252,10 +252,10 @@ localparam NUMBER3_VPOS = 140;
 localparam NUMBER4_VPOS = 140;
 localparam NUMBER5_VPOS = 180;
 localparam NUMBER6_VPOS = 180;
-localparam NUMBER3_HPOS = 370;
-localparam NUMBER4_HPOS = 405;
-localparam NUMBER5_HPOS = 405;
-localparam NUMBER6_HPOS = 440;
+localparam NUMBER3_HPOS = 340;
+localparam NUMBER4_HPOS = 371;
+localparam NUMBER5_HPOS = 400;
+localparam NUMBER6_HPOS = 431;
 
 localparam SCORE_H = 34;
 localparam SCORE_W = 50;
@@ -916,7 +916,7 @@ always @ (posedge clk) begin
         disp <= 0;
    
         pixel_addr <= (pixel_y >> 1) * VBUF_W + (pixel_x >> 1);   
-        sc <= score;
+        if (state != 7) sc <= score;
     
   end
 end
@@ -943,8 +943,9 @@ always @(*) begin
     else if (state == 7 && (number_region3 || number_region4) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
     else if (state == 7 && (number_region5 || number_region6) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
     else if ((number_region1 || number_region2) && data_snk_o != 12'h0f0) rgb_next = data_snk_o;
-    else if (mode == 3) rgb_next = {data_out[7:4], 8'b0};
-    else if (mode == 2) rgb_next = {8'b0, data_out[7:4]};
+    else if (mode == 0 && state > 0) rgb_next = {data_out[7:4], data_out[11:8], 4'b0};
+    else if (mode == 2) rgb_next = {4'b0, data_out[3:0], data_out[7:4]};
+    else if (mode == 3) rgb_next = {data_out[7:4], 4'b0110, 4'b1011};
             // else if (mode == 3 && data_out == 12'had8) rgb_next = 12'hC30; // dark_green to red
             // else if (mode == 3 && data_out == 12'hceb) rgb_next = 12'he78; 
             // else if (mode == 3 && data_out == 12'hefd) rgb_next = 12'hebd;
