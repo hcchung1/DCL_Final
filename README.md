@@ -65,13 +65,20 @@ Tools: Vscode, Vivado
 
 --- 
 ### 遊戲畫面
-
-![圖1: 進入遊戲畫面](./images/p1.jpg)
-![圖2：(btn1)簡單模式](./images/p2.jpg)
-![圖3：(btn2)中等模式](./images/p3.jpg)
-![圖4：(btn3)困難模式](./images/p4.jpg)
-![圖5：(btn0)無邊際模式：可超出邊界](./images/p5.jpg)
-![圖6：(btn0)無邊際模式：可超出邊界](./images/p6.jpg)
-![圖7：(btn0)無邊際模式：可超出邊界](./images/p7.jpg)
-![圖8：遊戲結束與結算畫面](./images/p8.jpg)
-![圖9：遊戲結束與結算畫面](./images/p9.jpg)
+<div align="center">
+   <img src = "./images/p1.jpg">
+   圖1: 進入遊戲畫面
+   <img src = "./images/p2.jpg">
+   圖2：(btn1)簡單模式
+   <img src = "./images/p3.jpg">
+   圖3：(btn2)中等模式
+   <img src = "./images/p4.jpg">
+   圖4：(btn3)困難模式
+   <img src = "./images/p5.jpg">
+   <img src = "./images/p6.jpg">
+   <img src = "./images/p7.jpg">
+   圖5, 6, 7：(btn0)無邊際模式：可超出邊界
+   <img src = "./images/p8.jpg">
+   <img src = "./images/p9.jpg">
+   圖8, 9：遊戲結束與結算畫面
+</div>
