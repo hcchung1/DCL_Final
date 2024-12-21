@@ -1,6 +1,4 @@
-# DCL_Final
-
-Final Project 2024
+# 2024 數位電路實驗(DCL) Final Project
 
 Author: Henry Chung(鍾承翰), Eric Chen(陳景寬), Dozen Zhou(周琨棋)
 
