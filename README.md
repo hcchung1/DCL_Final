@@ -65,3 +65,5 @@ Tools: Vscode, Vivado
 
 --- 
 ### 遊戲畫面
+
+![圖1: 進入遊戲畫面](./images/p1/png)
