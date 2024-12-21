@@ -10,6 +10,8 @@ Language: Verilog
 
 Tools: Vscode, Vivado
 
+Board: Xilinx Artix-7(Arty)
+
 ---
 ### 簡介
 
